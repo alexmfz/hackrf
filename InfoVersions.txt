@@ -1,0 +1,4 @@
+v1: Code from generationFits succesfully integrated with hackRF. Still not generated fits file from result of hackRF. 
+    It will be on future versions.
+
+v1.1: Fits generated sucessfully - files refactor - fixed bugs. Finish integration
