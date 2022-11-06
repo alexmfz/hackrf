@@ -31,7 +31,7 @@
 #include "fitsio.h"
 #include "FitsFolder/generatationFits.h"
 #include "Functions/functions.h"
-#include "timer.h"
+#include "Timer/timer.h"
 
 /*********************/
 

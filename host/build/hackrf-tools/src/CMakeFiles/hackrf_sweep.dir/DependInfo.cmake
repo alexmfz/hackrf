@@ -10,7 +10,7 @@ set(CMAKE_C_COMPILER_ID "GNU")
 
 # Preprocessor definitions for this target.
 set(CMAKE_TARGET_DEFINITIONS_C
-  "TOOL_RELEASE=\"git-d3e4e9b*\""
+  "TOOL_RELEASE=\"git-4e9ec38*\""
   )
 
 # The include file search paths:
