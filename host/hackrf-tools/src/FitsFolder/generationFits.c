@@ -22,12 +22,9 @@ fitsfile *fptr =NULL;
 int exist = 0;
 int status = 0, ii, jj;
 int fpixel = 1;
-int naxis = 2, nElements, exposure;
-long naxes[2];// = {160,100}; //200 filas(eje y) 400 columnas(eje x)
-uint8_t array_img[3600][200]; //naxes[0]naxes[y] (axis x ,axis y)
-
-/**Extern var**/
-extern uint32_t rounds;
+int naxis = 3, nElements, exposure;
+long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
+float array_img[3600][200]; //naxes[0]naxes[y] (axis x ,axis y)
 
 int create(char fileFitsName[])
 {   
@@ -37,49 +34,49 @@ int create(char fileFitsName[])
     if(exist == 1)
     {
         
-        printf("File already exists. Overwritting fits file.\n");
+        printf("create | File already exists. Overwritting fits file.\n");
         if(fits_open_file(&fptr, fileFitsName, READWRITE, &status))
         {
-            perror("Was not possible to open the file");
+            perror("create | Was not possible to open the file");
             return -1;
         }
         
         if(fits_delete_file(fptr,&status))
         {
-            perror("Was not possible to delete the file");
+            perror("create | Was not possible to delete the file");
             return -1;
         }
         if(fits_create_file(&fptr, fileFitsName, &status))
         {
-            perror("Was not possible to create the file");
+            perror("create | Was not possible to create the file");
             return -1;
         }
         
        /*create the primary array image (16-bit short integer pixels*/
-        if(fits_create_img(fptr, BYTE_IMG, naxis, naxes, &status))
+        if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
         {
-            perror("Was not possible to create the image");
+            perror("create | Was not possible to create the image");
             return -1;
         }
-        printf("File overwrriten: %s\n", fileFitsName);
+        printf("create | File overwrriten: %s\n", fileFitsName);
         return 0;
     }
     else //if not exist
     {
         if(fits_create_file(&fptr, fileFitsName, &status))
         {
-            perror("Was not possible to create the file");
+            perror("create | Was not possible to create the file");
             return -1;
         }
         
 
         /*create the primary array image (16-bit short integer pixels*/
-        if(fits_create_img(fptr, BYTE_IMG, naxis, naxes, &status))
+        if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
         {
-            perror("Was not possible to create the image");
+            perror("create | Was not possible to create the image");
             return -1;
         }
-        printf("File created: %s\n", fileFitsName);
+        printf("create | File created: %s\n", fileFitsName);
         return 0;
     }
 }
@@ -109,41 +106,32 @@ void updateHeadersFitsFile()
     fits_update_key(fptr,TLONG, "BZERO", &bzero, "Scaling offset", &status); 
     fits_update_key(fptr,TLONG, "BSCALE", &bscale, "Scaling factor", &status); 
 */
+    printf("updateHeadersFitsFile | Header fits file updated\n");
 }
 
-int insertData(uint8_t* samples)
+int insertData(float* samples)
 {
     int nRounds = 0;
 /*Initialize the values in the image with a linear ramp function*/
-    printf("Inserting data...\n");
+    printf("insertData | Inserting data...\n");
     //naxes[1] = 200
     //naxes[0] = 3600
     nElements = naxes[0]*naxes[1];
-    while(nRounds < rounds)
     {
         for(ii= 0; ii< naxes[1]; ii++ )
         {        
-            for (jj=nRounds*naxes[0]/rounds; jj< (1+nRounds)*naxes[0]/rounds; jj++)
+            for (jj=naxes[0]; jj< naxes[0]; jj++)
             {
-                //There are 4 rounds, so 4 values are needed to be set at iteration
                 array_img[jj][ii] = (uint8_t)(-samples[jj]);
             }
             
         }    
-        nRounds++;
     }
 
-/*    for(ii= 0; ii< naxes[1]; ii++ )
-    {        
-        for (jj=0; jj< naxes[0]; jj++)
-        {
-            array_img[ii][jj] = samples[];
-        }
-    }*/
     /*Write the array of integers of the image*/
-    if(fits_write_img(fptr, TBYTE, fpixel, nElements, array_img[0], &status))
+    if(fits_write_img(fptr, TFLOAT, fpixel, nElements, array_img[0], &status))
     {
-        perror("Was not possible to write data into the image");
+        perror("insertData | Was not possible to write data into the image");
         return -1;
     }
     return 0;
@@ -154,13 +142,15 @@ void closeFits()
     /*Close and report any error*/
     fits_close_file(fptr, &status);
     fits_report_error(stderr, status);
+    
+    printf("closeFits | fits file closed\n");
 }
 
-int generateFitsFile(char fileFitsName[], uint8_t*samples)
+int generateFitsFile(char fileFitsName[], float*samples)
 {   
    //Creation
-    printf("Filename: %s\n",fileFitsName);
-    printf("Dimensions:[%ld][%ld]\n",naxes[0],naxes[1]);
+    printf("generateFitsFile | Filename: %s\n",fileFitsName);
+    printf("generateFitsFile | Dimensions:[%ld][%ld]\n",naxes[0],naxes[1]);
 
    if (create(fileFitsName) == -1)
    {
@@ -171,13 +161,13 @@ int generateFitsFile(char fileFitsName[], uint8_t*samples)
    updateHeadersFitsFile();
    
    //Insert info
-   printf("Inserting data into img\n");
+   printf("generateFitsFile | Inserting data into img\n");
    if(insertData(samples) == -1)
    {
-    printf("There was an error\n");
+    printf("generateFitsFile | There was an error\n");
     return -1;
    }
-   printf("Finished insertion\n");
+   printf("generateFitsFile | Finished insertion\n");
 
    //CloseFile
    closeFits();

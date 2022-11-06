@@ -1,3 +1,12 @@
-v2.1: 
-Integrate timer functionality to API and compiler files
-Link.txt: /usr/bin/cc  -std=gnu90  -rdynamic CMakeFiles/hackrf_sweep.dir/hackrf_sweep.c.o CMakeFiles/hackrf_sweep.dir/generationFits.c.o CMakeFiles/hackrf_sweep.dir/functions.c.o CMakeFiles/hackrf_sweep.dir/timer.c.o -o hackrf_sweep  -Wl,-rpath,/home/manolo/hackrf/host/build/libhackrf/src: -lm -lfftw3f ../../libhackrf/src/libhackrf.so.0.7.0 -lusb-1.0 -lpthread -I/usr/local/src/cfitsio-4.1.0 -lcfitsio 
+v2.2: 
+Adapt new functionality concept as a test (with no timer)
+Test concept params:
+    -   StepValue = 1 MHz
+    -   Channels = 200
+    -   Freqs range: 45-245 MHz
+    -   Functions generator fixed: 150 MHz
+As a result each output must have:
+    -   Size output: 5 samples per 40 ranges = 200 power values
+
+Removed stuffs from previous versions. 
+SampleRate fixed to 20 MHz

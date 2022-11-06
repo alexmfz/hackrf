@@ -17,6 +17,6 @@
 #endif
 int create(char filename[]);
 void updateHeadersFitsFile();
-int insertData(uint8_t* samples);
+int insertData(float* samples);
 void closeFits();
-int generateFitsFile(char filename[], uint8_t* samples);
+int generateFitsFile(char filename[], float* samples);

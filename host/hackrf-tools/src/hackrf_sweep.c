@@ -33,8 +33,6 @@
 #include "Functions/functions.h"
 #include "Timer/timer.h"
 
-/*********************/
-
 /**
  * CONSTANTES
  */
@@ -53,8 +51,7 @@ typedef int bool;
 
 #define FFTMAX 	(8180)
 #define FFTSIZE_STD	(14400)
-#define CUSTOM_SAMPLE_RATE_HZ (16000000)
-//#define DEFAULT_SAMPLE_RATE_HZ (20000000) /* 20MHz default sample rate */
+#define CUSTOM_SAMPLE_RATE_HZ (20000000)
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -77,14 +74,12 @@ int step_count;
 unsigned int lna_gain=16, vga_gain=20;
 uint32_t freq_min = 0;
 uint32_t freq_max = 6000;
-float step_value = 3.975; //MHz
-
-uint32_t rounds = 4;
+float step_value = 0; //(freqmax-freqmin)/nChannels (MHz)
 
 FILE* outfile = NULL;
 char* path = NULL;
 char pathFits[] = "TFM.fits";
-uint8_t* samples;
+float* samples;
 int id_sample = 0;
 
 volatile uint32_t byte_count = 0;
@@ -118,7 +113,6 @@ float* pwr;
 float* window;
 static hackrf_device* device = NULL;
 const char*serial_number = NULL;
-
 
 int numberOfSteps = 0; //(FMax-FMin)/Width
 uint32_t requested_fft_bin_width = 0;
@@ -170,6 +164,7 @@ int rx_callback(hackrf_transfer* transfer) {
 	char time_str[50];
 	struct timeval usb_transfer_time;
 	int nElements = naxes[0]*naxes[1];
+
 	if(NULL == outfile){// || strstr(pathFits,"fits")==NULL) {
 		return -1;
 	}
@@ -177,21 +172,29 @@ int rx_callback(hackrf_transfer* transfer) {
 	if(do_exit) {
 		return 0;
 	}
+
 	gettimeofday(&usb_transfer_time, NULL);
 	byte_count += transfer->valid_length;
 	buf = (int8_t*) transfer->buffer;
 	ifft_bins = fftSize * step_count;
-	for(j=0; j<BLOCKS_PER_TRANSFER; j++) {
+	for(j=0; j<BLOCKS_PER_TRANSFER; j++) 
+	{
 		ubuf = (uint8_t*) buf;
-		if(ubuf[0] == 0x7F && ubuf[1] == 0x7F) {
+		if(ubuf[0] == 0x7F && ubuf[1] == 0x7F) 
+		{
 			frequency = ((uint64_t)(ubuf[9]) << 56) | ((uint64_t)(ubuf[8]) << 48) | ((uint64_t)(ubuf[7]) << 40)
 					| ((uint64_t)(ubuf[6]) << 32) | ((uint64_t)(ubuf[5]) << 24) | ((uint64_t)(ubuf[4]) << 16)
 					| ((uint64_t)(ubuf[3]) << 8) | ubuf[2];
-		} else {
+		} 
+		
+		else 
+		{
 			buf += BYTES_PER_BLOCK;
 			continue;
 		}
-		if (frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) {
+
+		if (frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
+		{
 			if(sweep_started) {
 				if(ifft_output) {
 					fftwf_execute(ifftwPlan);
@@ -202,38 +205,46 @@ int rx_callback(hackrf_transfer* transfer) {
 						fwrite(&ifftwOut[i][1], sizeof(float), 1, outfile);
 					}
 				}
+
 				sweep_count++;
 				if(one_shot) {
 					do_exit = true;
 				}
+
 				else if(finite_mode && sweep_count == num_sweeps) {
 					do_exit = true;
 				}
 			}
 			sweep_started = true;
 		}
+
 		if(do_exit) {
 			return 0;
 		}
+
 		if(!sweep_started) {
 			buf += BYTES_PER_BLOCK;
 			continue;
 		}
+
 		if((FREQ_MAX_MHZ * FREQ_ONE_MHZ) < frequency) {
 			buf += BYTES_PER_BLOCK;
 			continue;
 		}
 		/* copy to fftwIn as floats */
 		buf += BYTES_PER_BLOCK - (fftSize * 2);
+
 		for(i=0; i < fftSize; i++) {
 			fftwIn[i][0] = buf[i*2] * window[i] * 1.0f / 128.0f;
 			fftwIn[i][1] = buf[i*2+1] * window[i] * 1.0f / 128.0f;
 		}
 		buf += fftSize * 2;
 		fftwf_execute(fftwPlan);
+
 		for (i=0; i < fftSize; i++) {
 			pwr[i] = logPower(fftwOut[i], 1.0f / fftSize);
 		}
+
 		if(binary_output) {
 			record_length = 2 * sizeof(band_edge)
 					+ (fftSize/4) * sizeof(float);
@@ -252,23 +263,27 @@ int rx_callback(hackrf_transfer* transfer) {
 			fwrite(&band_edge, sizeof(band_edge), 1, outfile);
 			fwrite(&pwr[1+fftSize/8], sizeof(float), fftSize/4, outfile);
 		}
+
 		else if(ifft_output)
 		 {
 			ifft_idx = (uint32_t) round((frequency - (uint64_t)(FREQ_ONE_MHZ*frequencies[0]))
 					/ fft_bin_width);
 			ifft_idx = (ifft_idx + ifft_bins/2) % ifft_bins;
+
 			for(i = 0; (fftSize / 4) > i; i++) {
 				ifftwIn[ifft_idx + i][0] = fftwOut[i + 1 + (fftSize*5)/8][0];
 				ifftwIn[ifft_idx + i][1] = fftwOut[i + 1 + (fftSize*5)/8][1];
 			}
 			ifft_idx += fftSize / 2;
 			ifft_idx %= ifft_bins;
+
 			for(i = 0; (fftSize / 4) > i; i++) {
 				ifftwIn[ifft_idx + i][0] = fftwOut[i + 1 + (fftSize/8)][0];
 				ifftwIn[ifft_idx + i][1] = fftwOut[i + 1 + (fftSize/8)][1];
 			}
 		}
-		else if(strstr(pathFits, "fits")== NULL) //si el archivo no es .fits
+
+		else if(strstr(pathFits, "fits")!= NULL) //si el archivo no es .fits
 		{
 			if(id_sample == nElements-1)
 			{
@@ -286,10 +301,12 @@ int rx_callback(hackrf_transfer* transfer) {
 					(uint64_t)(frequency+sampleRate/4), //45MHz + 5MHz
 					fft_bin_width,
 					fftSize);
+
 				for(i = 0; (fftSize / 4) > i; i++) {
 					fprintf(outfile, ", %.2f", pwr[i + 1 + (fftSize*5)/8]);
 					id_sample++;
 				}
+
 				fprintf(outfile, "\n");
 				fprintf(outfile, "%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
 						time_str,
@@ -298,10 +315,12 @@ int rx_callback(hackrf_transfer* transfer) {
 						(uint64_t)(frequency+((sampleRate*3)/4)),
 						fft_bin_width,	//	--> 49504,95			
 						fftSize);
+
 				for(i = 0; (fftSize / 4) > i; i++) {
 					fprintf(outfile, ", %.2f", pwr[i + 1 + (fftSize/8)]);
 					id_sample++;
 				}
+
 				fprintf(outfile, "\n");
 				
 		}
@@ -310,8 +329,9 @@ int rx_callback(hackrf_transfer* transfer) {
 			for(i = 0; (fftSize / 4) > i; i++) {
 				if(id_sample%nElements == 0)
 				{
-					printf("Round Finished\n");
+					printf("rx_callback | Round Finished\n");
 				}
+
 				if(id_sample == nElements-1)
 				{
 					
@@ -325,8 +345,9 @@ int rx_callback(hackrf_transfer* transfer) {
 			{
 				if(id_sample%nElements == 0)
 				{
-					printf("Round Finished");
+					printf("rx_callback | Round Finished");
 				}
+
 				if(id_sample == nElements -1)
 				{
 					do_exit = true;
@@ -336,26 +357,24 @@ int rx_callback(hackrf_transfer* transfer) {
 					id_sample++;
 			}
 		}
-		
 	}
 			
 	return 0;
 }
-
 
 /**
  * Checks the paramsf not possible values to throw an error
  */
 static int checkParams(){
 if (lna_gain % 8)
-		fprintf(stderr, "warning: lna_gain (-l) must be a multiple of 8\n");
+		fprintf(stderr, "checkParams | warning: lna_gain (-l) must be a multiple of 8\n");
 
 	if (vga_gain % 2)
-		fprintf(stderr, "warning: vga_gain (-g) must be a multiple of 2\n");
+		fprintf(stderr, "checkParams | warning: vga_gain (-g) must be a multiple of 2\n");
 
 	if( amp ) {
 		if( amp_enable > 1 ) {
-			fprintf(stderr, "argument error: amp_enable shall be 0 or 1.\n");
+			fprintf(stderr, "checkParams | argument error: amp_enable shall be 0 or 1.\n");
 			usage();
 			return EXIT_FAILURE;
 		}
@@ -363,7 +382,7 @@ if (lna_gain % 8)
 
 	if (antenna) {
 		if (antenna_enable > 1) {
-			fprintf(stderr, "argument error: antenna_enable shall be 0 or 1.\n");
+			fprintf(stderr, "checkParams | argument error: antenna_enable shall be 0 or 1.\n");
 			usage();
 			return EXIT_FAILURE;
 		}
@@ -376,12 +395,12 @@ if (lna_gain % 8)
 	}
 
 	if(binary_output && ifft_output) {
-		fprintf(stderr, "argument error: binary output (-B) and IFFT output (-I) are mutually exclusive.\n");
+		fprintf(stderr, "checkParams | argument error: binary output (-B) and IFFT output (-I) are mutually exclusive.\n");
 		return EXIT_FAILURE;
 	}
 
 	if(ifft_output && (1 < num_ranges)) {
-		fprintf(stderr, "argument error: only one frequency range is supported in IFFT output (-I) mode.\n");
+		fprintf(stderr, "checkParams | argument error: only one frequency range is supported in IFFT output (-I) mode.\n");
 		return EXIT_FAILURE;
 	}
 
@@ -392,15 +411,16 @@ if (lna_gain % 8)
 	 */
 	if(fftSize < 4) {
 		fprintf(stderr,
-				"argument error: FFT bin width (-w) must be no more than 5000000\n");
+				"checkParams | argument error: FFT bin width (-w) must be no more than 5000000\n");
 		return EXIT_FAILURE;
 	}
 
 	if(fftSize > 8180) {
 		fprintf(stderr,
-				"argument error: FFT bin width (-w) must be no less than 2445\n");
+				"checkParams | argument error: FFT bin width (-w) must be no less than 2445\n");
 		return EXIT_FAILURE;
 	}
+	printf("checkParams | Success");
 	return EXIT_SUCCESS;
 
 }
@@ -408,17 +428,17 @@ if (lna_gain % 8)
 static int initConfigureHackRF(){
 	result = hackrf_init();
 	if( result != HACKRF_SUCCESS ) {
-		fprintf(stderr, "hackrf_init() failed: %s (%d)\n", hackrf_error_name(result), result);
+		fprintf(stderr, "initConfigureHackRF | hackrf_init() failed: %s (%d)\n", hackrf_error_name(result), result);
 		usage();
 		return EXIT_FAILURE;
 	}
 	result = hackrf_open_by_serial(serial_number, &device);
 	if( result != HACKRF_SUCCESS ) {
-		fprintf(stderr, "hackrf_open() failed: %s (%d)\n", hackrf_error_name(result), result);
+		fprintf(stderr, "initConfigureHackRF | hackrf_open() failed: %s (%d)\n", hackrf_error_name(result), result);
 		usage();
 		return EXIT_FAILURE;
 	}
-	
+	printf("initConfigHackRF | Success");
 	return result;
 }
 
@@ -431,9 +451,11 @@ static int openFile(){
 	}
 
 	if(outfile == NULL) {
-		fprintf(stderr, "Failed to open file: %s\n", path);
+		fprintf(stderr, "openFile | Failed to open file: %s\n", path);
 		return EXIT_FAILURE;
 	}
+
+	printf("openFile | Success");
 	return EXIT_SUCCESS;
 }
 
@@ -441,29 +463,31 @@ static int setBufOutFile(){
 	/* Change outfile buffer to have bigger one to store or read data on/to HDD */
 	result = setvbuf(outfile , NULL , _IOFBF , FD_BUFFER_SIZE);
 	if( result != 0 ) {
-		fprintf(stderr, "setvbuf() failed: %d\n", result);
+		fprintf(stderr, "setBufOutFile | setvbuf() failed: %d\n", result);
 		usage();
 		return EXIT_FAILURE;
 	}
+
+	printf("setBufOutFile | Success");
 	return result;
 }
 
 static int setHackRFParams(){
-	fprintf(stderr, "call hackrf_sample_rate_set(%.03f MHz)\n",
+	fprintf(stderr, "setHackRFParams | call hackrf_sample_rate_set(%.03f MHz)\n",
 		   ((float)sampleRate/(float)FREQ_ONE_MHZ));
 	result = hackrf_set_sample_rate_manual(device, sampleRate, 1);
 	if( result != HACKRF_SUCCESS ) {
-		fprintf(stderr, "hackrf_sample_rate_set() failed: %s (%d)\n",
+		fprintf(stderr, "setHackRFParams | hackrf_sample_rate_set() failed: %s (%d)\n",
 			   hackrf_error_name(result), result);
 		usage();
 		return EXIT_FAILURE;
 	}
 
-	fprintf(stderr, "call hackrf_baseband_filter_bandwidth_set(%.03f MHz)\n",
+	fprintf(stderr, "setHackRFParams | call hackrf_baseband_filter_bandwidth_set(%.03f MHz)\n",
 			((float)DEFAULT_BASEBAND_FILTER_BANDWIDTH/(float)FREQ_ONE_MHZ));
 	result = hackrf_set_baseband_filter_bandwidth(device, DEFAULT_BASEBAND_FILTER_BANDWIDTH);
 	if( result != HACKRF_SUCCESS ) {
-		fprintf(stderr, "hackrf_baseband_filter_bandwidth_set() failed: %s (%d)\n",
+		fprintf(stderr, "setHackRFParams | hackrf_baseband_filter_bandwidth_set() failed: %s (%d)\n",
 			   hackrf_error_name(result), result);
 		usage();
 		return EXIT_FAILURE;
@@ -472,51 +496,52 @@ static int setHackRFParams(){
 	result = hackrf_set_vga_gain(device, vga_gain);
 	result |= hackrf_set_lna_gain(device, lna_gain);
 
+	printf("setHackRFParams | Success");
 	return result;
 }
 
 static int sweeping()
 {
 	int customTuneStep = sampleRate/FREQ_ONE_MHZ;
-		printf("===SWEEPING===\n");
+	printf("sweeping | ===SWEEPING===\n");
 	result = hackrf_init_sweep(device, frequencies, num_ranges, BYTES_PER_BLOCK,
 			customTuneStep * FREQ_ONE_MHZ, OFFSET, INTERLEAVED);
 	if( result != HACKRF_SUCCESS ) {
-		fprintf(stderr, "hackrf_init_sweep() failed: %s (%d)\n",
+		fprintf(stderr, "sweeping | hackrf_init_sweep() failed: %s (%d)\n",
 			   hackrf_error_name(result), result);
 		return EXIT_FAILURE;
 	}
 
 	result |= hackrf_start_rx_sweep(device, rx_callback, NULL); //rx callback write are the values to save in the img
 	if (result != HACKRF_SUCCESS) {
-		fprintf(stderr, "hackrf_start_rx_sweep() failed: %s (%d)\n", hackrf_error_name(result), result);
+		fprintf(stderr, "sweeping | hackrf_start_rx_sweep() failed: %s (%d)\n", hackrf_error_name(result), result);
 		usage();
 		return EXIT_FAILURE;
 	}
 	
-	printf("===SWEEPING DONE===\n");
+	printf("sweeping | ===SWEEPING DONE===\n");
 	return EXIT_SUCCESS;
 }
 static int endConnection(){
 		if(device != NULL) {
 		result = hackrf_close(device);
 		if(result != HACKRF_SUCCESS) {
-			fprintf(stderr, "hackrf_close() failed: %s (%d)\n",
+			fprintf(stderr, "endConnection | hackrf_close() failed: %s (%d)\n",
 				   hackrf_error_name(result), result);
 				   return EXIT_FAILURE;
 		} else {
-			printf("hackrf_close() done\n");
+			printf("endConnection | hackrf_close() done\n");
 		}
 		
 		hackrf_exit();
-		printf("hackrf_exit() done\n");
+		printf("endConnection | hackrf_exit() done\n");
 	}
 
 	fflush(outfile);
 	if ( ( outfile != NULL ) && ( outfile != stdout ) ) {
 		fclose(outfile);
 		outfile = NULL;
-		printf("fclose() done\n");
+		printf("endConnection | fclose() done\n");
 	}
 	if(ifft_output)
 	{
@@ -527,7 +552,7 @@ static int endConnection(){
 		fftwf_free(ifftwIn);
 		fftwf_free(ifftwOut);	
 	}
-	printf("Connection close with hackrf\n");
+	printf("endConnection | Connection close with hackrf success\n");
 	return EXIT_SUCCESS;
 }
 
@@ -620,12 +645,12 @@ int main(int argc, char** argv)
 		ifftwPlan = fftwf_plan_dft_1d(fftSize * step_count, ifftwIn, ifftwOut, FFTW_BACKWARD, FFTW_MEASURE);
 	}
 
-	printf("HackRF configuration DONE.\n");
+	printf("main | HackRF configuration DONE.\n");
 	nElements = naxes[0]*naxes[1];
-	samples = (uint8_t*)calloc(nElements,sizeof(uint8_t));
+	samples = (float*)calloc(nElements,sizeof(float));
 	if(samples == NULL)
 	{
-		printf("Samples not allocated in memory.\n");
+		printf("main | Samples not allocated in memory.\n");
 		exit(0);
 	}
 	/**SWEEP**/
@@ -636,10 +661,10 @@ int main(int argc, char** argv)
 	}
 
 	if (amp) {
-		fprintf(stderr, "call hackrf_set_amp_enable(%u)\n", amp_enable);
+		fprintf(stderr, "main | call hackrf_set_amp_enable(%u)\n", amp_enable);
 		result = hackrf_set_amp_enable(device, (uint8_t)amp_enable);
 		if (result != HACKRF_SUCCESS) {
-			fprintf(stderr, "hackrf_set_amp_enable() failed: %s (%d)\n",
+			fprintf(stderr, "main | hackrf_set_amp_enable() failed: %s (%d)\n",
 				   hackrf_error_name(result), result);
 			usage();
 			return EXIT_FAILURE;
@@ -647,10 +672,10 @@ int main(int argc, char** argv)
 	}
 
 	if (antenna) {
-		fprintf(stderr, "call hackrf_set_antenna_enable(%u)\n", antenna_enable);
+		fprintf(stderr, "main | call hackrf_set_antenna_enable(%u)\n", antenna_enable);
 		result = hackrf_set_antenna_enable(device, (uint8_t)antenna_enable);
 		if (result != HACKRF_SUCCESS) {
-			fprintf(stderr, "hackrf_set_antenna_enable() failed: %s (%d)\n",
+			fprintf(stderr, "main | hackrf_set_antenna_enable() failed: %s (%d)\n",
 				   hackrf_error_name(result), result);
 			usage();
 			return EXIT_FAILURE;
@@ -660,7 +685,7 @@ int main(int argc, char** argv)
 	gettimeofday(&t_start, NULL);
 	time_prev = t_start;
 
-	fprintf(stderr, "Stop with Ctrl-C\n");
+	fprintf(stderr, "main | Stop with Ctrl-C\n");
 	while((hackrf_is_streaming(device) == HACKRF_TRUE) && (do_exit == false)) {
 		float time_difference;
 		m_sleep(50);
@@ -674,7 +699,7 @@ int main(int argc, char** argv)
 
 			if (byte_count == 0) {
 				exit_code = EXIT_FAILURE;
-				fprintf(stderr, "\nCouldn't transfer any data for one second.\n");
+				fprintf(stderr, "\n main | Couldn't transfer any data for one second.\n");
 				break;
 			}
 			byte_count = 0;
@@ -689,9 +714,9 @@ int main(int argc, char** argv)
 
 	result = hackrf_is_streaming(device);	
 	if (do_exit) {
-		fprintf(stderr, "\nExiting...\n");
+		fprintf(stderr, "\n main | Exiting...\n");
 	} else {
-		fprintf(stderr, "\nExiting... hackrf_is_streaming() result: %s (%d)\n",
+		fprintf(stderr, "\n main | Exiting... hackrf_is_streaming() result: %s (%d)\n",
 			   hackrf_error_name(result), result);
 	}
 
@@ -713,13 +738,13 @@ int main(int argc, char** argv)
 		printf("%\n",samples[i]);
 		
 	}*/
-	if(strstr(pathFits,"fits")!=NULL)
+/*	if(strstr(pathFits,"fits")!=NULL)
 	{
 		generateFitsFile(pathFits, samples);
 	}
-
+*/
 	free(samples);
-	printf("The dynamic memory used was sucessfully released.\nEND.\n");
+	printf("main | The dynamic memory used was sucessfully released.\nEND.\n");
 
 	return exit_code;
 	

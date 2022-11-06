@@ -33,12 +33,15 @@ typedef int bool;
 #endif
 
 /*EXTERN VARIABLES*/
-#define CUSTOM_SAMPLE_RATE_HZ (16000000)
+#define CUSTOM_SAMPLE_RATE_HZ (20000000)
 #define FREQ_ONE_MHZ (1000000ull)
 #define FREQ_MAX_MHZ (7250) /* 7250 MHz */
 #define FFTMAX 	(8180)
 #define FFTSIZE_STD	(14400)
-
+#define MAX_TIME_MINUTES (15)
+#define SAMPLES_PER_S	(4)
+#define CONVERSION_MIN_TO_S (60)
+#define TOTAL_SAMPLES_PER_FREQUENCY (MAX_TIME_MINUTES*CONVERSION_MIN_TO_S*SAMPLES_PER_S)
 extern int numberOfSteps;
 extern long naxes[2];
 extern float step_value;
@@ -61,7 +64,6 @@ extern unsigned int vga_gain;
 extern unsigned int lna_gain;
 extern uint32_t requested_fft_bin_width;
 extern int fftSize;
-extern uint32_t rounds;
 extern bool one_shot;
 extern bool finite_mode;
 extern bool binary_output;
@@ -80,11 +82,11 @@ void usage() {
 	fprintf(stderr, "\t[-d serial_number] # Serial number of desired HackRF\n");
 	fprintf(stderr, "\t[-a amp_enable] # RX RF amplifier 1=Enable, 0=Disable\n");
 	fprintf(stderr, "\t[-f freq_min:freq_max] # minimum and maximum frequencies in MHz\n");
+	fprintf(stderr, "\t[-n number channels] # Number of channels, default value = 200");
 	fprintf(stderr, "\t[-p antenna_enable] # Antenna port power, 1=Enable, 0=Disable\n");
 	fprintf(stderr, "\t[-l gain_db] # RX LNA (IF) gain, 0-40dB, 8dB steps\n");
 	fprintf(stderr, "\t[-g gain_db] # RX VGA (baseband) gain, 0-62dB, 2dB steps\n");
 	fprintf(stderr, "\t[-w bin_width] # FFT bin width (frequency resolution) in Hz, 2445-5000000\n");
-	fprintf(stderr, "\t[-round] # number of rounds to execute rx_callback\n");
 	fprintf(stderr, "\t[-1] # one shot mode\n");
 	fprintf(stderr, "\t[-N num_sweeps] # Number of sweeps to perform\n");
 	fprintf(stderr, "\t[-B] # binary output\n");
@@ -145,42 +147,37 @@ int parse_u32_range(char* s, uint32_t* const value_min, uint32_t* const value_ma
 /*Parameters for fits file*/
 int assignFitsParameters()
 {
-	printf("Filaname: %s\n",pathFits);
+	printf("assignFitsParameters | Filaname: %s\n",pathFits);
 	if(strstr(pathFits, "fits") != NULL)
 	{
+		naxes[0] = TOTAL_SAMPLES_PER_FREQUENCY; //3600
 		naxes[1] = numberOfSteps; //200
-		naxes[0] = (long)rounds*fftSize/4; //3600
+		//naxes[3] = naxes[0] * naxes[1];
 
 		if(naxes[1] <=2)
 		{
-			perror("Number of steps cannot be less than 0");
+			perror("assignFitsParameters | Number of steps cannot be less than 0");
 			return EXIT_FAILURE;
 		}
 
 		if(naxes[0] <= 0)
 		{
-			perror("Number of samples cannot be less than 0");
+			perror("assignFitsParameters | Number of samples cannot be less than 0");
 			return EXIT_FAILURE;
 		}
-		if(naxes[0]!= 3600)
-		{
-			naxes[0] = 3600;
-		}
-		
+
 		/*Creating Fits File*/
 		printf("Receiving measures and saving as a FITS file\n\n||===Parameters FITS file===||\n");
-		printf("Freq min: %d\n", freq_min);
-		printf("Freq max: %d\n", freq_max);
-		printf("Step Value: %lf\n",step_value);
-		printf("Number of steps(x): %ld\n",naxes[0]);
-		printf("Number of samples(y) per frequency: %ld\n", naxes[1]);
-		printf("Number of samples per round %ld:\n", naxes[1]/rounds);
-		printf("Number of total samples : %ld\n", naxes[0]*naxes[1]);
-		printf("Number of rounds: %d\n",rounds);
+		printf("assignFitsParameters | Freq min: %d\n", freq_min);
+		printf("assignFitsParameters | Freq max: %d\n", freq_max);
+		printf("assignFitsParameters | Step Value: %lf\n",step_value);
+		printf("assignFitsParameters | Number of steps(X): %ld\n",naxes[0]);
+		printf("assignFitsParameters | Number of samples(Z) per frequency: %d\n", fftSize/4);
+		printf("assignFitsParameters | Number of total samples : %ld\n", naxes[0]*naxes[1]);
 		
 		if(pathFits==NULL )
 		{
-			perror("File not able");
+			perror("assignFitsParameters | File not able");
 			return EXIT_FAILURE;
 		}
 	}
@@ -192,29 +189,21 @@ int assignFitsParameters()
  * 
  */
 void assignGenericParameters()
-{
-	
-	step_value = (float)(freq_max - freq_min)/nChannels;
+{	
 	numberOfSteps = nChannels;
-	sampleRate = (4 * step_value)*FREQ_ONE_MHZ;
 
-	
-	float notValidRequested = (float)sampleRate/FFTSIZE_STD;
-	int roundPrev = FFTMAX/notValidRequested +1;
-	requested_fft_bin_width = roundPrev*notValidRequested;
+	step_value = (float)(freq_max - freq_min)/numberOfSteps;
+	requested_fft_bin_width = step_value*FREQ_ONE_MHZ;
+
+	sampleRate = CUSTOM_SAMPLE_RATE_HZ;
 
 	fftSize = sampleRate/requested_fft_bin_width;
-	
-	rounds = 4*3600/fftSize;
 
-	printf("Step Value: %f\n", step_value);
-	printf("Number of Steps: %d\n", nChannels);
-	printf("Sample Rate: %d\n", sampleRate);
-	printf("Not valid Requested fft bin width: %f\n",notValidRequested);
-	printf("Requested fft bin width: %d\n",requested_fft_bin_width);
-	printf("FFT size: %d\n", fftSize);
-	printf("Rounds: %d\n", rounds);
-	
+	printf("assignGenericParameters | Step Value: %f MHz\n", step_value);
+	printf("assignGenericParameters | Number of Steps (channels): %d\n", numberOfSteps);
+	printf("assignGenericParameters | Sample Rate: %d MHz\n", sampleRate);
+	printf("assignGenericParameters | FFT size: %d\n", fftSize);
+	printf("assignGenericParameters | Samples per channel:\n %d", fftSize/4);
 }
 
 /**
@@ -286,10 +275,6 @@ while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1BIr:h?")) != EOF ) {
 		case 'w':
 			result = parse_u32(optarg, &requested_fft_bin_width);
 			fftSize = CUSTOM_SAMPLE_RATE_HZ / requested_fft_bin_width; //Number of samples per frecuency/4
-			break;
-		
-		case 'i':
-			result = parse_u32(optarg, &rounds);
 			break;
 
 		case '1':
