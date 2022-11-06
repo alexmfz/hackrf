@@ -1,5 +1,12 @@
 /**
- * LIBRERIAS
+ * @file functions.c
+ * @author Alejandro
+ * @brief 
+ * @version 0.1
+ * @date 2022-11-05
+ * 
+ * @copyright Copyright (c) 2022
+ * 
  */
 #include "/home/manolo/hackrf/host/libhackrf/src/hackrf.h"
 #include <stdio.h>

@@ -67,7 +67,7 @@ float hackRFTrigger(long previousTime, long postTime)
     return durationIteration;
 }
 
-int main()
+/*int main()
 {
     long previousTime = 0 , postTime = 0;
     float totalDuration = 0;
@@ -82,4 +82,4 @@ int main()
 
     printf("\n\nIterations: %d\nTotal duration: %f s\n", ITERATIONS, totalDuration);
     return 0;    
-}
+}*/

@@ -1,3 +1,13 @@
+/**
+ * @file generationFits.c
+ * @author Alejandro
+ * @brief 
+ * @version 0.1
+ * @date 2022-11-05
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include "fitsio.h"
 #include "time.h"
 #include <string.h>

@@ -1,5 +1,12 @@
 /**
- * LIBRERIAS
+ * @file hackrf_sweep.c
+ * @author Alejandro
+ * @brief 
+ * @version 2.0
+ * @date 2022-11-05
+ * 
+ * @copyright Copyright (c) 2022
+ * 
  */
 #include "/home/manolo/hackrf/host/libhackrf/src/hackrf.h"
 #include <stdio.h>
@@ -24,6 +31,7 @@
 #include "fitsio.h"
 #include "FitsFolder/generatationFits.h"
 #include "Functions/functions.h"
+#include "timer.h"
 
 /*********************/
 
