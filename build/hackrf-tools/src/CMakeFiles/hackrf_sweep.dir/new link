@@ -1,1 +1,0 @@
-/usr/bin/cc -std=gnu90 -rdynamic CMakeFiles/hackrf_sweep.dir/generationFits.c.o -o generationFits -Wl,-rpath,/home/manolo/hackrf/host/hackrf-tools/src/FitsFolder/generationFits.c -o generationFits -I/usr/local/src/cfitsio-4.1.0 -lcfitsio

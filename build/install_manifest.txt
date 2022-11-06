@@ -1,8 +1,0 @@
-/usr/local/lib/pkgconfig/libhackrf.pc
-/etc/udev/rules.d/53-hackrf.rules
-/usr/local/lib/libhackrf.so.0.7.0
-/usr/local/lib/libhackrf.so.0
-/usr/local/lib/libhackrf.so
-/usr/local/lib/libhackrf.a
-/usr/local/include/libhackrf/hackrf.h
-/usr/local/bin/hackrf_sweep
