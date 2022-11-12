@@ -3,11 +3,15 @@
 cd /home/manolo/hackrf/host/build/hackrf-tools/src
 rm hackrf_sweep
 
+cd /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder
+rm hackrf_sweep
+echo "Executable hackrf_sweep successfully removed"
+
 cd /home/manolo/hackrf/host/build/hackrf-tools/src/CMakeFiles/hackrf_sweep.dir
 rm generationFits.c.o 
 rm functions.c.o
-
-echo "Files successfully removed"
+rm timer.c.o
+echo "Files object successfully removed"
 
 ###Compile###
 #Fits functions

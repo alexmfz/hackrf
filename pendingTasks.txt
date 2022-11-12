@@ -1,0 +1,6 @@
+Status OK | PENDING
+
+1. Adapt timer handler into main --> PENDING
+2. Update logs to detect bugs better --> OK
+3. Generate fits file with correct format --> PENDING
+4. Resolve output bug detected in hackrf_sweep --> PENDING

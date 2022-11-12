@@ -34,38 +34,38 @@ int create(char fileFitsName[])
     if(exist == 1)
     {
         
-        printf("create | File already exists. Overwritting fits file.\n");
+        printf("generationsFits | create | File already exists. Overwritting fits file.\n");
         if(fits_open_file(&fptr, fileFitsName, READWRITE, &status))
         {
-            perror("create | Was not possible to open the file");
+            perror("generationsFits | create | Was not possible to open the file");
             return -1;
         }
         
         if(fits_delete_file(fptr,&status))
         {
-            perror("create | Was not possible to delete the file");
+            perror("generationsFits | create | Was not possible to delete the file");
             return -1;
         }
         if(fits_create_file(&fptr, fileFitsName, &status))
         {
-            perror("create | Was not possible to create the file");
+            perror("generationsFits | create | Was not possible to create the file");
             return -1;
         }
         
        /*create the primary array image (16-bit short integer pixels*/
         if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
         {
-            perror("create | Was not possible to create the image");
+            perror("generationsFits | create | Was not possible to create the image");
             return -1;
         }
-        printf("create | File overwrriten: %s\n", fileFitsName);
+        printf("generationsFits | create | File overwrriten: %s\n", fileFitsName);
         return 0;
     }
     else //if not exist
     {
         if(fits_create_file(&fptr, fileFitsName, &status))
         {
-            perror("create | Was not possible to create the file");
+            perror("generationsFits | create | Was not possible to create the file");
             return -1;
         }
         
@@ -73,10 +73,10 @@ int create(char fileFitsName[])
         /*create the primary array image (16-bit short integer pixels*/
         if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
         {
-            perror("create | Was not possible to create the image");
+            perror("generationsFits | create | Was not possible to create the image");
             return -1;
         }
-        printf("create | File created: %s\n", fileFitsName);
+        printf("generationsFits | create | File created: %s\n", fileFitsName);
         return 0;
     }
 }
@@ -106,14 +106,14 @@ void updateHeadersFitsFile()
     fits_update_key(fptr,TLONG, "BZERO", &bzero, "Scaling offset", &status); 
     fits_update_key(fptr,TLONG, "BSCALE", &bscale, "Scaling factor", &status); 
 */
-    printf("updateHeadersFitsFile | Header fits file updated\n");
+    printf("generationsFits | updateHeadersFitsFile | Header fits file updated\n");
 }
 
 int insertData(float* samples)
 {
     int nRounds = 0;
 /*Initialize the values in the image with a linear ramp function*/
-    printf("insertData | Inserting data...\n");
+    printf("generationsFits | insertData | Inserting data...\n");
     //naxes[1] = 200
     //naxes[0] = 3600
     nElements = naxes[0]*naxes[1];
@@ -131,7 +131,7 @@ int insertData(float* samples)
     /*Write the array of integers of the image*/
     if(fits_write_img(fptr, TFLOAT, fpixel, nElements, array_img[0], &status))
     {
-        perror("insertData | Was not possible to write data into the image");
+        perror("generationsFits | insertData | Was not possible to write data into the image");
         return -1;
     }
     return 0;
@@ -143,14 +143,14 @@ void closeFits()
     fits_close_file(fptr, &status);
     fits_report_error(stderr, status);
     
-    printf("closeFits | fits file closed\n");
+    printf("generationsFits | closeFits | fits file closed\n");
 }
 
 int generateFitsFile(char fileFitsName[], float*samples)
 {   
    //Creation
-    printf("generateFitsFile | Filename: %s\n",fileFitsName);
-    printf("generateFitsFile | Dimensions:[%ld][%ld]\n",naxes[0],naxes[1]);
+    printf("generationsFits | generateFitsFile | Filename: %s\n",fileFitsName);
+    printf("generationsFits | generateFitsFile | Dimensions:[%ld][%ld]\n",naxes[0],naxes[1]);
 
    if (create(fileFitsName) == -1)
    {
@@ -161,13 +161,13 @@ int generateFitsFile(char fileFitsName[], float*samples)
    updateHeadersFitsFile();
    
    //Insert info
-   printf("generateFitsFile | Inserting data into img\n");
+   printf("generationsFits | generateFitsFile | Inserting data into img\n");
    if(insertData(samples) == -1)
    {
-    printf("generateFitsFile | There was an error\n");
+    printf("generationsFits | generateFitsFile | There was an error\n");
     return -1;
    }
-   printf("generateFitsFile | Finished insertion\n");
+   printf("generationsFits | generateFitsFile | Finished insertion\n");
 
    //CloseFile
    closeFits();

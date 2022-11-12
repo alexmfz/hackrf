@@ -1,12 +1,7 @@
-v2.2: 
-Adapt new functionality concept as a test (with no timer)
-Test concept params:
-    -   StepValue = 1 MHz
-    -   Channels = 200
-    -   Freqs range: 45-245 MHz
-    -   Functions generator fixed: 150 MHz
-As a result each output must have:
-    -   Size output: 5 samples per 40 ranges = 200 power values
+v2.3: 
+- Reformated logs to detects where each of them are invoked. 
+    Format is: namefile | function | info
 
-Removed stuffs from previous versions. 
-SampleRate fixed to 20 MHz
+- Move timer handler from timer.c to hackrf_sweep
+
+- Results: 2 sweeps executed successfully as executionTimerHandlerIntegrated.out

@@ -95,6 +95,7 @@ void usage() {
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Output fields:\n");
 	fprintf(stderr, "\tdate, time, hz_low, hz_high, hz_bin_width, num_samples, dB, dB, . . .\n");
+	printf("functions | Usage\n");
 }
 
 int parse_u32(char* s, uint32_t* const value) {
@@ -147,7 +148,7 @@ int parse_u32_range(char* s, uint32_t* const value_min, uint32_t* const value_ma
 /*Parameters for fits file*/
 int assignFitsParameters()
 {
-	printf("assignFitsParameters | Filaname: %s\n",pathFits);
+	printf("functions | assignFitsParameters | Filaname: %s\n",pathFits);
 	if(strstr(pathFits, "fits") != NULL)
 	{
 		naxes[0] = TOTAL_SAMPLES_PER_FREQUENCY; //3600
@@ -156,28 +157,28 @@ int assignFitsParameters()
 
 		if(naxes[1] <=2)
 		{
-			perror("assignFitsParameters | Number of steps cannot be less than 0");
+			perror("functions | assignFitsParameters | Number of steps cannot be less than 0");
 			return EXIT_FAILURE;
 		}
 
 		if(naxes[0] <= 0)
 		{
-			perror("assignFitsParameters | Number of samples cannot be less than 0");
+			perror("functions | assignFitsParameters | Number of samples cannot be less than 0");
 			return EXIT_FAILURE;
 		}
 
 		/*Creating Fits File*/
-		printf("Receiving measures and saving as a FITS file\n\n||===Parameters FITS file===||\n");
-		printf("assignFitsParameters | Freq min: %d\n", freq_min);
-		printf("assignFitsParameters | Freq max: %d\n", freq_max);
-		printf("assignFitsParameters | Step Value: %lf\n",step_value);
-		printf("assignFitsParameters | Number of steps(X): %ld\n",naxes[0]);
-		printf("assignFitsParameters | Number of samples(Z) per frequency: %d\n", fftSize/4);
-		printf("assignFitsParameters | Number of total samples : %ld\n", naxes[0]*naxes[1]);
+		printf("functions | Receiving measures and saving as a FITS file\n\n||===Parameters FITS file===||\n");
+		printf("functions | assignFitsParameters | Freq min: %d\n", freq_min);
+		printf("functions | assignFitsParameters | Freq max: %d\n", freq_max);
+		printf("functions | assignFitsParameters | Step Value: %lf\n",step_value);
+		printf("functions | assignFitsParameters | Number of steps(X): %ld\n",naxes[0]);
+		printf("functions | assignFitsParameters | Number of samples(Z) per frequency: %d\n", fftSize/4);
+		printf("functions | assignFitsParameters | Number of total samples : %ld\n", naxes[0]*naxes[1]);
 		
 		if(pathFits==NULL )
 		{
-			perror("assignFitsParameters | File not able");
+			perror("functions | assignFitsParameters | File not able");
 			return EXIT_FAILURE;
 		}
 	}
@@ -199,11 +200,11 @@ void assignGenericParameters()
 
 	fftSize = sampleRate/requested_fft_bin_width;
 
-	printf("assignGenericParameters | Step Value: %f MHz\n", step_value);
-	printf("assignGenericParameters | Number of Steps (channels): %d\n", numberOfSteps);
-	printf("assignGenericParameters | Sample Rate: %d MHz\n", sampleRate);
-	printf("assignGenericParameters | FFT size: %d\n", fftSize);
-	printf("assignGenericParameters | Samples per channel:\n %d", fftSize/4);
+	printf("functions | assignGenericParameters | Step Value: %f MHz\n", step_value);
+	printf("functions | assignGenericParameters | Number of Steps (channels): %d\n", numberOfSteps);
+	printf("functions | assignGenericParameters | Sample Rate: %d MHz\n", sampleRate);
+	printf("functions | assignGenericParameters | FFT size: %d\n", fftSize);
+	printf("functions | assignGenericParameters | Samples per channel:\n %d", fftSize/4);
 }
 
 /**
@@ -231,20 +232,20 @@ while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1BIr:h?")) != EOF ) {
 			result = parse_u32_range(optarg, &freq_min, &freq_max);
 			if(freq_min >= freq_max) {
 				fprintf(stderr,
-						"argument error: freq_max must be greater than freq_min.\n");
+						"functions | showMenu | argument error: freq_max must be greater than freq_min.\n");
 				usage();
 				return EXIT_FAILURE;
 			}
 			if(FREQ_MAX_MHZ <freq_max) {
 				fprintf(stderr,
-						"argument error: freq_max may not be higher than %u.\n",
+						"functions | showMenu | argument error: freq_max may not be higher than %u.\n",
 						FREQ_MAX_MHZ);
 				usage();
 				return EXIT_FAILURE;
 			}
 			if(MAX_SWEEP_RANGES <= num_ranges) {
 				fprintf(stderr,
-						"argument error: specify a maximum of %u frequency ranges.\n",
+						"functions | showMenu | argument error: specify a maximum of %u frequency ranges.\n",
 						MAX_SWEEP_RANGES);
 				usage();
 				return EXIT_FAILURE;
@@ -300,13 +301,13 @@ while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1BIr:h?")) != EOF ) {
 			return EXIT_SUCCESS;
 
 		default:
-			fprintf(stderr, "unknown argument '-%c %s'\n", opt, optarg);
+			fprintf(stderr, "functions | showMenu | unknown argument '-%c %s'\n", opt, optarg);
 			usage();
 			return EXIT_FAILURE;
 		}
 		
 		if( result != HACKRF_SUCCESS ) {
-			fprintf(stderr, "argument error: '-%c %s' %s (%d)\n", opt, optarg, hackrf_error_name(result), result);
+			fprintf(stderr, "functions | showMenu | argument error: '-%c %s' %s (%d)\n", opt, optarg, hackrf_error_name(result), result);
 			usage();
 			return EXIT_FAILURE;
 		}		
