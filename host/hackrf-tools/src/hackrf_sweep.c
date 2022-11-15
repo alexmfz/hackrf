@@ -455,7 +455,7 @@ static int setBufOutFile(){
 }
 
 static int setHackRFParams(){
-	fprintf(stderr, "hackrf_sweep | setHackRFParams | call hackrf_sample_rate_set(%.03f MHz)\n",
+	printf("hackrf_sweep | setHackRFParams | call hackrf_sample_rate_set(%.03f MHz)\n",
 		   ((float)sampleRate/(float)FREQ_ONE_MHZ));
 	result = hackrf_set_sample_rate_manual(device, sampleRate, 1);
 	if( result != HACKRF_SUCCESS ) {
@@ -465,7 +465,7 @@ static int setHackRFParams(){
 		return EXIT_FAILURE;
 	}
 
-	fprintf(stderr, "setHackRFParams | call hackrf_baseband_filter_bandwidth_set(%.03f MHz)\n",
+	printf("setHackRFParams | call hackrf_baseband_filter_bandwidth_set(%.03f MHz)\n",
 			((float)DEFAULT_BASEBAND_FILTER_BANDWIDTH/(float)FREQ_ONE_MHZ));
 	result = hackrf_set_baseband_filter_bandwidth(device, DEFAULT_BASEBAND_FILTER_BANDWIDTH);
 	if( result != HACKRF_SUCCESS ) {
@@ -485,7 +485,6 @@ static int setHackRFParams(){
 static int setSweeping()
 {
 	int customTuneStep = sampleRate/FREQ_ONE_MHZ;
-	printf("hackrf_sweep | setSweeping | ===SWEEPING===\n");
 	result = hackrf_init_sweep(device, frequencies, num_ranges, BYTES_PER_BLOCK,
 			customTuneStep * FREQ_ONE_MHZ, OFFSET, INTERLEAVED);
 	if( result != HACKRF_SUCCESS ) {
@@ -506,7 +505,6 @@ static int sweeping()
 		return EXIT_FAILURE;
 	}
 	
-	printf("hackrf_sweep | sweeping | ===SWEEPING DONE===\n");
 	return EXIT_SUCCESS;
 }
 
@@ -610,7 +608,7 @@ static int endConnection(){
 		
 		else 
 		{
-			fprintf(stderr, "endConnection | hackrf_close() done\n");
+			printf(stderr, "endConnection | hackrf_close() done\n");
 		}
 		
 		hackrf_exit();
@@ -783,16 +781,20 @@ int main(int argc, char** argv)
 
 	for (i = 0; i < TRIGERRING_TIMES; i++)
 	{
+		printf("hackrf_sweep | ===SWEEPING STARTED===\n");
+		fprintf(stderr, "Iteration %d started\n",i+1);
+		printf("Iteration %d started\n",i+1);
 		totalDuration += hackRFTrigger();
+		fprintf(stderr, "Iteration %d Success\n",i+1);
+		printf("Iteration %d Success\n",i+1);
+		printf("hackrf_sweep | ===SWEEPING DONE===\n");
 		if (reconfigureHackRF() == EXIT_FAILURE) { return EXIT_FAILURE; }
 		do_exit = false; //to execute it again in one shot mode
 	    timerFlag = 0;  
-	executionControl = true;
-
+		executionControl = true;
 		sweep_started = false;
 		byte_count = 0;
-
-    printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
+    	printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
 
 	}
 
