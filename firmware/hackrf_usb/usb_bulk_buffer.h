@@ -1,4 +1,5 @@
 /*
+ * Copyright 2012-2022 Great Scott Gadgets <info@greatscottgadgets.com>
  * Copyright 2012 Jared Boone
  * Copyright 2013 Benjamin Vernoux
  *
@@ -35,4 +36,4 @@
  */
 extern uint8_t usb_bulk_buffer[USB_BULK_BUFFER_SIZE];
 
-#endif/*__USB_BULK_BUFFER_H__*/
+#endif /*__USB_BULK_BUFFER_H__*/

@@ -1,4 +1,5 @@
 /*
+ * Copyright 2016-2022 Great Scott Gadgets <info@greatscottgadgets.com>
  * Copyright 2016 Mike Walters, Dominic Spill
  *
  * This file is part of HackRF.
@@ -32,7 +33,8 @@ enum sweep_style {
 };
 
 usb_request_status_t usb_vendor_request_init_sweep(
-	usb_endpoint_t* const endpoint, const usb_transfer_stage_t stage);
+	usb_endpoint_t* const endpoint,
+	const usb_transfer_stage_t stage);
 
 void sweep_mode(uint32_t seq);
 

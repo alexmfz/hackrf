@@ -1,4 +1,5 @@
 /*
+ * Copyright 2012-2022 Great Scott Gadgets <info@greatscottgadgets.com>
  * Copyright 2012 Jared Boone
  * Copyright 2013 Benjamin Vernoux
  *
@@ -21,6 +22,7 @@
  */
 
 #include "usb_api_board_info.h"
+#include "platform_detect.h"
 
 #include <hackrf_core.h>
 #include <rom_iap.h>
@@ -33,72 +35,130 @@
 char version_string[] = VERSION_STRING;
 
 usb_request_status_t usb_vendor_request_read_board_id(
-		usb_endpoint_t* const endpoint, const usb_transfer_stage_t stage)
+	usb_endpoint_t* const endpoint,
+	const usb_transfer_stage_t stage)
 {
 	if (stage == USB_TRANSFER_STAGE_SETUP) {
-		endpoint->buffer[0] = BOARD_ID;
-		usb_transfer_schedule_block(endpoint->in, &endpoint->buffer, 1, NULL, NULL);
+		endpoint->buffer[0] = detected_platform();
+		usb_transfer_schedule_block(
+			endpoint->in,
+			&endpoint->buffer,
+			1,
+			NULL,
+			NULL);
 		usb_transfer_schedule_ack(endpoint->out);
 	}
 	return USB_REQUEST_STATUS_OK;
 }
 
 usb_request_status_t usb_vendor_request_read_version_string(
-	usb_endpoint_t* const endpoint, const usb_transfer_stage_t stage)
+	usb_endpoint_t* const endpoint,
+	const usb_transfer_stage_t stage)
 {
 	uint8_t length;
 
 	if (stage == USB_TRANSFER_STAGE_SETUP) {
-		length = (uint8_t)strlen(version_string);
-		usb_transfer_schedule_block(endpoint->in, version_string, length, NULL, NULL);
+		length = (uint8_t) strlen(version_string);
+		usb_transfer_schedule_block(
+			endpoint->in,
+			version_string,
+			length,
+			NULL,
+			NULL);
 		usb_transfer_schedule_ack(endpoint->out);
 	}
 	return USB_REQUEST_STATUS_OK;
 }
 
+static read_partid_serialno_t read_partid_serialno;
+
 usb_request_status_t usb_vendor_request_read_partid_serialno(
-	usb_endpoint_t* const endpoint, const usb_transfer_stage_t stage)
+	usb_endpoint_t* const endpoint,
+	const usb_transfer_stage_t stage)
 {
 	uint8_t length;
-	read_partid_serialno_t read_partid_serialno;
 	iap_cmd_res_t iap_cmd_res;
 
-	if (stage == USB_TRANSFER_STAGE_SETUP) 
-	{
+	if (stage == USB_TRANSFER_STAGE_SETUP) {
 		/* Read IAP Part Number Identification */
 		iap_cmd_res.cmd_param.command_code = IAP_CMD_READ_PART_ID_NO;
 		iap_cmd_call(&iap_cmd_res);
-		if(iap_cmd_res.status_res.status_ret != CMD_SUCCESS)
+		if (iap_cmd_res.status_res.status_ret != CMD_SUCCESS) {
 			return USB_REQUEST_STATUS_STALL;
+		}
 
 		read_partid_serialno.part_id[0] = iap_cmd_res.status_res.iap_result[0];
 		read_partid_serialno.part_id[1] = iap_cmd_res.status_res.iap_result[1];
-		
+
 		/* Read IAP Serial Number Identification */
 		iap_cmd_res.cmd_param.command_code = IAP_CMD_READ_SERIAL_NO;
 		iap_cmd_call(&iap_cmd_res);
-		if(iap_cmd_res.status_res.status_ret != CMD_SUCCESS)
+		if (iap_cmd_res.status_res.status_ret != CMD_SUCCESS) {
 			return USB_REQUEST_STATUS_STALL;
+		}
 
 		read_partid_serialno.serial_no[0] = iap_cmd_res.status_res.iap_result[0];
 		read_partid_serialno.serial_no[1] = iap_cmd_res.status_res.iap_result[1];
 		read_partid_serialno.serial_no[2] = iap_cmd_res.status_res.iap_result[2];
 		read_partid_serialno.serial_no[3] = iap_cmd_res.status_res.iap_result[3];
-		
-		length = (uint8_t)sizeof(read_partid_serialno_t);
-		usb_transfer_schedule_block(endpoint->in, &read_partid_serialno, length,
-					    NULL, NULL);
+
+		length = (uint8_t) sizeof(read_partid_serialno_t);
+		usb_transfer_schedule_block(
+			endpoint->in,
+			&read_partid_serialno,
+			length,
+			NULL,
+			NULL);
 		usb_transfer_schedule_ack(endpoint->out);
 	}
 	return USB_REQUEST_STATUS_OK;
 }
 
 usb_request_status_t usb_vendor_request_reset(
-	usb_endpoint_t* const endpoint, const usb_transfer_stage_t stage)
+	usb_endpoint_t* const endpoint,
+	const usb_transfer_stage_t stage)
 {
 	if (stage == USB_TRANSFER_STAGE_SETUP) {
 		wwdt_reset(100000);
 		usb_transfer_schedule_ack(endpoint->in);
+	}
+	return USB_REQUEST_STATUS_OK;
+}
+
+usb_request_status_t usb_vendor_request_read_board_rev(
+	usb_endpoint_t* const endpoint,
+	const usb_transfer_stage_t stage)
+{
+	if (stage == USB_TRANSFER_STAGE_SETUP) {
+		endpoint->buffer[0] = detected_revision();
+		usb_transfer_schedule_block(
+			endpoint->in,
+			&endpoint->buffer,
+			1,
+			NULL,
+			NULL);
+		usb_transfer_schedule_ack(endpoint->out);
+	}
+	return USB_REQUEST_STATUS_OK;
+}
+
+usb_request_status_t usb_vendor_request_read_supported_platform(
+	usb_endpoint_t* const endpoint,
+	const usb_transfer_stage_t stage)
+{
+	if (stage == USB_TRANSFER_STAGE_SETUP) {
+		uint32_t platform = supported_platform();
+		endpoint->buffer[0] = (platform >> 24) & 0xff;
+		endpoint->buffer[1] = (platform >> 16) & 0xff;
+		endpoint->buffer[2] = (platform >> 8) & 0xff;
+		endpoint->buffer[3] = platform & 0xff;
+		usb_transfer_schedule_block(
+			endpoint->in,
+			&endpoint->buffer,
+			4,
+			NULL,
+			NULL);
+		usb_transfer_schedule_ack(endpoint->out);
 	}
 	return USB_REQUEST_STATUS_OK;
 }
