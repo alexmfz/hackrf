@@ -75,6 +75,7 @@ typedef int bool;
 /********************/
 
 int result = 0;
+bool success = false;
 bool executionControl = true;
 uint32_t num_sweeps = 0;
 int num_ranges = 0;
@@ -91,7 +92,7 @@ char pathFits[] = "TFM.fits";
 float* samples;
 int id_sample = 0;
 
-volatile uint32_t byte_count = 0;
+uint32_t byte_count = 0;
 volatile uint64_t sweep_count = 0;
 
 struct timeval time_start;
@@ -114,7 +115,7 @@ bool binary_output = false;
 bool ifft_output = false;
 bool one_shot = false;
 bool finite_mode = false;
-volatile bool sweep_started = false;
+bool sweep_started = false;
 
 int fftSize = 20;
 double fft_bin_width;
@@ -127,7 +128,7 @@ fftwf_plan ifftwPlan = NULL;
 uint32_t ifft_idx = 0;
 float* pwr;
 float* window;
-static hackrf_device* device = NULL;
+hackrf_device* device = NULL;
 const char*serial_number = NULL;
 
 int numberOfSteps = 0; //(FMax-FMin)/Width
@@ -140,9 +141,9 @@ static float TimevalDiff(const struct timeval *a, const struct timeval *b) {
    return (a->tv_sec - b->tv_sec) + 1e-6f * (a->tv_usec - b->tv_usec);
 }
 
-volatile bool do_exit = false;
+ bool do_exit = false;
 
-volatile int timerFlag = 0;
+int timerFlag = 0;
 extern struct itimerval timer;
 extern struct timeval preTriggering;
 extern struct timeval postTriggering;
@@ -182,9 +183,9 @@ int rx_callback(hackrf_transfer* transfer) {
 	struct tm *fft_time;
 	char time_str[50];
 	struct timeval usb_transfer_time;
-	int nElements = naxes[0]*naxes[1];
+	//int nElements = naxes[0]*naxes[1];
 
-	fprintf(stderr, "Beginning callback\n");
+	//fprintf(stderr, "Beginning callback\n");
 	if(NULL == outfile){// || strstr(pathFits,"fits")==NULL) {
 		return -1;
 	}
@@ -219,14 +220,15 @@ int rx_callback(hackrf_transfer* transfer) {
 		
 		if (frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
 		{
-			fprintf(stderr, "At frecuency [0]\n");
+			success = true;
+
+			//fprintf(stderr, "At frecuency [0]\n");
 			if(sweep_started) 
 			{
 				sweep_count++;
 				if(one_shot) {
 					do_exit = true;
-					fprintf(stderr, "do exit is true\n");
-
+			//		fprintf(stderr, "do exit is true\n");
 				}
 
 				else if(finite_mode && sweep_count == num_sweeps) {
@@ -242,13 +244,13 @@ int rx_callback(hackrf_transfer* transfer) {
 		}
 
 		if(!sweep_started) {
-			fprintf(stderr, "sweep didnt started\n");
+		//	fprintf(stderr, "sweep didnt started\n");
 			buf += BYTES_PER_BLOCK;
 			continue;
 		}
 
 		if((FREQ_MAX_MHZ * FREQ_ONE_MHZ) < frequency) {
-			fprintf(stderr, "It should not enter\n");
+			//fprintf(stderr, "It should not enter\n");
 			buf += BYTES_PER_BLOCK;
 			continue;
 		}
@@ -300,13 +302,12 @@ int rx_callback(hackrf_transfer* transfer) {
 					id_sample++;
 				}
 
-				printf("\n");
-				
+				printf("\n");			
 		}
 		
 		if((frequency+((sampleRate*3)/4)) >= freq_max*FREQ_ONE_MHZ)
 		{
-			fprintf(stderr, "Last frequency: %ld\n", (frequency+((sampleRate*3)/4)));
+		//	fprintf(stderr, "Last frequency: %ld\n", (frequency+((sampleRate*3)/4)));
 		}
 		/*else //FITS file
 		{
@@ -517,9 +518,9 @@ static int sweeping()
 	result |= hackrf_start_rx_sweep(device, rx_callback, NULL); //rx callback write are the values to save in the img
 	if (result != HACKRF_SUCCESS) {
 		fprintf(stderr, "hackrf_sweep | sweeping | hackrf_start_rx_sweep() failed: %s (%d)\n", hackrf_error_name(result), result);
-		usage();
 		return EXIT_FAILURE;
 	}
+	
 	executionControl = false; //Set to false to not execute sweeping operation again until a new triggering action is thrown*/
 
 	return EXIT_SUCCESS;
@@ -681,7 +682,7 @@ void timerHandler(int sig)
 
 float hackRFTrigger()
 { 
-	fprintf(stderr, "hackrf_sweep | hackRFTrigger()\n");
+	printf("hackrf_sweep | hackRFTrigger()\n");
 	gettimeofday(&preTriggering,NULL);
 
     if(signal(SIGALRM, timerHandler) == SIG_ERR)
@@ -700,12 +701,13 @@ float hackRFTrigger()
 	{ 
 		if(executionControl) //Just execute one time until handler flag is clean
 		{
-			if(sweeping() == EXIT_FAILURE){	return result; }
+			if(sweeping() == EXIT_FAILURE){	return EXIT_FAILURE; }
 			do_exit = false; //to execute it again in one shot mode
 			sweep_started = false;
 			byte_count = 0;
 		}
 	}
+	
 	timerFlag = 0;      
     gettimeofday(&postTriggering,NULL);    
     durationIteration = TimevalDiff(&postTriggering, &preTriggering);
@@ -783,10 +785,10 @@ int main(int argc, char** argv)
 		exit(0);
 	}
 
-	if (setSweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
-
 	printf("hackrf_sweep | calling configuration timer\n");
 	setTimerParams();
+
+	if (setSweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
 	printf("hackrf_sweep | Start triggering %d times\n", TRIGERRING_TIMES);
 
@@ -796,10 +798,10 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Iteration %d started\n",i+1);
 		printf("Iteration %d started\n",i+1);
 		totalDuration += hackRFTrigger();
-		fprintf(stderr, "Iteration %d Success\n",i+1);
-		printf("Iteration %d Success\n",i+1);
+		success == true ? fprintf(stderr, "Iteration %d Success\n",i+1) : fprintf(stderr, "Iteration %d Failed\n",i+1);
+		success == true ? printf("Iteration %d Success\n",i+1) : printf("Iteration %d Failed\n",i+1);
+		success = false;
 		printf("hackrf_sweep | ===SWEEPING DONE===\n");
-		//if(hackrf_stop_rx(device) == EXIT_FAILURE) { return EXIT_FAILURE; }
 		if (reconfigureHackRF() == EXIT_FAILURE) { return EXIT_FAILURE; }
 		executionControl = true;
     	//printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
