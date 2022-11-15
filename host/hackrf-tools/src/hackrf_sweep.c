@@ -53,7 +53,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFTSIZE_STD	(14400)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGERRING_TIMES (2)
+#define TRIGERRING_TIMES (100)
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -140,7 +140,7 @@ static float TimevalDiff(const struct timeval *a, const struct timeval *b) {
    return (a->tv_sec - b->tv_sec) + 1e-6f * (a->tv_usec - b->tv_usec);
 }
 
-bool do_exit = false;
+volatile bool do_exit = false;
 
 volatile int timerFlag = 0;
 extern struct itimerval timer;
@@ -184,6 +184,7 @@ int rx_callback(hackrf_transfer* transfer) {
 	struct timeval usb_transfer_time;
 	int nElements = naxes[0]*naxes[1];
 
+	fprintf(stderr, "Beginning callback\n");
 	if(NULL == outfile){// || strstr(pathFits,"fits")==NULL) {
 		return -1;
 	}
@@ -200,9 +201,14 @@ int rx_callback(hackrf_transfer* transfer) {
 		ubuf = (uint8_t*) buf;
 		if(ubuf[0] == 0x7F && ubuf[1] == 0x7F) 
 		{
-			frequency = ((uint64_t)(ubuf[9]) << 56) | ((uint64_t)(ubuf[8]) << 48) | ((uint64_t)(ubuf[7]) << 40)
-					| ((uint64_t)(ubuf[6]) << 32) | ((uint64_t)(ubuf[5]) << 24) | ((uint64_t)(ubuf[4]) << 16)
-					| ((uint64_t)(ubuf[3]) << 8) | ubuf[2];
+			frequency = ((uint64_t)(ubuf[9]) << 56) |
+			 			((uint64_t)(ubuf[8]) << 48) |
+						((uint64_t)(ubuf[7]) << 40) |
+						((uint64_t)(ubuf[6]) << 32) | 
+						((uint64_t)(ubuf[5]) << 24) |
+						((uint64_t)(ubuf[4]) << 16) |
+						((uint64_t)(ubuf[3]) << 8) |
+						ubuf[2];
 		} 
 		
 		else 
@@ -210,21 +216,24 @@ int rx_callback(hackrf_transfer* transfer) {
 			buf += BYTES_PER_BLOCK;
 			continue;
 		}
-
+		
 		if (frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
 		{
+			fprintf(stderr, "At frecuency [0]\n");
 			if(sweep_started) 
 			{
 				sweep_count++;
 				if(one_shot) {
 					do_exit = true;
+					fprintf(stderr, "do exit is true\n");
+
 				}
 
 				else if(finite_mode && sweep_count == num_sweeps) {
 					do_exit = true;
 				}
 			}
-
+			
 			sweep_started = true;
 		}
 
@@ -233,11 +242,13 @@ int rx_callback(hackrf_transfer* transfer) {
 		}
 
 		if(!sweep_started) {
+			fprintf(stderr, "sweep didnt started\n");
 			buf += BYTES_PER_BLOCK;
 			continue;
 		}
 
 		if((FREQ_MAX_MHZ * FREQ_ONE_MHZ) < frequency) {
+			fprintf(stderr, "It should not enter\n");
 			buf += BYTES_PER_BLOCK;
 			continue;
 		}
@@ -262,7 +273,7 @@ int rx_callback(hackrf_transfer* transfer) {
 				time_t time_stamp_seconds = usb_transfer_time.tv_sec;
 				fft_time = localtime(&time_stamp_seconds);
 				strftime(time_str, 50, "%Y-%m-%d, %H:%M:%S", fft_time);
-				fprintf(outfile, "%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
+				printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
 					time_str,
 					(long int)usb_transfer_time.tv_usec,
 					(uint64_t)(frequency), //First time: 45MhZ
@@ -271,12 +282,12 @@ int rx_callback(hackrf_transfer* transfer) {
 					fftSize);
 
 				for(i = 0; (fftSize / 4) > i; i++) {
-					fprintf(outfile, ", %.2f", pwr[i + 1 + (fftSize*5)/8]);
+					printf(", %.2f", pwr[i + 1 + (fftSize*5)/8]);
 					id_sample++;
 				}
 
-				fprintf(outfile, "\n");
-				fprintf(outfile, "%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
+				printf("\n");
+				printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
 						time_str,
 						(long int)usb_transfer_time.tv_usec,
 						(uint64_t)(frequency+(sampleRate/2)),
@@ -285,14 +296,19 @@ int rx_callback(hackrf_transfer* transfer) {
 						fftSize);
 
 				for(i = 0; (fftSize / 4) > i; i++) {
-					fprintf(outfile, ", %.2f", pwr[i + 1 + (fftSize/8)]);
+					printf(", %.2f", pwr[i + 1 + (fftSize/8)]);
 					id_sample++;
 				}
 
-				fprintf(outfile, "\n");
+				printf("\n");
 				
 		}
-		else //FITS file
+		
+		if((frequency+((sampleRate*3)/4)) >= freq_max*FREQ_ONE_MHZ)
+		{
+			fprintf(stderr, "Last frequency: %ld\n", (frequency+((sampleRate*3)/4)));
+		}
+		/*else //FITS file
 		{
 			for(i = 0; (fftSize / 4) > i; i++) {
 				if(id_sample%nElements == 0)
@@ -324,7 +340,7 @@ int rx_callback(hackrf_transfer* transfer) {
 					samples[id_sample] =- pwr[i + 1 + (fftSize/8)];
 					id_sample++;
 			}
-		}
+		}*/
 	}
 			
 	return 0;
@@ -504,7 +520,8 @@ static int sweeping()
 		usage();
 		return EXIT_FAILURE;
 	}
-	
+	executionControl = false; //Set to false to not execute sweeping operation again until a new triggering action is thrown*/
+
 	return EXIT_SUCCESS;
 }
 
@@ -515,8 +532,7 @@ static float sweepDuration()
 	gettimeofday(&t_start, NULL);
 	time_prev = t_start;
 
-	printf("hackrf_sweep | sweepDuration |Stop with Ctrl-C\n");
-	//printf("hackrf_sweep | Stop with Ctrl-C\n");
+	printf("hackrf_sweep | sweepDuration");
 
 	while((hackrf_is_streaming(device) == HACKRF_TRUE) && (do_exit == false)) {
 		float time_difference;
@@ -595,6 +611,7 @@ static void checkStreaming()
 	}
 
 }
+
 static int endConnection(){
 	if(device != NULL) 
 	{
@@ -608,7 +625,7 @@ static int endConnection(){
 		
 		else 
 		{
-			printf(stderr, "endConnection | hackrf_close() done\n");
+			printf("endConnection | hackrf_close() done\n");
 		}
 		
 		hackrf_exit();
@@ -621,15 +638,7 @@ static int endConnection(){
 		outfile = NULL;
 		printf("hackrf_sweep | endConnection | fclose() done\n");
 	}
-	if(ifft_output)
-	{
-		fftwf_free(fftwIn);
-		fftwf_free(fftwOut);
-		fftwf_free(pwr);
-		fftwf_free(window);
-		fftwf_free(ifftwIn);
-		fftwf_free(ifftwOut);	
-	}
+
 	printf("hackrf_sweep | endConnection | Connection close with hackrf success\n");
 	return EXIT_SUCCESS;
 }
@@ -672,9 +681,9 @@ void timerHandler(int sig)
 
 float hackRFTrigger()
 { 
+	fprintf(stderr, "hackrf_sweep | hackRFTrigger()\n");
+	gettimeofday(&preTriggering,NULL);
 
-    gettimeofday(&preTriggering,NULL);
-    
     if(signal(SIGALRM, timerHandler) == SIG_ERR)
     {
         fprintf(stderr, "timer | hackRFTrigger | Unable to catch alarm signal");
@@ -690,12 +699,14 @@ float hackRFTrigger()
     while(!timerFlag)
 	{ 
 		if(executionControl) //Just execute one time until handler flag is clean
-		{		
+		{
 			if(sweeping() == EXIT_FAILURE){	return result; }
-			executionControl = false; //Set to false to not execute sweeping operation again until a new triggering action is thrown*/
+			do_exit = false; //to execute it again in one shot mode
+			sweep_started = false;
+			byte_count = 0;
 		}
 	}
-
+	timerFlag = 0;      
     gettimeofday(&postTriggering,NULL);    
     durationIteration = TimevalDiff(&postTriggering, &preTriggering);
     
@@ -788,14 +799,10 @@ int main(int argc, char** argv)
 		fprintf(stderr, "Iteration %d Success\n",i+1);
 		printf("Iteration %d Success\n",i+1);
 		printf("hackrf_sweep | ===SWEEPING DONE===\n");
+		//if(hackrf_stop_rx(device) == EXIT_FAILURE) { return EXIT_FAILURE; }
 		if (reconfigureHackRF() == EXIT_FAILURE) { return EXIT_FAILURE; }
-		do_exit = false; //to execute it again in one shot mode
-	    timerFlag = 0;  
 		executionControl = true;
-		sweep_started = false;
-		byte_count = 0;
-    	printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
-
+    	//printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
 	}
 
 	do_exit = true;
