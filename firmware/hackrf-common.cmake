@@ -52,7 +52,6 @@ ExternalProject_Add(libopencm3_${PROJECT_NAME}
 	INSTALL_COMMAND ""
 )
 
-#set(VERSION "")
 if (NOT DEFINED VERSION)
 	execute_process(
 		COMMAND git log -n 1 --format=%h
@@ -63,7 +62,7 @@ if (NOT DEFINED VERSION)
 		OUTPUT_STRIP_TRAILING_WHITESPACE
 	)
 	if (GIT_VERSION_FOUND)
-		set(VERSION "unknown")
+		set(VERSION "2022.09.1+")
 	else (GIT_VERSION_FOUND)
 		set(VERSION "git-${GIT_VERSION}")
 	endif (GIT_VERSION_FOUND)
@@ -184,6 +183,7 @@ macro(DeclareTargets)
 		${PATH_HACKRF_FIRMWARE_COMMON}/spi_ssp.c
 		${PATH_HACKRF_FIRMWARE_COMMON}/gpio_lpc.c
 		${PATH_HACKRF_FIRMWARE_COMMON}/hackrf_ui.c
+		${PATH_HACKRF_FIRMWARE_COMMON}/platform_detect.c
 	)
 
 	if(BOARD STREQUAL "RAD1O")
@@ -230,7 +230,7 @@ macro(DeclareTargets)
 		COMMAND rm -f _tmp.dfu _header.bin
 		COMMAND cp ${PROJECT_NAME}_dfu.bin _tmp.dfu
 		COMMAND dfu-suffix --vid=0x1fc9 --pid=0x000c --did=0x0 -a _tmp.dfu
-		COMMAND python ${PATH_DFU_PY} ${PROJECT_NAME}
+		COMMAND python3 ${PATH_DFU_PY} ${PROJECT_NAME}
 		COMMAND cat _header.bin _tmp.dfu >${PROJECT_NAME}.dfu
 		COMMAND rm -f _tmp.dfu _header.bin
 	)
