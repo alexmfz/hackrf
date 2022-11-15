@@ -1,7 +1,3 @@
-v2.3: 
-- Reformated logs to detects where each of them are invoked. 
-    Format is: namefile | function | info
-
-- Move timer handler from timer.c to hackrf_sweep
-
-- Results: 2 sweeps executed successfully as executionTimerHandlerIntegrated.out
+v2.4: 
+- Reformated invokers to be shorter
+- Wrong output at more than 10 executions

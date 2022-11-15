@@ -75,6 +75,7 @@ typedef int bool;
 /********************/
 
 int result = 0;
+bool executionControl = true;
 uint32_t num_sweeps = 0;
 int num_ranges = 0;
 uint16_t frequencies[MAX_SWEEP_RANGES*2];
@@ -481,18 +482,23 @@ static int setHackRFParams(){
 	return result;
 }
 
-static int sweeping()
+static int setSweeping()
 {
 	int customTuneStep = sampleRate/FREQ_ONE_MHZ;
-	printf("hackrf_sweep | sweeping | ===SWEEPING===\n");
+	printf("hackrf_sweep | setSweeping | ===SWEEPING===\n");
 	result = hackrf_init_sweep(device, frequencies, num_ranges, BYTES_PER_BLOCK,
 			customTuneStep * FREQ_ONE_MHZ, OFFSET, INTERLEAVED);
 	if( result != HACKRF_SUCCESS ) {
-		fprintf(stderr, "hackrf_sweep | sweeping | hackrf_init_sweep() failed: %s (%d)\n",
+		fprintf(stderr, "hackrf_sweep | setSweeping | hackrf_init_sweep() failed: %s (%d)\n",
 			   hackrf_error_name(result), result);
 		return EXIT_FAILURE;
 	}
 
+	return EXIT_SUCCESS;
+}
+
+static int sweeping()
+{
 	result |= hackrf_start_rx_sweep(device, rx_callback, NULL); //rx callback write are the values to save in the img
 	if (result != HACKRF_SUCCESS) {
 		fprintf(stderr, "hackrf_sweep | sweeping | hackrf_start_rx_sweep() failed: %s (%d)\n", hackrf_error_name(result), result);
@@ -630,6 +636,28 @@ static int endConnection(){
 	return EXIT_SUCCESS;
 }
 
+static int reconfigureHackRF()
+{
+	if(endConnection() == EXIT_FAILURE){ return EXIT_FAILURE; }
+	
+	if(initConfigureHackRF() == EXIT_FAILURE){ return EXIT_FAILURE; }
+	
+	if(setHackRFParams() == EXIT_FAILURE){ return EXIT_FAILURE; }
+
+	if(setSweeping() == EXIT_FAILURE){ return EXIT_FAILURE; }
+
+	return EXIT_SUCCESS;
+}
+
+static void freeFFTMemory()
+{
+	fftwf_free(fftwIn);
+	fftwf_free(fftwOut);
+	fftwf_free(pwr);
+	fftwf_free(window);
+	fftwf_free(ifftwIn);
+	fftwf_free(ifftwOut);
+}
 /**Timer part**/
 
 /**
@@ -646,7 +674,6 @@ void timerHandler(int sig)
 
 float hackRFTrigger()
 { 
-	bool executionControl = true;
 
     gettimeofday(&preTriggering,NULL);
     
@@ -665,30 +692,14 @@ float hackRFTrigger()
     while(!timerFlag)
 	{ 
 		if(executionControl) //Just execute one time until handler flag is clean
-		{
-			result = sweeping();
-		
-			if(result == EXIT_FAILURE)
-			{
-				fprintf(stderr, "hackrf_sweep | timerHandler | sweeping error\n");
-				return result;
-			}
-			
-			durationSweeps += sweepDuration();
+		{		
+			if(sweeping() == EXIT_FAILURE){	return result; }
+			executionControl = false; //Set to false to not execute sweeping operation again until a new triggering action is thrown*/
 		}
-
-		executionControl = false; //Set to false to not execute sweeping operation again until a new triggering action is thrown*/
 	}
 
-    gettimeofday(&postTriggering,NULL);
-    
+    gettimeofday(&postTriggering,NULL);    
     durationIteration = TimevalDiff(&postTriggering, &preTriggering);
-    timerFlag = 0;  
-	executionControl = true;
-	sweep_started = false;
-	byte_count = 0;
-
-    printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
     
 	return durationIteration;
 }
@@ -703,12 +714,8 @@ int main(int argc, char** argv)
 	float totalDuration = 0; //total duration (should be aroung 15 minutes)
 
 	showMenu(opt, argc, argv);
-	
-	result = checkParams();
-	if(result == EXIT_FAILURE)
-	{
-		return EXIT_FAILURE;
-	}
+
+	if(checkParams() == EXIT_FAILURE){ return EXIT_FAILURE; } 
 
 	fft_bin_width = (double)sampleRate / fftSize;
 	fftwIn = (fftwf_complex*)fftwf_malloc(sizeof(fftwf_complex) * fftSize);
@@ -726,26 +733,13 @@ int main(int argc, char** argv)
 	}
 #endif
 
-	result = initConfigureHackRF();
-	if(result == EXIT_FAILURE)
-	{
-		return EXIT_FAILURE;
-	}
+	if(initConfigureHackRF() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
 	if(strstr(pathFits, "fits") != NULL) // AQUI
-	{
-		result = openFile();
-	
-		if(result == EXIT_FAILURE)
-		{	
-			return EXIT_FAILURE;
-		}
+	{	
+		if(openFile() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
-		result = setBufOutFile();
-		if(result == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
+		if(setBufOutFile() == EXIT_FAILURE){ return EXIT_FAILURE; }
 	}
 
 #ifdef _MSC_VER
@@ -758,18 +752,9 @@ int main(int argc, char** argv)
 	signal(SIGTERM, &sigint_callback_handler);
 	signal(SIGABRT, &sigint_callback_handler);
 #endif
-	int customTuneUp = sampleRate/FREQ_ONE_MHZ;
-	result = setHackRFParams();
-	if(result == EXIT_FAILURE)
-	{
-		return EXIT_FAILURE;
-	}
 
-	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE)
-	{
-		fprintf(stderr, "hackrf_sweep | options failed\n");
-		return EXIT_FAILURE; 
-	}
+	int customTuneUp = sampleRate/FREQ_ONE_MHZ;
+	if(setHackRFParams() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
 	for(i = 0; i < num_ranges; i++) {
 		step_count = 1 + (frequencies[2*i+1] - frequencies[2*i] - 1)
@@ -788,6 +773,9 @@ int main(int argc, char** argv)
 		printf("hackrf_sweep | Samples not allocated in memory.\n");
 		exit(0);
 	}
+
+	if (setSweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
+
 	printf("hackrf_sweep | calling configuration timer\n");
 	setTimerParams();
 
@@ -796,22 +784,24 @@ int main(int argc, char** argv)
 	for (i = 0; i < TRIGERRING_TIMES; i++)
 	{
 		totalDuration += hackRFTrigger();
-		
+		if (reconfigureHackRF() == EXIT_FAILURE) { return EXIT_FAILURE; }
 		do_exit = false; //to execute it again in one shot mode
-		result = endConnection();
-		
-		if(result == EXIT_FAILURE)
-		{
-			return EXIT_FAILURE;
-		}
-	
-		result = initConfigureHackRF();
-				result = setHackRFParams();
+	    timerFlag = 0;  
+	executionControl = true;
+
+		sweep_started = false;
+		byte_count = 0;
+
+    printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
 
 	}
 
 	do_exit = true;
 	
+	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE){ return EXIT_FAILURE; }
+
+	durationSweeps += sweepDuration();
+
 	checkStreaming();   	
     printf("hackrf_sweep | All triggering actions(%d) where completed\n", TRIGERRING_TIMES);
 
@@ -826,10 +816,7 @@ int main(int argc, char** argv)
 		fflush(outfile);
 	}*/
 
-    result = endConnection();
-	if(result == EXIT_FAILURE){
-		return EXIT_FAILURE;
-	}
+	if(endConnection() == EXIT_FAILURE){ return EXIT_FAILURE; }
 /*	
 	for (i = 0; i< nElements; i++)
 	{
@@ -841,13 +828,8 @@ int main(int argc, char** argv)
 		generateFitsFile(pathFits, samples);
 	}
 */
-	fftwf_free(fftwIn);
-	fftwf_free(fftwOut);
-	fftwf_free(pwr);
-	fftwf_free(window);
-	fftwf_free(ifftwIn);
-	fftwf_free(ifftwOut);
-
+	
+	freeFFTMemory();
 	free(samples);
 	printf("hackrf_sweep | The dynamic memory used was successfully released.\nEND.\n");
 
