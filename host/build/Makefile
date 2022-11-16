@@ -208,6 +208,19 @@ hackrf_sweep/fast:
 	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_sweep.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_sweep.dir/build
 .PHONY : hackrf_sweep/fast
 
+#=============================================================================
+# Target rules for targets named hackrf_info
+
+# Build rule for target.
+hackrf_info: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 hackrf_info
+.PHONY : hackrf_info
+
+# fast build rule for target.
+hackrf_info/fast:
+	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_info.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_info.dir/build
+.PHONY : hackrf_info/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
