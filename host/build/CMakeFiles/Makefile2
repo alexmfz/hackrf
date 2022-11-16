@@ -94,6 +94,7 @@ hackrf-tools/clean: hackrf-tools/src/clean
 
 # Recursive "all" directory target.
 hackrf-tools/src/all: hackrf-tools/src/CMakeFiles/hackrf_sweep.dir/all
+hackrf-tools/src/all: hackrf-tools/src/CMakeFiles/hackrf_info.dir/all
 
 .PHONY : hackrf-tools/src/all
 
@@ -104,6 +105,7 @@ hackrf-tools/src/preinstall:
 
 # Recursive "clean" directory target.
 hackrf-tools/src/clean: hackrf-tools/src/CMakeFiles/hackrf_sweep.dir/clean
+hackrf-tools/src/clean: hackrf-tools/src/CMakeFiles/hackrf_info.dir/clean
 
 .PHONY : hackrf-tools/src/clean
 
@@ -225,6 +227,34 @@ hackrf: libhackrf/src/CMakeFiles/hackrf.dir/rule
 libhackrf/src/CMakeFiles/hackrf.dir/clean:
 	$(MAKE) -f libhackrf/src/CMakeFiles/hackrf.dir/build.make libhackrf/src/CMakeFiles/hackrf.dir/clean
 .PHONY : libhackrf/src/CMakeFiles/hackrf.dir/clean
+
+
+#=============================================================================
+# Target rules for target hackrf-tools/src/CMakeFiles/hackrf_info.dir
+
+# All Build rule for target.
+hackrf-tools/src/CMakeFiles/hackrf_info.dir/all: libhackrf/src/CMakeFiles/hackrf.dir/all
+	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_info.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_info.dir/depend
+	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_info.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_info.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/manolo/hackrf/host/build/CMakeFiles --progress-num=11,12 "Built target hackrf_info"
+.PHONY : hackrf-tools/src/CMakeFiles/hackrf_info.dir/all
+
+# Build rule for subdir invocation for target.
+hackrf-tools/src/CMakeFiles/hackrf_info.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/manolo/hackrf/host/build/CMakeFiles 4
+	$(MAKE) -f CMakeFiles/Makefile2 hackrf-tools/src/CMakeFiles/hackrf_info.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/manolo/hackrf/host/build/CMakeFiles 0
+.PHONY : hackrf-tools/src/CMakeFiles/hackrf_info.dir/rule
+
+# Convenience name for target.
+hackrf_info: hackrf-tools/src/CMakeFiles/hackrf_info.dir/rule
+
+.PHONY : hackrf_info
+
+# clean rule for target.
+hackrf-tools/src/CMakeFiles/hackrf_info.dir/clean:
+	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_info.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_info.dir/clean
+.PHONY : hackrf-tools/src/CMakeFiles/hackrf_info.dir/clean
 
 #=============================================================================
 # Target rules for target hackrf-tools/src/CMakeFiles/hackrf_sweep.dir
