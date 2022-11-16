@@ -2,10 +2,13 @@
 #Remove previous files .c.o, .o
 cd /home/manolo/hackrf/host/build/hackrf-tools/src
 rm hackrf_sweep
+rm hackrf_info
 
 cd /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder
 rm hackrf_sweep
+rm hackrf_info
 echo "Executable hackrf_sweep successfully removed"
+echo "Executable hackrf_info successfully removed"
 
 cd /home/manolo/hackrf/host/build/hackrf-tools/src/CMakeFiles/hackrf_sweep.dir
 rm generationFits.c.o 
@@ -38,6 +41,7 @@ make
 echo "All files were successfully compiled"
 
 cp -R /home/manolo/hackrf/host/build/hackrf-tools/src/hackrf_sweep /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder/
+cp -R /home/manolo/hackrf/host/build/hackrf-tools/src/hackrf_info /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder/
 
 echo "Ready to exec"
 
