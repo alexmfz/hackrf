@@ -69,4 +69,6 @@ set(CMAKE_DEPEND_INFO_FILES
   "libhackrf/src/CMakeFiles/hackrf-static.dir/DependInfo.cmake"
   "libhackrf/src/CMakeFiles/hackrf.dir/DependInfo.cmake"
   "hackrf-tools/src/CMakeFiles/hackrf_sweep.dir/DependInfo.cmake"
+  "hackrf-tools/src/CMakeFiles/hackrf_info.dir/DependInfo.cmake"
+
   )
