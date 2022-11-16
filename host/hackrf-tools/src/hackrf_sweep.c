@@ -101,6 +101,10 @@ struct timeval t_start;
 /*Variables for sweepDuration*/
 struct timeval time_now;
 struct timeval time_prev;
+
+struct timeval time_preConfig;
+struct timeval time_postConfig;
+
 int exit_code = EXIT_SUCCESS;
 float sweep_rate = 0;
 /*****/
@@ -646,6 +650,8 @@ static int endConnection(){
 
 static int reconfigureHackRF()
 {
+	//gettimeofday(&time_preConfig, NULL);
+	
 	if(endConnection() == EXIT_FAILURE){ return EXIT_FAILURE; }
 	
 	if(initConfigureHackRF() == EXIT_FAILURE){ return EXIT_FAILURE; }
@@ -654,6 +660,9 @@ static int reconfigureHackRF()
 
 	if(setSweeping() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
+	//gettimeofday(&time_postConfig, NULL);
+
+	//printf("Time during reconfiguring hackRF: %f\n", TimevalDiff(&time_postConfig, &time_preConfig));
 	return EXIT_SUCCESS;
 }
 
@@ -805,6 +814,7 @@ int main(int argc, char** argv)
 		if (reconfigureHackRF() == EXIT_FAILURE) { return EXIT_FAILURE; }
 		executionControl = true;
     	//printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
+
 	}
 
 	do_exit = true;

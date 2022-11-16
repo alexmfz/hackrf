@@ -1,3 +1,16 @@
 v2.4: 
 - Reformated invokers to be shorter
 - Wrong output at more than 10 executions: With 3600 executions only 348 sweeps were donne
+- Test scenarios:
+    -   10 sweepings from 45-245MHz => OK
+    -   20 sweeping from 45-245MHz => OK
+    -   100 sweepings from 45-245MHz => Error
+    -   3600 sweepings from 45-245MHz => Error
+- Bug at 0x7F 0x7F in hackrf_sweep_start_rx(...)
+- Questions:
+    - Is it a timer question?       No. It has been tested and the timer set variables correctly
+    - Is the timer good defined?        Yes
+    - Is the reconfiguration the problem because of the time?      No, it is aroung 0.05 s
+    - Is the loop the problem because of the time?      No sense, timer activates after call of hackRFTrigger()
+    - Is it a hardware question?        ??
+    - Can it be execute the original code with bash file?
