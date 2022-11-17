@@ -9,6 +9,8 @@
 ../libhackrf/src/hackrf.h
 stdint.h
 -
+sys/types.h
+-
 
 /home/manolo/hackrf/host/hackrf-tools/src/hackrf_info.c
 hackrf.h
