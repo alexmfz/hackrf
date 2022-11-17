@@ -1,5 +1,6 @@
 v2.4: 
 - Reformated invokers to be shorter
+- folders updated to version hackrf-2022.09.1
 - Wrong output at more than 10 executions: With 3600 executions only 348 sweeps were donne
 - Test scenarios:
     -   10 sweepings from 45-245MHz => OK

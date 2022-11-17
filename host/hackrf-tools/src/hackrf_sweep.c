@@ -77,6 +77,7 @@ typedef int bool;
 int result = 0;
 bool success = false;
 bool executionControl = true;
+int counterSucess = 0;
 uint32_t num_sweeps = 0;
 int num_ranges = 0;
 uint16_t frequencies[MAX_SWEEP_RANGES*2];
@@ -804,11 +805,14 @@ int main(int argc, char** argv)
 	for (i = 0; i < TRIGERRING_TIMES; i++)
 	{
 		printf("hackrf_sweep | ===SWEEPING STARTED===\n");
-		fprintf(stderr, "Iteration %d started\n",i+1);
+		//fprintf(stderr, "Iteration %d started\n",i+1);
 		printf("Iteration %d started\n",i+1);
 		totalDuration += hackRFTrigger();
-		success == true ? fprintf(stderr, "Iteration %d Success\n",i+1) : fprintf(stderr, "Iteration %d Failed\n",i+1);
+		//success == true ? fprintf(stderr, "Iteration %d Success\n",i+1) : fprintf(stderr, "Iteration %d Failed\n",i+1);
 		success == true ? printf("Iteration %d Success\n",i+1) : printf("Iteration %d Failed\n",i+1);
+		
+		if (success == true) { counterSucess++; }
+
 		success = false;
 		printf("hackrf_sweep | ===SWEEPING DONE===\n");
 		if (reconfigureHackRF() == EXIT_FAILURE) { return EXIT_FAILURE; }
@@ -816,7 +820,7 @@ int main(int argc, char** argv)
     	//printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
 
 	}
-
+	fprint(stderr, "Total sweep completed successfully: %d out of %d", counterSucess, TRIGERRING_TIMES);
 	do_exit = true;
 	
 	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE){ return EXIT_FAILURE; }
