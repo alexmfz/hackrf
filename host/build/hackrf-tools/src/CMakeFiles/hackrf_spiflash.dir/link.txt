@@ -1,0 +1,1 @@
+/usr/bin/cc  -std=gnu90  -rdynamic CMakeFiles/hackrf_spiflash.dir/hackrf_spiflash.c.o  -o hackrf_spiflash  -Wl,-rpath,/home/manolo/hackrf/host/build/libhackrf/src: -lm -lfftw3f ../../libhackrf/src/libhackrf.so.0.7.0 -lusb-1.0 -lpthread 

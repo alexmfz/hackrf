@@ -5,4 +5,11 @@
 /usr/local/lib/libhackrf.so
 /usr/local/lib/libhackrf.a
 /usr/local/include/libhackrf/hackrf.h
+/usr/local/bin/hackrf_transfer
+/usr/local/bin/hackrf_spiflash
+/usr/local/bin/hackrf_cpldjtag
+/usr/local/bin/hackrf_info
+/usr/local/bin/hackrf_debug
+/usr/local/bin/hackrf_clock
 /usr/local/bin/hackrf_sweep
+/usr/local/bin/hackrf_operacake

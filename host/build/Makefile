@@ -196,6 +196,45 @@ hackrf/fast:
 .PHONY : hackrf/fast
 
 #=============================================================================
+# Target rules for targets named hackrf_spiflash
+
+# Build rule for target.
+hackrf_spiflash: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 hackrf_spiflash
+.PHONY : hackrf_spiflash
+
+# fast build rule for target.
+hackrf_spiflash/fast:
+	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_spiflash.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_spiflash.dir/build
+.PHONY : hackrf_spiflash/fast
+
+#=============================================================================
+# Target rules for targets named hackrf_cpldjtag
+
+# Build rule for target.
+hackrf_cpldjtag: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 hackrf_cpldjtag
+.PHONY : hackrf_cpldjtag
+
+# fast build rule for target.
+hackrf_cpldjtag/fast:
+	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_cpldjtag.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_cpldjtag.dir/build
+.PHONY : hackrf_cpldjtag/fast
+
+#=============================================================================
+# Target rules for targets named hackrf_clock
+
+# Build rule for target.
+hackrf_clock: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 hackrf_clock
+.PHONY : hackrf_clock
+
+# fast build rule for target.
+hackrf_clock/fast:
+	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_clock.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_clock.dir/build
+.PHONY : hackrf_clock/fast
+
+#=============================================================================
 # Target rules for targets named hackrf_sweep
 
 # Build rule for target.
@@ -221,6 +260,45 @@ hackrf_info/fast:
 	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_info.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_info.dir/build
 .PHONY : hackrf_info/fast
 
+#=============================================================================
+# Target rules for targets named hackrf_debug
+
+# Build rule for target.
+hackrf_debug: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 hackrf_debug
+.PHONY : hackrf_debug
+
+# fast build rule for target.
+hackrf_debug/fast:
+	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_debug.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_debug.dir/build
+.PHONY : hackrf_debug/fast
+
+#=============================================================================
+# Target rules for targets named hackrf_transfer
+
+# Build rule for target.
+hackrf_transfer: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 hackrf_transfer
+.PHONY : hackrf_transfer
+
+# fast build rule for target.
+hackrf_transfer/fast:
+	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_transfer.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_transfer.dir/build
+.PHONY : hackrf_transfer/fast
+
+#=============================================================================
+# Target rules for targets named hackrf_operacake
+
+# Build rule for target.
+hackrf_operacake: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 hackrf_operacake
+.PHONY : hackrf_operacake
+
+# fast build rule for target.
+hackrf_operacake/fast:
+	$(MAKE) -f hackrf-tools/src/CMakeFiles/hackrf_operacake.dir/build.make hackrf-tools/src/CMakeFiles/hackrf_operacake.dir/build
+.PHONY : hackrf_operacake/fast
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -236,7 +314,14 @@ help:
 	@echo "... uninstall"
 	@echo "... hackrf-static"
 	@echo "... hackrf"
+	@echo "... hackrf_spiflash"
+	@echo "... hackrf_cpldjtag"
+	@echo "... hackrf_clock"
 	@echo "... hackrf_sweep"
+	@echo "... hackrf_info"
+	@echo "... hackrf_debug"
+	@echo "... hackrf_transfer"
+	@echo "... hackrf_operacake"
 .PHONY : help
 
 

@@ -4,7 +4,7 @@
 # compile C with /usr/bin/cc
 C_FLAGS =  -std=gnu90   -Wall
 
-C_DEFINES = -DTOOL_RELEASE="\"git-4cef523*\""
+C_DEFINES = -DTOOL_RELEASE="\"git-2d33e18*\""
 
 C_INCLUDES = -I/home/manolo/hackrf/host/libhackrf/src 
 

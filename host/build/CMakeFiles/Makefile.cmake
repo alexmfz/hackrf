@@ -68,7 +68,12 @@ set(CMAKE_DEPEND_INFO_FILES
   "CMakeFiles/uninstall.dir/DependInfo.cmake"
   "libhackrf/src/CMakeFiles/hackrf-static.dir/DependInfo.cmake"
   "libhackrf/src/CMakeFiles/hackrf.dir/DependInfo.cmake"
+  "hackrf-tools/src/CMakeFiles/hackrf_spiflash.dir/DependInfo.cmake"
+  "hackrf-tools/src/CMakeFiles/hackrf_cpldjtag.dir/DependInfo.cmake"
+  "hackrf-tools/src/CMakeFiles/hackrf_clock.dir/DependInfo.cmake"
   "hackrf-tools/src/CMakeFiles/hackrf_sweep.dir/DependInfo.cmake"
   "hackrf-tools/src/CMakeFiles/hackrf_info.dir/DependInfo.cmake"
-
+  "hackrf-tools/src/CMakeFiles/hackrf_debug.dir/DependInfo.cmake"
+  "hackrf-tools/src/CMakeFiles/hackrf_transfer.dir/DependInfo.cmake"
+  "hackrf-tools/src/CMakeFiles/hackrf_operacake.dir/DependInfo.cmake"
   )

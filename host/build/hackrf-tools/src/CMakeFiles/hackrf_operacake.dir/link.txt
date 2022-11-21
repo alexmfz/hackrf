@@ -1,0 +1,1 @@
+/usr/bin/cc  -std=gnu90  -rdynamic CMakeFiles/hackrf_operacake.dir/hackrf_operacake.c.o  -o hackrf_operacake  -Wl,-rpath,/home/manolo/hackrf/host/build/libhackrf/src: -lm -lfftw3f ../../libhackrf/src/libhackrf.so.0.7.0 -lusb-1.0 -lpthread 
