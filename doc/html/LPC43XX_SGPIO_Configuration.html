@@ -1,0 +1,273 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>LPC43xx SGPIO Configuration &mdash; HackRF  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/status.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="List of Hardware Revisions" href="list_of_hardware_revisions.html" />
+    <link rel="prev" title="LPC43xx Debugging" href="LPC43XX_Debugging.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HackRF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_one.html">HackRF One</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jawbreaker.html">Jawbreaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opera_cake.html">Opera Cake</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_help.html">Getting Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_projects_mentions.html">HackRF Community Projects and Mentions</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Software</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installing_hackrf_software.html">Installing HackRF Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started_hackrf_gnuradio.html">Getting Started with HackRF and GNU Radio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="software_support.html">HackRF Compatible Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libhackrf_api.html">libhackRF API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_sweep.html">hackrf_sweep</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="updating_firmware.html">Updating Firmware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="firmware_development_setup.html">Firmware Development Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_Debugging.html">LPC43xx Debugging</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">LPC43xx SGPIO Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#frequently-asked-questions">Frequently Asked Questions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#why-not-use-gpdma-to-transfer-samples-through-sgpio">Why not use GPDMA to transfer samples through SGPIO?</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Hardware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="list_of_hardware_revisions.html">List of Hardware Revisions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_components.html">Hardware Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enclosure_options.html">Enclosure Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrfs_buttons.html">HackRF One’s Buttons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_clock_interface.html">External Clock Interface (CLKIN and CLKOUT)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expansion_interface.html">Expansion Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_triggering.html">Hardware Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rf_shield_installation.html">RF Shield Installation Instructions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HackRF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>LPC43xx SGPIO Configuration</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/LPC43XX_SGPIO_Configuration.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="lpc43xx-sgpio-configuration">
+<h1>LPC43xx SGPIO Configuration<a class="headerlink" href="#lpc43xx-sgpio-configuration" title="Permalink to this headline">¶</a></h1>
+<p>The LPC43xx SGPIO peripheral is used to move samples between USB and the ADC/DAC chip (MAX5864). The SGPIO is a peripheral that has a bunch of 32-bit shift registers. These shift registers can be configured to act as a parallel interface of different widths. For HackRF, we configure the SGPIO to transfer eight bits at a time. The SGPIO interface can also accept an external clock, which we use to synchronize transfers with the sample clock.</p>
+<p>In the current HackRF design, there is a CPLD which manages the interface between the MAX5864 and the SGPIO interface. There are four SGPIO signals that control the SGPIO data transfer:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Clock: Determines when a value on the SGPIO data bus is transferred.</p></li>
+<li><p>Direction: Determines whether the MAX5864 DA (ADC) data is driven onto the SGPIO lines, or if the SGPIO lines drive the data bus with data for the MAX5864 DD (DAC) signals.</p></li>
+<li><p>Data Valid: Indicates a sample on the SGPIO data bus is valid data.</p></li>
+<li><p>Transfer Enable: Allows SGPIO to synchronize with the I/Q data stream. The MAX5864 produces/consumes two values (quadrature/complex value) per sample period – an I value and a Q value. These two values are multiplexed on the SGPIO lines. This signal suspends data valid until the I value should be transferred.</p></li>
+</ul>
+</div></blockquote>
+<section id="frequently-asked-questions">
+<h2>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h2>
+<section id="why-not-use-gpdma-to-transfer-samples-through-sgpio">
+<h3>Why not use GPDMA to transfer samples through SGPIO?<a class="headerlink" href="#why-not-use-gpdma-to-transfer-samples-through-sgpio" title="Permalink to this headline">¶</a></h3>
+<p>It would be great if we could, as that would free up lots of processor time. Unfortunately, the GPDMA scheme in the LPC43xx does not seem to support peripheral-to-memory and memory-to-peripheral transfers with the SGPIO peripheral.</p>
+<p>You might observe that the SGPIO peripheral can generate requests from SGPIO14 and SGPIO15, using an arbitrary bit pattern in the slice shift register. The pattern in the slice determines the request interval. That’s a good start. However, how do you specify which SGPIO shadow registers are read/written at each request, and in which order those registers are transferred with memory? It turns out you can’t. In fact, it appears that an SGPIO request doesn’t cause any transfer at all, if your source or destination is “peripheral”. Instead, the SGPIO request is intended to perform a memory-to-memory transfer synchronized with SGPIO. But you’re on your own as far as getting data to/from the SGPIO shadow registers. I believe this is why the SGPIO camera example in the user manual describes an SGPIO interrupt doing the SGPIO shadow register transfer, and the GPDMA doing moves from one block of RAM to another.</p>
+<p>Perhaps if we transfer only one SGPIO shadow register, using memory-to-memory? Then we don’t have to worry about the order of SGPIO registers, or which ones need to be transferred. It turns out that when you switch over to memory-to-memory transfers, you lose peripheral request generation. So the GPDMA will transfer as fast as possible – far faster than words are produced/consumed by SGPIO.</p>
+<p>I’d really love to be wrong about all this, but all my testing has indicated there’s no workable solution to using GPDMA that’s any better than using SGPIO interrupts to transfer samples. If you want some sample GPDMA code to experiment with, please contact Jared (sharebrained on #hackrf in Discord or IRC).</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="list_of_hardware_revisions.html" class="btn btn-neutral float-right" title="List of Hardware Revisions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="LPC43XX_Debugging.html" class="btn btn-neutral float-left" title="LPC43xx Debugging" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Great Scott Gadgets.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

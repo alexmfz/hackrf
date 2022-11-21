@@ -1,0 +1,582 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Expansion Interface &mdash; HackRF  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/status.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Hardware Triggering" href="hardware_triggering.html" />
+    <link rel="prev" title="External Clock Interface (CLKIN and CLKOUT)" href="external_clock_interface.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HackRF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_one.html">HackRF One</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jawbreaker.html">Jawbreaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opera_cake.html">Opera Cake</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_help.html">Getting Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_projects_mentions.html">HackRF Community Projects and Mentions</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Software</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installing_hackrf_software.html">Installing HackRF Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started_hackrf_gnuradio.html">Getting Started with HackRF and GNU Radio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="software_support.html">HackRF Compatible Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libhackrf_api.html">libhackRF API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_sweep.html">hackrf_sweep</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="updating_firmware.html">Updating Firmware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="firmware_development_setup.html">Firmware Development Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_Debugging.html">LPC43xx Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_SGPIO_Configuration.html">LPC43xx SGPIO Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Hardware</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="list_of_hardware_revisions.html">List of Hardware Revisions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_components.html">Hardware Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enclosure_options.html">Enclosure Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrfs_buttons.html">HackRF One’s Buttons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_clock_interface.html">External Clock Interface (CLKIN and CLKOUT)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Expansion Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#p9-baseband">P9 Baseband</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#p20-gpio">P20 GPIO</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#p22-i2s">P22 I2S</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#p28-sd">P28 SD</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_triggering.html">Hardware Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rf_shield_installation.html">RF Shield Installation Instructions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HackRF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Expansion Interface</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/expansion_interface.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="expansion-interface">
+<h1>Expansion Interface<a class="headerlink" href="#expansion-interface" title="Permalink to this headline">¶</a></h1>
+<p>The HackRF One expansion interface consists of headers P9, P20, P22, and P28. These four headers are installed on the commercial HackRF One from Great Scott Gadgets.</p>
+<section id="p9-baseband">
+<h2>P9 Baseband<a class="headerlink" href="#p9-baseband" title="Permalink to this headline">¶</a></h2>
+<p>A direct analog interface to the high speed dual ADC and dual DAC.</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Pin</p></th>
+<th class="head"><p>Function</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>RXBBQ-</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>RXBBI-</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>RXBBQ+</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>RXBBI+</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-odd"><td><p>10</p></td>
+<td><p>TXBBI-</p></td>
+</tr>
+<tr class="row-even"><td><p>11</p></td>
+<td><p>TXBBQ+</p></td>
+</tr>
+<tr class="row-odd"><td><p>12</p></td>
+<td><p>TXBBI+</p></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+<td><p>TXBBQ-</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-even"><td><p>15</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-odd"><td><p>16</p></td>
+<td><p>GND</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="p20-gpio">
+<h2>P20 GPIO<a class="headerlink" href="#p20-gpio" title="Permalink to this headline">¶</a></h2>
+<p>Providing access to GPIO, ADC, RTC, and power.</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Pin</p></th>
+<th class="head"><p>Function</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>VBAT</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>RTC_ALARM</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>VCC</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>WAKEUP</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>GPIO3_8</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>GPIO3_0</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>GPIO3_10</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>GPIO3_11</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>GPIO3_12</p></td>
+</tr>
+<tr class="row-odd"><td><p>10</p></td>
+<td><p>GPIO3_13</p></td>
+</tr>
+<tr class="row-even"><td><p>11</p></td>
+<td><p>GPIO3_14</p></td>
+</tr>
+<tr class="row-odd"><td><p>12</p></td>
+<td><p>GPIO3_15</p></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+<td><p>ADC0_6</p></td>
+</tr>
+<tr class="row-even"><td><p>15</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-odd"><td><p>16</p></td>
+<td><p>ADC0_2</p></td>
+</tr>
+<tr class="row-even"><td><p>17</p></td>
+<td><p>VBUSCTRL</p></td>
+</tr>
+<tr class="row-odd"><td><p>18</p></td>
+<td><p>ADC0_5</p></td>
+</tr>
+<tr class="row-even"><td><p>19</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-odd"><td><p>20</p></td>
+<td><p>ADC0_0</p></td>
+</tr>
+<tr class="row-even"><td><p>21</p></td>
+<td><p>VBUS</p></td>
+</tr>
+<tr class="row-odd"><td><p>22</p></td>
+<td><p>VIN</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="p22-i2s">
+<h2>P22 I2S<a class="headerlink" href="#p22-i2s" title="Permalink to this headline">¶</a></h2>
+<p>I2S, SPI, I2C, UART, GPIO, and clocks.</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Pin</p></th>
+<th class="head"><p>Function</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>CLKOUT</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>CLKIN</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>RESET</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>I2C1_SCL</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>I2C1_SDA</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>SPIFI_MISO</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>SPIFI_SCK</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>SPIFI_MOSI</p></td>
+</tr>
+<tr class="row-odd"><td><p>10</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-even"><td><p>11</p></td>
+<td><p>VCC</p></td>
+</tr>
+<tr class="row-odd"><td><p>12</p></td>
+<td><p>I2S0_RX_SCK</p></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+<td><p>I2S_RX_SDA</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+<td><p>I2S0_RX_MCLK</p></td>
+</tr>
+<tr class="row-even"><td><p>15</p></td>
+<td><p>I2S0_RX_WS</p></td>
+</tr>
+<tr class="row-odd"><td><p>16</p></td>
+<td><p>I2S0_TX_SCK</p></td>
+</tr>
+<tr class="row-even"><td><p>17</p></td>
+<td><p>I2S0_TX_MCLK</p></td>
+</tr>
+<tr class="row-odd"><td><p>18</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-even"><td><p>19</p></td>
+<td><p>U0_RXD</p></td>
+</tr>
+<tr class="row-odd"><td><p>20</p></td>
+<td><p>U0_TXD</p></td>
+</tr>
+<tr class="row-even"><td><p>21</p></td>
+<td><p>P2_9</p></td>
+</tr>
+<tr class="row-odd"><td><p>22</p></td>
+<td><p>P2_13</p></td>
+</tr>
+<tr class="row-even"><td><p>23</p></td>
+<td><p>P2_8</p></td>
+</tr>
+<tr class="row-odd"><td><p>24</p></td>
+<td><p>SDA</p></td>
+</tr>
+<tr class="row-even"><td><p>25</p></td>
+<td><p>CLK6</p></td>
+</tr>
+<tr class="row-odd"><td><p>26</p></td>
+<td><p>SCL</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="p28-sd">
+<h2>P28 SD<a class="headerlink" href="#p28-sd" title="Permalink to this headline">¶</a></h2>
+<p>SDIO, GPIO, clocks, and CPLD.</p>
+<table class="colwidths-given docutils align-default">
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Pin</p></th>
+<th class="head"><p>Function</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>1</p></td>
+<td><p>VCC</p></td>
+</tr>
+<tr class="row-odd"><td><p>2</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-even"><td><p>3</p></td>
+<td><p>SD_CD</p></td>
+</tr>
+<tr class="row-odd"><td><p>4</p></td>
+<td><p>SD_DAT3</p></td>
+</tr>
+<tr class="row-even"><td><p>5</p></td>
+<td><p>SD_DAT2</p></td>
+</tr>
+<tr class="row-odd"><td><p>6</p></td>
+<td><p>SD_DAT1</p></td>
+</tr>
+<tr class="row-even"><td><p>7</p></td>
+<td><p>SD_DAT0</p></td>
+</tr>
+<tr class="row-odd"><td><p>8</p></td>
+<td><p>SD_VOLT0</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>SD_CMD</p></td>
+</tr>
+<tr class="row-odd"><td><p>10</p></td>
+<td><p>SD_POW</p></td>
+</tr>
+<tr class="row-even"><td><p>11</p></td>
+<td><p>SD_CLK</p></td>
+</tr>
+<tr class="row-odd"><td><p>12</p></td>
+<td><p>GND</p></td>
+</tr>
+<tr class="row-even"><td><p>13</p></td>
+<td><p>GCK2</p></td>
+</tr>
+<tr class="row-odd"><td><p>14</p></td>
+<td><p>GCK1</p></td>
+</tr>
+<tr class="row-even"><td><p>15</p></td>
+<td><p>B1AUX14 (trigger output)</p></td>
+</tr>
+<tr class="row-odd"><td><p>16</p></td>
+<td><p>B1AUX13 (trigger input)</p></td>
+</tr>
+<tr class="row-even"><td><p>17</p></td>
+<td><p>CPLD_TCK</p></td>
+</tr>
+<tr class="row-odd"><td><p>18</p></td>
+<td><p>BANK2F3M2</p></td>
+</tr>
+<tr class="row-even"><td><p>19</p></td>
+<td><p>CPLD_TDI</p></td>
+</tr>
+<tr class="row-odd"><td><p>20</p></td>
+<td><p>BANK2F3M6</p></td>
+</tr>
+<tr class="row-even"><td><p>21</p></td>
+<td><p>BANK2F3M12</p></td>
+</tr>
+<tr class="row-odd"><td><p>22</p></td>
+<td><p>BANK2F3M4</p></td>
+</tr>
+</tbody>
+</table>
+<p>Additional unpopulated headers and test points are available for test and development, but they may be incompatible with some enclosure or expansion options.</p>
+<p>Refer to the schematics and component documentation for more information.</p>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="hardware_triggering.html" class="btn btn-neutral float-right" title="Hardware Triggering" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="external_clock_interface.html" class="btn btn-neutral float-left" title="External Clock Interface (CLKIN and CLKOUT)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Great Scott Gadgets.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

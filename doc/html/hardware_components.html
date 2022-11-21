@@ -1,0 +1,302 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Hardware Components &mdash; HackRF  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/status.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Enclosure Options" href="enclosure_options.html" />
+    <link rel="prev" title="List of Hardware Revisions" href="list_of_hardware_revisions.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HackRF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_one.html">HackRF One</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jawbreaker.html">Jawbreaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opera_cake.html">Opera Cake</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_help.html">Getting Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_projects_mentions.html">HackRF Community Projects and Mentions</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Software</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installing_hackrf_software.html">Installing HackRF Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started_hackrf_gnuradio.html">Getting Started with HackRF and GNU Radio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="software_support.html">HackRF Compatible Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libhackrf_api.html">libhackRF API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_sweep.html">hackrf_sweep</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="updating_firmware.html">Updating Firmware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="firmware_development_setup.html">Firmware Development Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_Debugging.html">LPC43xx Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_SGPIO_Configuration.html">LPC43xx SGPIO Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Hardware</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="list_of_hardware_revisions.html">List of Hardware Revisions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Hardware Components</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#block-diagram">Block Diagram</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="enclosure_options.html">Enclosure Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrfs_buttons.html">HackRF One’s Buttons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_clock_interface.html">External Clock Interface (CLKIN and CLKOUT)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expansion_interface.html">Expansion Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_triggering.html">Hardware Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rf_shield_installation.html">RF Shield Installation Instructions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HackRF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Hardware Components</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/hardware_components.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="hardware-components">
+<h1>Hardware Components<a class="headerlink" href="#hardware-components" title="Permalink to this headline">¶</a></h1>
+<p>Major parts used in HackRF One:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><a class="reference external" href="https://www.maximintegrated.com/en/products/comms/wireless-rf/MAX2837.html">MAX2837 2.3 to 2.7 GHz transceiver</a></dt><dd><ul>
+<li><p><a class="reference external" href="https://datasheets.maximintegrated.com/en/ds/MAX2837.pdf">Datasheet</a></p></li>
+<li><p>There’s also a register map document that Mike received directly from Maxim. Send an email to Mike or submit a support request to Maxim if you want a copy.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="http://www.maxim-ic.com/datasheet/index.mvp/id/3946/t/do">MAX5864 ADC/DAC</a></dt><dd><ul>
+<li><p><a class="reference external" href="http://datasheets.maxim-ic.com/en/ds/MAX5864.pdf">Datasheet</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="http://www.silabs.com/products/clocksoscillators/clock-generator/Pages/lvcmos-clocks-5-outputs.aspx">Si5351 clock generator</a></dt><dd><ul>
+<li><p><a class="reference external" href="http://www.silabs.com/Support%20Documents/TechnicalDocs/AN619.pdf">AN619: Manually Generating an Si5351 Register Map</a></p></li>
+<li><p><a class="reference external" href="http://www.silabs.com/Support%20Documents/TechnicalDocs/Si5351.pdf">Datasheet</a> - this document is a mess of typos, and best used in conjunction with AN619, which has its own typos. Usually, you can reconcile what’s true by comparison and a bit of thought.</p></li>
+<li><p><a class="reference external" href="http://www.silabs.com/products/clocksoscillators/clock-generators-and-buffers/Pages/clock+vcxo.aspx">Other Documentation</a> - includes application notes, user guides, and white papers.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>CoolRunner-II CPLD</p></li>
+<li><dl class="simple">
+<dt><a class="reference external" href="http://www.nxp.com/products/microcontrollers-and-processors/arm-processors/lpc-arm-cortex-m-mcus/lpc-dual-core-cortex-m0-m4f/lpc4300:MC_1403790133078">LPC43xx ARM Cortex-M4 microcontroller</a></dt><dd><ul>
+<li><p><a class="reference external" href="http://www.nxp.com/documents/user_manual/UM10503.pdf">User Manual</a></p></li>
+<li><p><a class="reference external" href="http://www.nxp.com/documents/data_sheet/LPC4350_30_20_10.pdf">Datasheet</a></p></li>
+<li><p><a class="reference external" href="http://www.nxp.com/products/microcontrollers/cortex_m4/lpc4300/LPC4330FBD144.html#documentation">Other Documentation (LPC4330FBD144)</a> - includes errata and application notes.</p></li>
+<li><p><a class="reference external" href="http://www.keil.com/support/man/docs/ulink2/ulink2_hw_connectors.htm">ARM-standard JTAG/SWD connector pinout</a></p></li>
+<li><p><a class="reference external" href="http://www.lpcware.com/system/files/LPC18xx_43xx%20BSDL%20files%2020121127_0.zip">BSDL file for the LPC43xx (For boundary scan)</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference external" href="http://www.rfmd.com/store/rffc5072-1.html">RFFC5072 mixer/synthesizer</a></dt><dd><ul>
+<li><p><a class="reference external" href="http://www.rfmd.com/CS/Documents/RFFC5071_2DS.pdf">Datasheet</a></p></li>
+<li><p><a class="reference external" href="http://www.rfmd.com/store/rffc5072-1.html">Other Documentation</a> ; click “Technical Documents” - includes programming guides and application notes.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><a class="reference external" href="https://www.winbond.com/resource-files/w25q80bv%20revk%2020151203.pdf">W25Q80BV 8M-bit Flash</a></p></li>
+</ul>
+<section id="block-diagram">
+<h2>Block Diagram<a class="headerlink" href="#block-diagram" title="Permalink to this headline">¶</a></h2>
+<img alt="_images/block-diagram.png" class="align-center" src="_images/block-diagram.png" />
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="enclosure_options.html" class="btn btn-neutral float-right" title="Enclosure Options" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="list_of_hardware_revisions.html" class="btn btn-neutral float-left" title="List of Hardware Revisions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Great Scott Gadgets.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

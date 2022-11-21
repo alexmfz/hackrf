@@ -1,0 +1,384 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Installing HackRF Software &mdash; HackRF  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/status.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Getting Started with HackRF and GNU Radio" href="getting_started_hackrf_gnuradio.html" />
+    <link rel="prev" title="HackRF Community Projects and Mentions" href="hackrf_projects_mentions.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HackRF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_one.html">HackRF One</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jawbreaker.html">Jawbreaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opera_cake.html">Opera Cake</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_help.html">Getting Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_projects_mentions.html">HackRF Community Projects and Mentions</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Software</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installing HackRF Software</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install-using-package-managers">Install Using Package Managers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#freebsd">FreeBSD</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux-arch">Linux: Arch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux-fedora-red-hat">Linux: Fedora / Red Hat</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux-gentoo">Linux: Gentoo</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux-ubuntu-debian">Linux: Ubuntu / Debian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#os-x-10-5-homebrew">OS X (10.5+): Homebrew</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#os-x-10-5-macports">OS X (10.5+): MacPorts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#windows-binaries">Windows: Binaries</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#installing-from-source">Installing From Source</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#linux-os-x-bsd-building-hackrf-software-from-source">Linux / OS X / *BSD: Building HackRF Software From Source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#windows-prerequisites-for-cygwin-mingw-or-visual-studio">Windows: Prerequisites for Cygwin, MinGW, or Visual Studio</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#windows-installing-hackrf-software-via-cygwin">Windows: Installing HackRF Software via Cygwin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#windows-installing-hackrf-software-via-mingw">Windows: Installing HackRF Software via MinGW</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#windows-installing-hackrf-software-via-visual-studio-2015-x64">Windows: Installing HackRF Software via Visual Studio 2015 x64</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started_hackrf_gnuradio.html">Getting Started with HackRF and GNU Radio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="software_support.html">HackRF Compatible Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libhackrf_api.html">libhackRF API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_sweep.html">hackrf_sweep</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="updating_firmware.html">Updating Firmware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="firmware_development_setup.html">Firmware Development Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_Debugging.html">LPC43xx Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_SGPIO_Configuration.html">LPC43xx SGPIO Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Hardware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="list_of_hardware_revisions.html">List of Hardware Revisions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_components.html">Hardware Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enclosure_options.html">Enclosure Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrfs_buttons.html">HackRF One’s Buttons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_clock_interface.html">External Clock Interface (CLKIN and CLKOUT)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expansion_interface.html">Expansion Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_triggering.html">Hardware Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rf_shield_installation.html">RF Shield Installation Instructions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HackRF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Installing HackRF Software</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/installing_hackrf_software.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="installing-hackrf-software">
+<span id="operating-system-tips"></span><h1>Installing HackRF Software<a class="headerlink" href="#installing-hackrf-software" title="Permalink to this headline">¶</a></h1>
+<section id="install-using-package-managers">
+<h2>Install Using Package Managers<a class="headerlink" href="#install-using-package-managers" title="Permalink to this headline">¶</a></h2>
+<p>Unless developing or testing new features for HackRF, we highly recommend that most users use build systems or package managers provided for their operating system. <strong>Our suggested operating system for use with HackRF is Ubuntu</strong>.</p>
+<section id="freebsd">
+<h3>FreeBSD<a class="headerlink" href="#freebsd" title="Permalink to this headline">¶</a></h3>
+<p>You can use the binary package: <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">pkg</span> <span class="pre">install</span> <span class="pre">hackrf</span></code></p>
+<p>You can also build and install from ports:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="c1"># cd /usr/ports/comms/hackrf</span>
+<span class="c1"># make install</span>
+</pre></div>
+</div>
+</section>
+<section id="linux-arch">
+<h3>Linux: Arch<a class="headerlink" href="#linux-arch" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pacman -S hackrf
+</pre></div>
+</div>
+</section>
+<section id="linux-fedora-red-hat">
+<h3>Linux: Fedora / Red Hat<a class="headerlink" href="#linux-fedora-red-hat" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">dnf</span> <span class="pre">install</span> <span class="pre">hackrf</span> <span class="pre">-y</span></code></p>
+</section>
+<section id="linux-gentoo">
+<h3>Linux: Gentoo<a class="headerlink" href="#linux-gentoo" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>emerge -a net-wireless/hackrf-tools
+</pre></div>
+</div>
+</section>
+<section id="linux-ubuntu-debian">
+<h3>Linux: Ubuntu / Debian<a class="headerlink" href="#linux-ubuntu-debian" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">hackrf</span></code></p>
+</section>
+<section id="os-x-10-5-homebrew">
+<h3>OS X (10.5+): Homebrew<a class="headerlink" href="#os-x-10-5-homebrew" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">hackrf</span></code></p>
+</section>
+<section id="os-x-10-5-macports">
+<h3>OS X (10.5+): MacPorts<a class="headerlink" href="#os-x-10-5-macports" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">port</span> <span class="pre">install</span> <span class="pre">hackrf</span></code></p>
+</section>
+<section id="windows-binaries">
+<h3>Windows: Binaries<a class="headerlink" href="#windows-binaries" title="Permalink to this headline">¶</a></h3>
+<p>Binaries are provided as part of the PothosSDR project, they can be downloaded <a class="reference external" href="http://downloads.myriadrf.org/builds/PothosSDR/?C=M;O=D">here</a>.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="installing-from-source">
+<h2>Installing From Source<a class="headerlink" href="#installing-from-source" title="Permalink to this headline">¶</a></h2>
+<section id="linux-os-x-bsd-building-hackrf-software-from-source">
+<h3>Linux / OS X / *BSD: Building HackRF Software From Source<a class="headerlink" href="#linux-os-x-bsd-building-hackrf-software-from-source" title="Permalink to this headline">¶</a></h3>
+<p>Acquire the source for the HackRF tools from either a <a class="reference external" href="https://github.com/mossmann/hackrf/releases">release archive</a> or git: <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/mossmann/hackrf.git</span></code></p>
+<p>Once you have the source downloaded, the host tools can be built as follows:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> hackrf/host
+mkdir build
+<span class="nb">cd</span> build
+cmake ..
+make
+sudo make install
+sudo ldconfig
+</pre></div>
+</div>
+<p>If you have HackRF hardware, you may need to <a class="reference internal" href="updating_firmware.html#updating-firmware"><span class="std std-ref">update the firmware</span></a> to match the host tools versions.</p>
+</section>
+<section id="windows-prerequisites-for-cygwin-mingw-or-visual-studio">
+<h3>Windows: Prerequisites for Cygwin, MinGW, or Visual Studio<a class="headerlink" href="#windows-prerequisites-for-cygwin-mingw-or-visual-studio" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>cmake-2.8.12.1 or later from <a class="reference external" href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</a></p></li>
+<li><p>libusbx-1.0.18 or later from <a class="reference external" href="http://sourceforge.net/projects/libusbx/files/latest/download?source=files">http://sourceforge.net/projects/libusbx/files/latest/download?source=files</a></p></li>
+<li><p>fftw-3.3.5 or later from <a class="reference external" href="http://www.fftw.org/install/windows.html">http://www.fftw.org/install/windows.html</a></p></li>
+<li><dl class="simple">
+<dt>Install Windows driver for HackRF hardware or use Zadig see <a class="reference external" href="http://sourceforge.net/projects/libwdi/files/zadig">http://sourceforge.net/projects/libwdi/files/zadig</a></dt><dd><ul>
+<li><p>If you want to use Zadig select HackRF USB device and just install/replace it with WinUSB driver.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>Note for Windows build: You shall always execute hackrf-tools from Windows command shell and not from Cygwin or MinGW shell because on Cygwin/MinGW Ctrl+C is not managed correctly and especially for hackrf_transfer the Ctrl+C (abort) will not stop correctly and will corrupt the file.</p>
+</section>
+<section id="windows-installing-hackrf-software-via-cygwin">
+<h3>Windows: Installing HackRF Software via Cygwin<a class="headerlink" href="#windows-installing-hackrf-software-via-cygwin" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>mkdir host/build
+<span class="nb">cd</span> host/build
+cmake ../ -G <span class="s2">&quot;Unix Makefiles&quot;</span> -DCMAKE_LEGACY_CYGWIN_WIN32<span class="o">=</span><span class="m">1</span> -DLIBUSB_INCLUDE_DIR<span class="o">=</span>/usr/local/include/libusb-1.0/
+make
+make install
+</pre></div>
+</div>
+</section>
+<section id="windows-installing-hackrf-software-via-mingw">
+<h3>Windows: Installing HackRF Software via MinGW<a class="headerlink" href="#windows-installing-hackrf-software-via-mingw" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>mkdir host/build
+<span class="nb">cd</span> host/build
+cmake ../ -G <span class="s2">&quot;MSYS Makefiles&quot;</span> -DLIBUSB_INCLUDE_DIR<span class="o">=</span>/usr/local/include/libusb-1.0/
+make
+make install
+</pre></div>
+</div>
+</section>
+<section id="windows-installing-hackrf-software-via-visual-studio-2015-x64">
+<h3>Windows: Installing HackRF Software via Visual Studio 2015 x64<a class="headerlink" href="#windows-installing-hackrf-software-via-visual-studio-2015-x64" title="Permalink to this headline">¶</a></h3>
+<p>Create library definition for MSVC to link to <code class="docutils literal notranslate"><span class="pre">C:\fftw-3.3.5-dll64&gt;</span> <span class="pre">lib</span> <span class="pre">/machine:x64</span> <span class="pre">/def:libfftw3f-3.def</span></code></p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>c:<span class="se">\h</span>ackrf<span class="se">\h</span>ost<span class="se">\b</span>uild&gt; cmake ../ -G <span class="s2">&quot;Visual Studio 14 2015 Win64&quot;</span> <span class="se">\</span>
+-DLIBUSB_INCLUDE_DIR<span class="o">=</span>c:<span class="se">\l</span>ibusb-1.0.21<span class="se">\l</span>ibusb <span class="se">\</span>
+-DLIBUSB_LIBRARIES<span class="o">=</span>c:<span class="se">\l</span>ibusb-1.0.21<span class="se">\M</span>S64<span class="se">\d</span>ll<span class="se">\l</span>ib<span class="se">\l</span>ibusb-1.0.lib <span class="se">\</span>
+-DTHREADS_PTHREADS_INCLUDE_DIR<span class="o">=</span>c:<span class="se">\p</span>threads-w32-2-9-1-release<span class="se">\P</span>re-built.2<span class="se">\i</span>nclude <span class="se">\</span>
+-DTHREADS_PTHREADS_WIN32_LIBRARY<span class="o">=</span>c:<span class="se">\p</span>threads-w32-2-9-1-release<span class="se">\P</span>re-built.2<span class="se">\l</span>ib<span class="se">\x</span><span class="m">64</span><span class="se">\p</span>threadVC2.lib <span class="se">\</span>
+-DFFTW_INCLUDES<span class="o">=</span>C:<span class="se">\f</span>ftw-3.3.5-dll64 <span class="se">\</span>
+-DFFTW_LIBRARIES<span class="o">=</span>C:<span class="se">\f</span>ftw-3.3.5-dll64<span class="se">\l</span>ibfftw3f-3.lib
+</pre></div>
+</div>
+<p>CMake will produce a solution file named <code class="docutils literal notranslate"><span class="pre">HackRF.sln</span></code> and a series of project files which can be built with msbuild as follows: <code class="docutils literal notranslate"><span class="pre">c:\hackrf\host\build&gt;</span> <span class="pre">msbuild</span> <span class="pre">HackRF.sln</span></code></p>
+</section>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="getting_started_hackrf_gnuradio.html" class="btn btn-neutral float-right" title="Getting Started with HackRF and GNU Radio" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="hackrf_projects_mentions.html" class="btn btn-neutral float-left" title="HackRF Community Projects and Mentions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Great Scott Gadgets.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

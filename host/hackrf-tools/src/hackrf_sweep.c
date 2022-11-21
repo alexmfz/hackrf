@@ -53,7 +53,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFTSIZE_STD	(14400)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGERRING_TIMES (100)
+#define TRIGERRING_TIMES (10)
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -310,10 +310,6 @@ int rx_callback(hackrf_transfer* transfer) {
 				printf("\n");			
 		}
 		
-		if((frequency+((sampleRate*3)/4)) >= freq_max*FREQ_ONE_MHZ)
-		{
-		//	fprintf(stderr, "Last frequency: %ld\n", (frequency+((sampleRate*3)/4)));
-		}
 		/*else //FITS file
 		{
 			for(i = 0; (fftSize / 4) > i; i++) {
@@ -731,7 +727,7 @@ float hackRFTrigger()
  */
 int main(int argc, char** argv) 
 {
-	int opt = 0, i, nElements;
+	int opt = 0, i, j, nElements;
 	float totalDuration = 0; //total duration (should be aroung 15 minutes)
 
 	showMenu(opt, argc, argv);
@@ -788,12 +784,12 @@ int main(int argc, char** argv)
 	printf("hackrf_sweep | HackRF configuration DONE.\n");
 
 	nElements = naxes[0]*naxes[1];
-	samples = (float*)calloc(nElements,sizeof(float));
-	if(samples == NULL)
-	{
-		printf("hackrf_sweep | Samples not allocated in memory.\n");
-		exit(0);
-	}
+	//samples = (float*)calloc(nElements,sizeof(float));
+	//if(samples == NULL)
+	//{
+	//	printf("hackrf_sweep | Samples not allocated in memory.\n");
+	//	exit(0);
+	//}
 
 	printf("hackrf_sweep | calling configuration timer\n");
 	setTimerParams();
@@ -801,7 +797,7 @@ int main(int argc, char** argv)
 	if (setSweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
 	printf("hackrf_sweep | Start triggering %d times\n", TRIGERRING_TIMES);
-
+	
 	for (i = 0; i < TRIGERRING_TIMES; i++)
 	{
 		printf("hackrf_sweep | ===SWEEPING STARTED===\n");
@@ -812,19 +808,17 @@ int main(int argc, char** argv)
 		success == true ? printf("Iteration %d Success\n",i+1) : printf("Iteration %d Failed\n",i+1);
 		
 		if (success == true) { counterSucess++; }
-
 		success = false;
 		printf("hackrf_sweep | ===SWEEPING DONE===\n");
 		if (reconfigureHackRF() == EXIT_FAILURE) { return EXIT_FAILURE; }
 		executionControl = true;
-    	//printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
-
+		//printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
 	}
-	fprint(stderr, "Total sweep completed successfully: %d out of %d", counterSucess, TRIGERRING_TIMES);
+
+	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE){ return EXIT_FAILURE; }
+	fprintf(stderr, "Total sweep completed successfully: %d out of %d", counterSucess, TRIGERRING_TIMES);
 	do_exit = true;
 	
-	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE){ return EXIT_FAILURE; }
-
 	durationSweeps += sweepDuration();
 
 	checkStreaming();   	

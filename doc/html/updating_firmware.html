@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Updating Firmware &mdash; HackRF  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/status.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Firmware Development Setup" href="firmware_development_setup.html" />
+    <link rel="prev" title="hackrf_sweep" href="hackrf_sweep.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HackRF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_one.html">HackRF One</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jawbreaker.html">Jawbreaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opera_cake.html">Opera Cake</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_help.html">Getting Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_projects_mentions.html">HackRF Community Projects and Mentions</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Software</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installing_hackrf_software.html">Installing HackRF Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started_hackrf_gnuradio.html">Getting Started with HackRF and GNU Radio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="software_support.html">HackRF Compatible Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libhackrf_api.html">libhackRF API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_sweep.html">hackrf_sweep</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Updating Firmware</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#updating-the-spi-flash-firmware">Updating the SPI Flash Firmware</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#updating-the-cpld">Updating the CPLD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#only-if-necessary-dfu-boot">Only if Necessary: DFU Boot</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#only-if-necessary-recovering-the-spi-flash-firmware">Only if Necessary: Recovering the SPI Flash Firmware</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#obtaining-dfu-util">Obtaining DFU-Util</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="firmware_development_setup.html">Firmware Development Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_Debugging.html">LPC43xx Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_SGPIO_Configuration.html">LPC43xx SGPIO Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Hardware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="list_of_hardware_revisions.html">List of Hardware Revisions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_components.html">Hardware Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enclosure_options.html">Enclosure Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrfs_buttons.html">HackRF One’s Buttons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_clock_interface.html">External Clock Interface (CLKIN and CLKOUT)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expansion_interface.html">Expansion Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_triggering.html">Hardware Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rf_shield_installation.html">RF Shield Installation Instructions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HackRF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Updating Firmware</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/updating_firmware.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="updating-firmware">
+<span id="id1"></span><h1>Updating Firmware<a class="headerlink" href="#updating-firmware" title="Permalink to this headline">¶</a></h1>
+<p>HackRF devices ship with firmware on the SPI flash memory. The firmware can be updated with nothing more than a USB cable and host computer.</p>
+<p>These instructions allow you to upgrade the firmware in order to take advantage of new features or bug fixes.</p>
+<p>If you have any difficulty making this process work from your native operating system, you can  <a class="reference internal" href="getting_started_hackrf_gnuradio.html#try-pentoo"><span class="std std-ref">use Pentoo or the GNU Radio Live DVD</span></a> to perform the updates.</p>
+<section id="updating-the-spi-flash-firmware">
+<h2>Updating the SPI Flash Firmware<a class="headerlink" href="#updating-the-spi-flash-firmware" title="Permalink to this headline">¶</a></h2>
+<p>To update the firmware on a working HackRF One, use the hackrf_spiflash program:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>hackrf_spiflash -w hackrf_one_usb.bin
+</pre></div>
+</div>
+<p>You can find the firmware binary (hackrf_one_usb.bin) in the firmware-bin directory of the latest <a class="reference external" href="https://github.com/mossmann/hackrf/releases/latest">release package</a> or you can compile your own from the <a class="reference external" href="https://github.com/mossmann/hackrf/tree/master/firmware">source</a>. For Jawbreaker, use hackrf_jawbreaker_usb.bin. If you compile from source, the file will be called hackrf_usb.bin.</p>
+<p>The hackrf_spiflash program is part of hackrf-tools.</p>
+<p>When writing a firmware image to SPI flash, be sure to select firmware with a filename ending in “.bin”.</p>
+<p>After writing the firmware to SPI flash, you may need to reset the HackRF device by pressing the RESET button or by unplugging it and plugging it back in.</p>
+<p>If you get an error that mentions HACKRF_ERROR_NOT_FOUND, check out the <a class="reference internal" href="troubleshooting.html#faq-hackrf-under-linux"><span class="std std-ref">FAQ</span></a>. It’s often a permissions problem that can be quickly solved.</p>
+</section>
+<section id="updating-the-cpld">
+<h2>Updating the CPLD<a class="headerlink" href="#updating-the-cpld" title="Permalink to this headline">¶</a></h2>
+<p>Older versions of HackRF firmware (prior to release 2021.03.1) require an additional step to program a bitstream into the CPLD.</p>
+<p>To update the CPLD image, first update the SPI flash firmware, libhackrf, and hackrf-tools to the version you are installing. Then:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>hackrf_cpldjtag -x firmware/cpld/sgpio_if/default.xsvf
+</pre></div>
+</div>
+<p>After a few seconds, three LEDs should start blinking. This indicates that the CPLD has been programmed successfully. Reset the HackRF device by pressing the RESET button or by unplugging it and plugging it back in.</p>
+</section>
+<section id="only-if-necessary-dfu-boot">
+<h2>Only if Necessary: DFU Boot<a class="headerlink" href="#only-if-necessary-dfu-boot" title="Permalink to this headline">¶</a></h2>
+<p>DFU boot mode is normally only needed if the firmware is not working properly or has never been installed.</p>
+<p>The LPC4330 microcontroller on HackRF is capable of booting from several different code sources. By default, HackRF boots from SPI flash memory (SPIFI). It can also boot HackRF in DFU (USB) boot mode. In DFU boot mode, HackRF will enumerate over USB, wait for code to be delivered using the DFU (Device Firmware Update) standard over USB, and then execute that code from RAM. The SPIFI is normally unused and unaltered in DFU mode.</p>
+<p>To start up HackRF One in DFU mode, hold down the DFU button while powering it on or while pressing and releasing the RESET button. Release the DFU button after the 3V3 LED illuminates. The 1V8 LED should remain off. At this point HackRF One is ready to receive firmware over USB.</p>
+<p>To start up Jawbreaker in DFU mode, short two pins on one of the “BOOT” headers while power is first supplied. The pins that must be shorted are pins 1 and 2 of header P32 on Jawbreaker. Header P32 is labeled “P2_8” on most Jawbreakers but may be labeled “2” on prototype units. Pin 1 is labeled “VCC”. Pin 2 is the center pin. After DFU boot, you should see VCCLED illuminate and note that 1V8LED does not illuminate. At this point Jawbreaker is ready to receive firmware over USB.</p>
+<p>You should only use a firmware image with a filename ending in “.dfu” over DFU, not firmware ending in “.bin”.</p>
+</section>
+<section id="only-if-necessary-recovering-the-spi-flash-firmware">
+<h2>Only if Necessary: Recovering the SPI Flash Firmware<a class="headerlink" href="#only-if-necessary-recovering-the-spi-flash-firmware" title="Permalink to this headline">¶</a></h2>
+<p>If the firmware installed in SPI flash has been damaged or if you are programming a home-made HackRF for the first time, you will not be able to immediately use the hackrf_spiflash program as listed in the above procedure. Follow these steps instead:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Follow the DFU Boot instructions to start the HackRF in DFU boot mode.</p></li>
+<li><p>Type <code class="docutils literal notranslate"><span class="pre">dfu-util</span> <span class="pre">--device</span> <span class="pre">1fc9:000c</span> <span class="pre">--alt</span> <span class="pre">0</span> <span class="pre">--download</span> <span class="pre">hackrf_one_usb.dfu</span></code> to load firmware from a release package into RAM. If you have a Jawbreaker, use hackrf_jawbreaker_usb.dfu instead. Alternatively, use <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">-e</span> <span class="pre">BOARD=HACKRF_ONE</span> <span class="pre">RUN_FROM=RAM</span> <span class="pre">program</span></code> to load the firmware into RAM and start it.</p></li>
+<li><p>Follow the SPI flash firmware update procedure above to write the “.bin” firmware image to SPI flash.</p></li>
+</ol>
+</div></blockquote>
+</section>
+<section id="obtaining-dfu-util">
+<h2>Obtaining DFU-Util<a class="headerlink" href="#obtaining-dfu-util" title="Permalink to this headline">¶</a></h2>
+<p>On fresh installs of your OS, you may need obtain a copy of DFU-Util. For most Linux distributions it should be available as a package, for example on Debian/Ubuntu</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo apt-get install dfu-util
+</pre></div>
+</div>
+<p>If you are using a platform without a dfu-util package, build instruction can be found <a class="reference external" href="http://dfu-util.sourceforge.net/build.html">here on the dfu-util source forge build page</a>.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> ~
+sudo apt-get build-dep dfu-util
+sudo apt-get install libusb-1.0-0-dev
+git clone git://git.code.sf.net/p/dfu-util/dfu-util
+<span class="nb">cd</span> dfu-util
+./autogen.sh
+./configure
+make
+sudo make install
+</pre></div>
+</div>
+<p>Now you will have the current version of DFU Util installed on your system.</p>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="firmware_development_setup.html" class="btn btn-neutral float-right" title="Firmware Development Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="hackrf_sweep.html" class="btn btn-neutral float-left" title="hackrf_sweep" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Great Scott Gadgets.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

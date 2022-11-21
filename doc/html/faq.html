@@ -1,0 +1,354 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>FAQ &mdash; HackRF  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/status.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Troubleshooting" href="troubleshooting.html" />
+    <link rel="prev" title="Opera Cake" href="opera_cake.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HackRF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="hackrf_one.html">HackRF One</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jawbreaker.html">Jawbreaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opera_cake.html">Opera Cake</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">FAQ</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-the-transmit-power-of-hackrf">What is the Transmit Power of HackRF?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-the-receive-power-of-hackrf">What is the Receive Power of HackRF?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-the-minimum-signal-power-level-that-can-be-detected-by-hackrf">What is the minimum signal power level that can be detected by HackRF?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#is-hackrf-full-duplex">Is HackRF full-duplex?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#why-isn-t-hackrf-one-full-duplex">Why isn’t HackRF One full-duplex?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-could-the-hackrf-one-design-be-changed-to-make-it-full-duplex">How could the HackRF One design be changed to make it full-duplex?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#are-those-connectors-sma-or-rp-sma">Are those connectors SMA or RP-SMA?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-the-big-spike-in-the-center-of-my-received-spectrum">What is the big spike in the center of my received spectrum?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-gain-controls-are-provided-by-hackrf">What gain controls are provided by HackRF?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#why-is-the-rf-gain-setting-restricted-to-two-values">Why is the RF gain setting restricted to two values?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#why-are-the-leds-on-hackrf-different-colours">Why are the LEDs on HackRF different colours?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#where-can-i-purchase-hackrf">Where can I purchase HackRF?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_help.html">Getting Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_projects_mentions.html">HackRF Community Projects and Mentions</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Software</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installing_hackrf_software.html">Installing HackRF Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started_hackrf_gnuradio.html">Getting Started with HackRF and GNU Radio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="software_support.html">HackRF Compatible Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libhackrf_api.html">libhackRF API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_sweep.html">hackrf_sweep</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="updating_firmware.html">Updating Firmware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="firmware_development_setup.html">Firmware Development Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_Debugging.html">LPC43xx Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_SGPIO_Configuration.html">LPC43xx SGPIO Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Hardware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="list_of_hardware_revisions.html">List of Hardware Revisions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_components.html">Hardware Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enclosure_options.html">Enclosure Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrfs_buttons.html">HackRF One’s Buttons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_clock_interface.html">External Clock Interface (CLKIN and CLKOUT)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expansion_interface.html">Expansion Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_triggering.html">Hardware Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rf_shield_installation.html">RF Shield Installation Instructions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HackRF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>FAQ</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/faq.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="faq">
+<span id="id1"></span><h1>FAQ<a class="headerlink" href="#faq" title="Permalink to this headline">¶</a></h1>
+<section id="what-is-the-transmit-power-of-hackrf">
+<h2>What is the Transmit Power of HackRF?<a class="headerlink" href="#what-is-the-transmit-power-of-hackrf" title="Permalink to this headline">¶</a></h2>
+<p>HackRF One’s absolute maximum TX power varies by operating frequency:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>1 MHz to 10 MHz: 5 dBm to 15 dBm, generally increasing as frequency increases (see this <a class="reference external" href="https://greatscottgadgets.com/2015/05-15-hackrf-one-at-1-mhz/">blog post</a>)</p></li>
+<li><p>10 MHz to 2150 MHz: 5 dBm to 15 dBm, generally decreasing as frequency increases</p></li>
+<li><p>2150 MHz to 2750 MHz: 13 dBm to 15 dBm</p></li>
+<li><p>2750 MHz to 4000 MHz: 0 dBm to 5 dBm, decreasing as frequency increases</p></li>
+<li><p>4000 MHz to 6000 MHz: -10 dBm to 0 dBm, generally decreasing as frequency increases</p></li>
+</ul>
+</div></blockquote>
+<p>Through most of the frequency range up to 4 GHz, the maximum TX power is between 0 and 10 dBm. The frequency range with best performance is 2150 MHz to 2750 MHz.</p>
+<p>Overall, the output power is enough to perform over-the-air experiments at close range or to drive an external amplifier. If you connect an external amplifier, you should also use an external bandpass filter for your operating frequency.</p>
+<p>Before you transmit, know your laws. HackRF One has not been tested for compliance with regulations governing transmission of radio signals. You are responsible for using your HackRF One legally.</p>
+</section>
+<hr class="docutils" />
+<section id="what-is-the-receive-power-of-hackrf">
+<h2>What is the Receive Power of HackRF?<a class="headerlink" href="#what-is-the-receive-power-of-hackrf" title="Permalink to this headline">¶</a></h2>
+<p>The maximum RX power of HackRF One is -5 dBm. Exceeding -5 dBm can result in permanent damage!</p>
+<p>In theory, HackRF One can safely accept up to 10 dBm with the front-end RX amplifier disabled. However, a simple software or user error could enable the amplifier, resulting in permanent damage. It is better to use an external attenuator than to risk damage.</p>
+</section>
+<hr class="docutils" />
+<section id="what-is-the-minimum-signal-power-level-that-can-be-detected-by-hackrf">
+<h2>What is the minimum signal power level that can be detected by HackRF?<a class="headerlink" href="#what-is-the-minimum-signal-power-level-that-can-be-detected-by-hackrf" title="Permalink to this headline">¶</a></h2>
+<p>This isn’t a question that can be answered for a general purpose SDR platform such as HackRF. Any answer would be very specific to a particular application. For example, an answerable question might be: What is the minimum power level in dBm of modulation M at frequency F that can be detected by HackRF One with software S under configuration C at a bit error rate of no more than E%? Changing any of those variables (M, F, S, C, or E) would change the answer to the question. Even a seemingly minor software update might result in a significantly different answer. To learn the exact answer for a specific application, you would have to measure it yourself.</p>
+<p>HackRF’s concrete specifications include operating frequency range, maximum sample rate, and dynamic range in bits. These specifications can be used to roughly determine the suitability of HackRF for a given application. Testing is required to finely measure performance in an application. Performance can typically be enhanced significantly by selecting an appropriate antenna, external amplifier, and/or external filter for the application.</p>
+</section>
+<hr class="docutils" />
+<section id="is-hackrf-full-duplex">
+<h2>Is HackRF full-duplex?<a class="headerlink" href="#is-hackrf-full-duplex" title="Permalink to this headline">¶</a></h2>
+<p>HackRF One is a half-duplex transceiver. This means that it can transmit or receive but not both at the same time.</p>
+</section>
+<hr class="docutils" />
+<section id="why-isn-t-hackrf-one-full-duplex">
+<h2>Why isn’t HackRF One full-duplex?<a class="headerlink" href="#why-isn-t-hackrf-one-full-duplex" title="Permalink to this headline">¶</a></h2>
+<p>HackRF One is designed to support the widest possible range of SDR applications in a single, low cost, portable device. Many applications do not require full-duplex operation. Full-duplex support would have made HackRF larger and more expensive, and it would have required an external power supply. Since full-duplex needs can be met by simply using a second HackRF One, it made sense to keep the device small, portable, and low cost for everyone who does not require full-duplex operation.</p>
+</section>
+<hr class="docutils" />
+<section id="how-could-the-hackrf-one-design-be-changed-to-make-it-full-duplex">
+<h2>How could the HackRF One design be changed to make it full-duplex?<a class="headerlink" href="#how-could-the-hackrf-one-design-be-changed-to-make-it-full-duplex" title="Permalink to this headline">¶</a></h2>
+<p>The HackRF One hardware design is actually full-duplex (at lower sample rates) from the USB connection through the ADC/DAC. The RF section is the only part of the design that cannot support full-duplex operation. The easiest way to make HackRF One full-duplex would be to create an add-on board that duplicates the RF section and also provides an external power input (from a wall wart, for example) for the additional power required. This would also require software effort; the firmware, CPLD, libhackrf, and other host software would all need work to support full-duplex operation.</p>
+<p>If you were to try to redesign the RF section on HackRF One to support full-duplex, the main thing to focus on would be the MAX2837 (intermediate frequency transceiver). This part is half-duplex, so you would either need two of them or you would have to redesign the RF section to use something other than the MAX2837, likely resulting in a radically different design. If you used two MAX2837s you might be able to use one RFFC5071 instead of two RFFC5072s.</p>
+</section>
+<hr class="docutils" />
+<section id="are-those-connectors-sma-or-rp-sma">
+<h2>Are those connectors SMA or RP-SMA?<a class="headerlink" href="#are-those-connectors-sma-or-rp-sma" title="Permalink to this headline">¶</a></h2>
+<p>Some connectors that appear to be SMA are actually RP-SMA. If you connect an RP-SMA antenna to HackRF One, it will seem to connect snugly but won’t function at all because neither the male nor female side has a center pin. RP-SMA connectors are most common on 2.4 GHz antennas and are popular on Wi-Fi equipment. Adapters are available.</p>
+<hr class="docutils" />
+</section>
+<section id="what-is-the-big-spike-in-the-center-of-my-received-spectrum">
+<span id="bigspike"></span><h2>What is the big spike in the center of my received spectrum?<a class="headerlink" href="#what-is-the-big-spike-in-the-center-of-my-received-spectrum" title="Permalink to this headline">¶</a></h2>
+<p>If you see a large spike in the center of your FFT display regardless of the frequenecy you are tuned to, you are seeing a DC offset (or component or bias). The term “DC” comes from “Direct Current” in electronics. It is the unchanging aspect of a signal as opposed to the “alternating” part of the signal (AC) that changes over time. Take, for example, the signal represented by the digital sequence:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>-2, -1, <span class="m">1</span>, <span class="m">6</span>, <span class="m">8</span>, <span class="m">9</span>, <span class="m">8</span>, <span class="m">6</span>, <span class="m">1</span>, -1, -2, -1, <span class="m">1</span>, <span class="m">6</span>, <span class="m">8</span>, <span class="m">9</span>, <span class="m">8</span>, <span class="m">6</span>, <span class="m">1</span>, -1, -2, -1, <span class="m">1</span>, <span class="m">6</span>, <span class="m">8</span>, <span class="m">9</span>, <span class="m">8</span>, <span class="m">6</span>, <span class="m">1</span>, -1
+</pre></div>
+</div>
+<p>This periodic signal contains a strong sinusoidal component spanning from -2 to 9. If you were to plot the spectrum of this signal, you would see one spike at the frequency of this sinusoid and a second spike at 0 Hz (DC). If the signal spanned from values -2 to 2 (centered around zero), there would be no DC offset. Since it is centered around 3.5 (the number midway between -2 and 9), there is a DC component.</p>
+<p>Samples produced by HackRF are measurements of radio waveforms, but the measurement method is prone to a DC bias introduced by HackRF. It’s an artifact of the measurement system, not an indication of a received radio signal. DC offset is not unique to HackRF; it is common to all quadrature sampling systems.</p>
+<p>There was a bug in the HackRF firmware (through release 2013.06.1) that made the DC offset worse than it should have been. In the worst cases, certain Jawbreakers experienced a DC offset that drifted to a great extreme over several seconds of operation. This bug has been fixed. The fix reduces DC offset but does not do away with it entirely. It is something you have to live with when using any quadrature sampling system like HackRF.</p>
+<p>A high DC offset is also one of a few symptoms that can be caused by a software version mismatch. A common problem is that people run an old version of gr-osmosdr with newer firmware.</p>
+</section>
+<hr class="docutils" />
+<section id="what-gain-controls-are-provided-by-hackrf">
+<h2>What gain controls are provided by HackRF?<a class="headerlink" href="#what-gain-controls-are-provided-by-hackrf" title="Permalink to this headline">¶</a></h2>
+<p>HackRF (both Jawbreaker and One) provides three different analog gain controls on RX and two on TX.</p>
+<p>The three RX gain controls are at these stages:</p>
+<ul class="simple">
+<li><p>RF (“amp”, 0 or 14 dB)</p></li>
+<li><p>IF (“lna”, 0 to 40 dB in 8 dB steps)</p></li>
+<li><p>baseband (“vga”, 0 to 62 dB in 2 dB steps)</p></li>
+</ul>
+<p>The two TX gain controls are at these stages:</p>
+<ul class="simple">
+<li><p>RF (0 or 14 dB)</p></li>
+<li><p>IF (0 to 47 dB in 1 dB steps)</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="why-is-the-rf-gain-setting-restricted-to-two-values">
+<h2>Why is the RF gain setting restricted to two values?<a class="headerlink" href="#why-is-the-rf-gain-setting-restricted-to-two-values" title="Permalink to this headline">¶</a></h2>
+<p>HackRF has two RF amplifiers close to the antenna port, one for TX and one for RX. These amplifiers have two settings: on or off. In the off state, the amps are completely bypassed. They nominally provide 14 dB of gain when on, but the actual amount of gain varies by frequency. In general, expect less gain at higher frequencies. For fine control of gain, use the IF and/or baseband gain options.</p>
+</section>
+<hr class="docutils" />
+<section id="why-are-the-leds-on-hackrf-different-colours">
+<h2>Why are the LEDs on HackRF different colours?<a class="headerlink" href="#why-are-the-leds-on-hackrf-different-colours" title="Permalink to this headline">¶</a></h2>
+<p>Each LED is a single color. There are no multi-colored LEDs on HackRF One. Adjacent LEDs are different colors in order to make them easier to distinguish from one another. The colors do not mean anything.</p>
+</section>
+<hr class="docutils" />
+<section id="where-can-i-purchase-hackrf">
+<h2>Where can I purchase HackRF?<a class="headerlink" href="#where-can-i-purchase-hackrf" title="Permalink to this headline">¶</a></h2>
+<p>HackRF is designed and manufactured by Great Scott Gadgets. We do not sell low volumes of HackRFs to people individually; instead we have agreements with specific resellers. Please see our reseller list on the Great Scott Gadgets website for availability: <a class="reference external" href="http://greatscottgadgets.com/hackrf/">http://greatscottgadgets.com/hackrf/</a>.</p>
+<p>HackRF is open source hardware, so you can also build your own.</p>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="troubleshooting.html" class="btn btn-neutral float-right" title="Troubleshooting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="opera_cake.html" class="btn btn-neutral float-left" title="Opera Cake" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Great Scott Gadgets.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

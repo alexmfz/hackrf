@@ -1,0 +1,355 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Troubleshooting &mdash; HackRF  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/status.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Getting Help" href="getting_help.html" />
+    <link rel="prev" title="FAQ" href="faq.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HackRF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="hackrf_one.html">HackRF One</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jawbreaker.html">Jawbreaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opera_cake.html">Opera Cake</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Troubleshooting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-deal-with-the-big-spike-in-the-middle-of-my-spectrum">How do I deal with the big spike in the middle of my spectrum?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-should-i-set-the-gain-controls-for-rx">How should I set the gain controls for RX?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-are-the-minimum-system-requirements-for-using-hackrf">What are the minimum system requirements for using HackRF?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#why-isn-t-hackrf-working-with-my-virtual-machine-vm">Why isn’t HackRF working with my virtual machine (VM)?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-leds-should-be-illuminated-on-the-hackrf">What LEDs should be illuminated on the HackRF?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#i-can-t-seem-to-access-my-hackrf-under-linux">I can’t seem to access my HackRF under Linux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-command-hackrf-info-failed-with-hackrf-open-hackrf-error-not-found">The command hackrf_info failed with “hackrf_open() .. HACKRF_ERROR_NOT_FOUND”</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_help.html">Getting Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_projects_mentions.html">HackRF Community Projects and Mentions</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Software</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installing_hackrf_software.html">Installing HackRF Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started_hackrf_gnuradio.html">Getting Started with HackRF and GNU Radio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="software_support.html">HackRF Compatible Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libhackrf_api.html">libhackRF API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_sweep.html">hackrf_sweep</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="updating_firmware.html">Updating Firmware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="firmware_development_setup.html">Firmware Development Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_Debugging.html">LPC43xx Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_SGPIO_Configuration.html">LPC43xx SGPIO Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Hardware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="list_of_hardware_revisions.html">List of Hardware Revisions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_components.html">Hardware Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enclosure_options.html">Enclosure Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrfs_buttons.html">HackRF One’s Buttons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_clock_interface.html">External Clock Interface (CLKIN and CLKOUT)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expansion_interface.html">Expansion Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_triggering.html">Hardware Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rf_shield_installation.html">RF Shield Installation Instructions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HackRF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Troubleshooting</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/troubleshooting.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="troubleshooting">
+<span id="id1"></span><h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h1>
+<section id="how-do-i-deal-with-the-big-spike-in-the-middle-of-my-spectrum">
+<h2>How do I deal with the big spike in the middle of my spectrum?<a class="headerlink" href="#how-do-i-deal-with-the-big-spike-in-the-middle-of-my-spectrum" title="Permalink to this headline">¶</a></h2>
+<p>Start by reading <a class="reference internal" href="faq.html#bigspike"><span class="std std-ref">our FAQ Response on the DC Spike</span></a>. After that, there are a few options:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Ignore it. For many applications it isn’t a problem. You’ll learn to ignore it.</p></li>
+<li><p>Avoid it. The best way to handle DC offset for most applications is to use offset tuning; instead of tuning to your exact frequency of interest, tune to a nearby frequency so that the entire signal you are interested in is shifted away from 0 Hz but still within the received bandwidth. If your algorithm works best with your signal centered at 0 Hz (many do), you can shift the frequency in the digital domain, moving your signal of interest to 0 Hz and your DC offset away from 0 Hz. HackRF’s high maximum sampling rate can be a big help as it allows you to use offset tuning even for relatively wideband signals.</p></li>
+<li><p>Correct it. There are various ways of removing the DC offset in software. However, these techniques may degrade parts of the signal that are close to 0 Hz. It may look better, but that doesn’t necessarily mean that it is better from the standpoint of a demodulator algorithm, for example. Still, correcting the DC offset is often a good choice.</p></li>
+</ol>
+</div></blockquote>
+</section>
+<hr class="docutils" />
+<section id="how-should-i-set-the-gain-controls-for-rx">
+<h2>How should I set the gain controls for RX?<a class="headerlink" href="#how-should-i-set-the-gain-controls-for-rx" title="Permalink to this headline">¶</a></h2>
+<p>A good default setting to start with is RF=0 (off), IF=16, baseband=16. Increase or decrease the IF and baseband gain controls roughly equally to find the best settings for your situation. Turn on the RF amp if you need help picking up weak signals. If your gain settings are too low, your signal may be buried in the noise. If one or more of your gain settings is too high, you may see distortion (look for unexpected frequencies that pop up when you increase the gain) or the noise floor may be amplified more than your signal is.</p>
+</section>
+<hr class="docutils" />
+<section id="what-are-the-minimum-system-requirements-for-using-hackrf">
+<h2>What are the minimum system requirements for using HackRF?<a class="headerlink" href="#what-are-the-minimum-system-requirements-for-using-hackrf" title="Permalink to this headline">¶</a></h2>
+<p>The most important requirement is that you supply 500 mA at 5 V DC to your HackRF via the USB port. If your host computer has difficulty meeting this requirement, you may need to use a powered USB hub.</p>
+<p>Most users will want to stream data to or from the HackRF at high speeds. This requires that the host computer supports Hi-Speed USB. Some Hi-Speed USB hosts are better than others, and you may have multiple host controllers on your computer. If you have difficulty operating your HackRF at high sample rates (10 Msps to 20 Msps), try using a different USB port on your computer. If possible, arrange things so that the HackRF is the only device on the bus.</p>
+<p>There is no specific minimum CPU requirement for the host computer, but SDR is generally a CPU-intensive application. If you have a slower CPU, you may be unable to run certain SDR software or you may only be able to operate at lower sample rates.</p>
+</section>
+<hr class="docutils" />
+<section id="why-isn-t-hackrf-working-with-my-virtual-machine-vm">
+<h2>Why isn’t HackRF working with my virtual machine (VM)?<a class="headerlink" href="#why-isn-t-hackrf-working-with-my-virtual-machine-vm" title="Permalink to this headline">¶</a></h2>
+<p>HackRF requires the ability to stream data at very high rates over USB. Unfortunately VM software typically has problems with continuous high speed USB transfers.</p>
+<p>There are some known bugs with the HackRF firmware’s USB implementation. It is possible that fixing these bugs will improve the ability to operate HackRF with a VM, but there is a very good chance that operation at higher sample rates will still be limited.</p>
+</section>
+<hr class="docutils" />
+<section id="what-leds-should-be-illuminated-on-the-hackrf">
+<h2>What LEDs should be illuminated on the HackRF?<a class="headerlink" href="#what-leds-should-be-illuminated-on-the-hackrf" title="Permalink to this headline">¶</a></h2>
+<p>When HackRF One is plugged in to a USB host, four LEDs should turn on: 3V3, 1V8, RF, and USB. The 3V3 LED indicates that the primary internal power supply is working properly. The 1V8 and RF LEDs indicate that firmware is running and has switched on additional internal power supplies. The USB LED indicates that the HackRF One is communicating with the host over USB.</p>
+<p>The RX and TX LEDs indicate that a receive or transmit operation is currently in progress.</p>
+<hr class="docutils" />
+</section>
+<section id="i-can-t-seem-to-access-my-hackrf-under-linux">
+<span id="faq-hackrf-under-linux"></span><h2>I can’t seem to access my HackRF under Linux<a class="headerlink" href="#i-can-t-seem-to-access-my-hackrf-under-linux" title="Permalink to this headline">¶</a></h2>
+<p>If you run <code class="docutils literal notranslate"><span class="pre">hackrf_info</span></code> or any other command which tries to communicate with the HackRF and get one of the following error messages</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>hackrf_open<span class="o">()</span> failed: HACKRF_ERROR_NOT_FOUND <span class="o">(</span>-5<span class="o">)</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>hackrf_open<span class="o">()</span> failed: HACKRF_ERROR_LIBUSB <span class="o">(</span>-1000<span class="o">)</span>
+</pre></div>
+</div>
+<p>there are a few steps you can try:</p>
+<ol class="arabic">
+<li><p>Make sure that you are running the latest version of libhackrf and hackrf-tools. HackRF One, for example, is only supported by release 2014.04.1 or newer. Try running <code class="docutils literal notranslate"><span class="pre">hackrf_info</span></code> again to see if the updates have addressed your issue.</p></li>
+<li><p>Write a udev rule to instruct udev to set permissions for the device in a way that it can be accessed by any user on the system who is a member of a specific group.</p>
+<blockquote>
+<div><p>A normal user under Linux doesn’t have the permissions to access arbitrary USB devices because of security reasons. The first solution would be to run every command which tries to access the HackRF as root which is not recommended for daily usage, but at least shows you if your HackRF really works.</p>
+<p>To write a udev rule, you need to create a new rules file in the <code class="docutils literal notranslate"><span class="pre">/etc/udev/rules.d</span></code> folder. I called mine <code class="docutils literal notranslate"><span class="pre">52-hackrf.rules</span></code>. Here is the content:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>ATTR<span class="o">{</span>idVendor<span class="o">}==</span><span class="s2">&quot;1d50&quot;</span>, ATTR<span class="o">{</span>idProduct<span class="o">}==</span><span class="s2">&quot;604b&quot;</span>, <span class="nv">SYMLINK</span><span class="o">+=</span><span class="s2">&quot;hackrf-jawbreaker-%k&quot;</span>, <span class="nv">MODE</span><span class="o">=</span><span class="s2">&quot;660&quot;</span>,   <span class="nv">GROUP</span><span class="o">=</span><span class="s2">&quot;plugdev&quot;</span>
+ATTR<span class="o">{</span>idVendor<span class="o">}==</span><span class="s2">&quot;1d50&quot;</span>, ATTR<span class="o">{</span>idProduct<span class="o">}==</span><span class="s2">&quot;6089&quot;</span>, <span class="nv">SYMLINK</span><span class="o">+=</span><span class="s2">&quot;hackrf-one-%k&quot;</span>, <span class="nv">MODE</span><span class="o">=</span><span class="s2">&quot;660&quot;</span>, <span class="nv">GROUP</span><span class="o">=</span><span class="s2">&quot;plugdev&quot;</span>
+ATTR<span class="o">{</span>idVendor<span class="o">}==</span><span class="s2">&quot;1fc9&quot;</span>, ATTR<span class="o">{</span>idProduct<span class="o">}==</span><span class="s2">&quot;000c&quot;</span>, <span class="nv">SYMLINK</span><span class="o">+=</span><span class="s2">&quot;hackrf-dfu-%k&quot;</span>, <span class="nv">MODE</span><span class="o">=</span><span class="s2">&quot;660&quot;</span>, <span class="nv">GROUP</span><span class="o">=</span><span class="s2">&quot;plugdev&quot;</span>
+</pre></div>
+</div>
+<p>The content of the file instructs udev to look out for devices with Vendor ID and Product ID matching HackRF devices. It then sets the UNIX permissions to <code class="docutils literal notranslate"><span class="pre">660</span></code> and the group to <code class="docutils literal notranslate"><span class="pre">plugdev</span></code> and creates a symlink in <code class="docutils literal notranslate"><span class="pre">/dev</span></code> to the device.</p>
+<p>After creating the rules file you can either reboot or run the command <code class="docutils literal notranslate"><span class="pre">udevadm</span> <span class="pre">control</span> <span class="pre">--reload-rules</span></code> as root to instruct udev to reload all rule files. After replugging your HackRF board, you should be able to access the device with all utilities as a normal user. If you still can’t access the device, make sure that you are a member of the plugdev group.</p>
+<p>(These instructions have been tested on Ubuntu and Gentoo and may need to be adapted to other Linux distributions. In particular, your distro may have a group named something other than plugdev for this purpose.)</p>
+</div></blockquote>
+</li>
+<li><p>Disable USB autosuspend for HackRF. A common problem for laptop users could power management enabling USB autosuspend, which is likely if <code class="docutils literal notranslate"><span class="pre">hackrf_info</span></code> returns an error of <code class="docutils literal notranslate"><span class="pre">hackrf_open()</span> <span class="pre">failed:</span> <span class="pre">Input/Output</span> <span class="pre">Error</span> <span class="pre">(-1000)</span></code> on the first execution, and works if you run it a second time directly afterwards. This can be confirmed by running <code class="docutils literal notranslate"><span class="pre">LIBUSB_DEBUG=3</span> <span class="pre">hackrf_info</span></code> and checking that the error is a <code class="docutils literal notranslate"><span class="pre">broken</span> <span class="pre">pipe</span></code>. </p>
+<blockquote>
+<div><p>If you use the TLP power manager you can add the HackRF USB VID/PIDs to the <code class="docutils literal notranslate"><span class="pre">USB_BLACKLIST</span></code> line in <code class="docutils literal notranslate"><span class="pre">/etc/default/tlp</span></code> (under Archlinux create a file <code class="docutils literal notranslate"><span class="pre">/etc/tlp.d/10-usb-blacklist.conf</span></code>, under Ubuntu the config file can be found at <code class="docutils literal notranslate"><span class="pre">/etc/tlp.conf</span></code>):</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">USB_BLACKLIST</span><span class="o">=</span><span class="s2">&quot;1d50:604b 1d50:6089 1d50:cc15 1fc9:000c&quot;</span>
+</pre></div>
+</div>
+<p>and restart TLP using <code class="docutils literal notranslate"><span class="pre">tlp</span> <span class="pre">restart</span></code> or <code class="docutils literal notranslate"><span class="pre">systemctl</span> <span class="pre">restart</span> <span class="pre">tlp</span></code>.</p>
+</div></blockquote>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="the-command-hackrf-info-failed-with-hackrf-open-hackrf-error-not-found">
+<h2>The command hackrf_info failed with “hackrf_open() .. HACKRF_ERROR_NOT_FOUND”<a class="headerlink" href="#the-command-hackrf-info-failed-with-hackrf-open-hackrf-error-not-found" title="Permalink to this headline">¶</a></h2>
+<p>This could be a problem of a kernel driver. Some ubuntu versions, like Ubuntu 15.04 with installed gnuradio has a kernel driver pre-installed. In this case you probably will get some syslog kernel messages like:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>kernel: [ 8932.297074] hackrf 1-9.4:1.0: Board ID: 02</p></li>
+<li><p>kernel: [ 8932.297076] hackrf 1-9.4:1.0: Firmware version: 2014.08.1</p></li>
+<li><p>kernel: [ 8932.297261] hackrf 1-9.4:1.0: Registered as swradio0</p></li>
+<li><p>kernel: [ 8932.297262] hackrf 1-9.4:1.0: SDR API is still slightly experimental and functionality changes may follow</p></li>
+</ul>
+</div></blockquote>
+<p>when you plug in the the HackRF module. Use the command <code class="docutils literal notranslate"><span class="pre">dmesg</span></code> to check the last system log entries. If you try to start <code class="docutils literal notranslate"><span class="pre">hackrf_info</span></code> it will terminate with the error message and the system log will show a message like:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>kernel: [ 8967.263268] usb 1-9.4: usbfs: interface 0 claimed by hackrf while ‘hackrf_info’ sets config #1</p></li>
+</ul>
+</div></blockquote>
+<p>To solve this issue check under root account if is there is a kernel module <code class="docutils literal notranslate"><span class="pre">hackrf</span></code> loaded: <code class="docutils literal notranslate"><span class="pre">lsmod</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">hackrf</span></code>. If there is a hackrf kernel module, try to unload it with <code class="docutils literal notranslate"><span class="pre">rmmod</span> <span class="pre">hackrf</span></code>. You must do this command as root, too. After this the command <code class="docutils literal notranslate"><span class="pre">hackrf_info</span></code> (and all other hackrf related stuff) should work and the syslog usbfs massage should vanish.</p>
+<p>After a reset or USB unplug/plug this kernel module will load again and block the access again. To solve this you have to blacklist the hackrf kernel module in /etc/modprobe.d/blacklist(.conf) The current filename of the blacklist file may differ, it depends on the current ubuntu version. In ubuntu 15.04 it is located in /etc/modprobe.d/blacklist.conf. Open this file under root account with a text editor an add the following line at the end:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>blacklist hackrf
+</pre></div>
+</div>
+<p>After a system-restart, to get the updated modprobe working, the hackrf worked under ubuntu 15.04 with the upstream packages (Firmware version: 2014.08.1) out-of-the-box.</p>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="getting_help.html" class="btn btn-neutral float-right" title="Getting Help" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="faq.html" class="btn btn-neutral float-left" title="FAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Great Scott Gadgets.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

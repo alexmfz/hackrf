@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Getting Started with HackRF and GNU Radio &mdash; HackRF  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/status.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="HackRF Compatible Software" href="software_support.html" />
+    <link rel="prev" title="Installing HackRF Software" href="installing_hackrf_software.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> HackRF
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_one.html">HackRF One</a></li>
+<li class="toctree-l1"><a class="reference internal" href="jawbreaker.html">Jawbreaker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="opera_cake.html">Opera Cake</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_help.html">Getting Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_projects_mentions.html">HackRF Community Projects and Mentions</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Software</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installing_hackrf_software.html">Installing HackRF Software</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started with HackRF and GNU Radio</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#try-your-hackrf-with-pentoo-linux">Try Your HackRF with Pentoo Linux</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#software-setup">Software Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="software_support.html">HackRF Compatible Software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libhackrf_api.html">libhackRF API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrf_sweep.html">hackrf_sweep</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Firmware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="updating_firmware.html">Updating Firmware</a></li>
+<li class="toctree-l1"><a class="reference internal" href="firmware_development_setup.html">Firmware Development Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_Debugging.html">LPC43xx Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="LPC43XX_SGPIO_Configuration.html">LPC43xx SGPIO Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Hardware</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="list_of_hardware_revisions.html">List of Hardware Revisions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_components.html">Hardware Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="enclosure_options.html">Enclosure Options</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hackrfs_buttons.html">HackRF One’s Buttons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_clock_interface.html">External Clock Interface (CLKIN and CLKOUT)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expansion_interface.html">Expansion Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hardware_triggering.html">Hardware Triggering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rf_shield_installation.html">RF Shield Installation Instructions</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">HackRF</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Getting Started with HackRF and GNU Radio</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/getting_started_hackrf_gnuradio.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="getting-started-with-hackrf-and-gnu-radio">
+<h1>Getting Started with HackRF and GNU Radio<a class="headerlink" href="#getting-started-with-hackrf-and-gnu-radio" title="Permalink to this headline">¶</a></h1>
+<p>We recommend getting started by watching the <a class="reference external" href="https://greatscottgadgets.com/sdr/">Software Defined Radio with HackRF</a> video series. This series will introduce you to HackRF One, software including GNU Radio, and teach you the fundamentals of Digital Signal Processing (DSP) needed to take full advantage of the power of Software Defined Radio (SDR). Additional helpful information follows.</p>
+<section id="try-your-hackrf-with-pentoo-linux">
+<span id="try-pentoo"></span><h2>Try Your HackRF with Pentoo Linux<a class="headerlink" href="#try-your-hackrf-with-pentoo-linux" title="Permalink to this headline">¶</a></h2>
+<p>The easiest way to get started with your HackRF and ensure that it works is to use Pentoo, a Linux distribution with full support for HackRF and GNU Radio. Download the latest Pentoo .iso image from one of the mirrors listed at <a class="reference external" href="https://pentoo.ch/downloads">http://pentoo.ch/downloads/</a>. Then burn the .iso to a DVD or use <a class="reference external" href="http://unetbootin.sourceforge.net/">UNetbootin</a> to install the .iso on a USB flash drive. Boot your computer using the DVD or USB flash drive to run Pentoo. Do this natively, not in a virtual machine. (Unfortunately high speed USB operation invariably fails when people try to run HackRF from a virtual machine.)</p>
+<p>Once Pentoo is running, you can immediately use it to <a class="reference internal" href="updating_firmware.html#updating-firmware"><span class="std std-ref">update firmware</span></a> on your HackRF or use other HackRF command line tools. For a walkthrough, watch <a class="reference external" href="http://greatscottgadgets.com/sdr/5/">SDR with HackRF, Lesson 5: HackRF One</a>.</p>
+<p>To verify that your HackRF is detected, type <code class="docutils literal notranslate"><span class="pre">hackrf_info</span></code> at the command line. It should produce a few lines of output including “Found HackRF board.” The 3V3, 1V8, RF, and USB LEDs should all be illuminated and are various colors.</p>
+<p>You can type <code class="docutils literal notranslate"><span class="pre">startx</span></code> at the command line to launch a desktop environment. Accept the “default config” in the first dialog box. The desktop environment is useful for GNU Radio Companion and other graphical applications but is not required for basic operations such as firmware updates.</p>
+<p>Now you can use programs such as gnuradio-companion or gqrx to start experimenting with your HackRF. Try the Examples below. If you are new to GNU Radio, an excellent place to start is with the <a class="reference external" href="http://greatscottgadgets.com/sdr/">SDR with HackRF</a> video series or with the <a class="reference external" href="https://wiki.gnuradio.org/index.php/Tutorials">GNU Radio guided tutorials</a>.</p>
+<p><strong>Alternative: GNU Radio Live SDR Environment</strong></p>
+<p>The <a class="reference external" href="https://wiki.gnuradio.org/index.php/GNU_Radio_Live_SDR_Environment">GNU Radio Live SDR Environment</a> is another nice bootable Linux .iso with support for HackRF and, of course, GNU Radio.</p>
+</section>
+<section id="software-setup">
+<h2>Software Setup<a class="headerlink" href="#software-setup" title="Permalink to this headline">¶</a></h2>
+<p>As mentioned above, the best way to get started with HackRF is to use Pentoo Linux. Eventually you may want to install software to use HackRF with your favorite operating system.</p>
+<p>If your package manager includes the most recent release of libhackrf and gr-osmosdr, then use it to install those packages in addition to GNU Radio. Otherwise, the recommended way to install these tools is by using <a class="reference external" href="https://github.com/gnuradio/pybombs">PyBOMBS</a>.</p>
+<p>See the <a class="reference internal" href="installing_hackrf_software.html#operating-system-tips"><span class="std std-ref">Operating System Tips</span></a> page for information on setting up HackRF software on particular Operating Systems and Linux distributions.</p>
+<p>If you have any trouble, make sure that things work when booted to Pentoo. This will allow you to easily determine if your problem is being caused by hardware or software, and it will give you a way to see how the software is supposed to function.</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>A great way to get started with HackRF is the <a class="reference external" href="http://greatscottgadgets.com/sdr/">SDR with HackRF</a> video series. Additional examples follow:</p>
+<p>Testing the HackRF</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Plug in the HackRF</p></li>
+<li><p>run the hackrf_info command <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">hackrf_info</span></code></p></li>
+</ol>
+</div></blockquote>
+<p>If everything is OK, you should see something similar to the following:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>hackrf_info version: <span class="m">2017</span>.02.1
+libhackrf version: <span class="m">2017</span>.02.1 <span class="o">(</span><span class="m">0</span>.5<span class="o">)</span>
+Found HackRF
+Index: <span class="m">0</span>
+Serial number: <span class="m">0000000000000000</span><span class="c1">################</span>
+Board ID Number: <span class="m">2</span> <span class="o">(</span>HackRF One<span class="o">)</span>
+Firmware Version: <span class="m">2017</span>.02.1 <span class="o">(</span>API:1.02<span class="o">)</span>
+Part ID Number: 0x######## 0x########
+</pre></div>
+</div>
+<p><strong>FM Radio Example</strong></p>
+<p>This Example was derived from the following works:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="http://www.instructables.com/id/RTL-SDR-FM-radio-receiver-with-GNU-Radio-Companion/">RTL-SDR FM radio receiver with GNU Radio Companion</a></p></li>
+<li><p><a class="reference external" href="https://www.youtube.com/watch?v=KWeY2yqwVA0">How To Build an FM Receiver with the USRP in Less Than 10 Minutes</a></p></li>
+</ul>
+<ol class="arabic simple">
+<li><p>Download the FM Radio Receiver python file <a class="reference external" href="https://raw.githubusercontent.com/rrobotics/hackrf-tests/master/fm_radio/fm_radio_rx.py">here</a></p></li>
+<li><p>Run the file <code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">python</span> <span class="pre">./fm_radio_rx.py</span></code></p></li>
+<li><p>You can find the GNU Radio Companion source file <a class="reference external" href="https://raw.githubusercontent.com/rrobotics/hackrf-tests/master/fm_radio/fm_radio_rx.grc">here</a></p></li>
+</ol>
+</div></blockquote>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="software_support.html" class="btn btn-neutral float-right" title="HackRF Compatible Software" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installing_hackrf_software.html" class="btn btn-neutral float-left" title="Installing HackRF Software" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Great Scott Gadgets.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
