@@ -53,7 +53,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFTSIZE_STD	(14400)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGERRING_TIMES (10)
+#define TRIGGERING_TIMES (3600)
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -75,6 +75,7 @@ typedef int bool;
 /********************/
 
 int result = 0;
+float totalDuration = 0; //total duration (should be aroung 15 minutes)
 bool success = false;
 bool executionControl = true;
 int counterSucess = 0;
@@ -92,6 +93,7 @@ char* path = NULL;
 char pathFits[] = "TFM.fits";
 float* samples;
 int id_sample = 0;
+int flag_initialFreqCaught = 0;
 
 uint32_t byte_count = 0;
 volatile uint64_t sweep_count = 0;
@@ -171,7 +173,45 @@ void sigint_callback_handler(int signum)  {
 	do_exit = true;
 }
 #endif
-	
+
+/**Timer part**/
+
+/**
+ * timer handler
+ */
+void timerHandler(int sig)
+{
+    timerFlag = 1;
+} 
+
+/**
+ * timer trigger
+ */
+
+float hackRFTrigger()
+{ 
+	printf("hackrf_sweep | hackRFTrigger()\n");
+	gettimeofday(&preTriggering,NULL);
+
+    if(signal(SIGALRM, timerHandler) == SIG_ERR)
+    {
+        fprintf(stderr, "timer | hackRFTrigger | Unable to catch alarm signal");
+        return 0;
+    }
+   
+    if(setitimer(ITIMER_REAL, &timer, 0) == -1)
+    {
+        fprintf(stderr, "timer | hackRFTrigger | Error calling timer");
+        return 0;
+    }
+    
+    
+    gettimeofday(&postTriggering,NULL);    
+    durationIteration = 0;
+    
+	return durationIteration;
+}
+
 float logPower(fftwf_complex in, float scale)
 {
 	float re = in[0] * scale;
@@ -190,7 +230,6 @@ int rx_callback(hackrf_transfer* transfer) {
 	struct timeval usb_transfer_time;
 	//int nElements = naxes[0]*naxes[1];
 
-	//fprintf(stderr, "Beginning callback\n");
 	if(NULL == outfile){// || strstr(pathFits,"fits")==NULL) {
 		return -1;
 	}
@@ -223,24 +262,25 @@ int rx_callback(hackrf_transfer* transfer) {
 			continue;
 		}
 		
+		/*
+	
+		*/
+
 		if (frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
-		{
+		{	
 			success = true;
 
-			//fprintf(stderr, "At frecuency [0]\n");
 			if(sweep_started) 
 			{
 				sweep_count++;
-				if(one_shot) {
-					do_exit = true;
-			//		fprintf(stderr, "do exit is true\n");
-				}
+				if(one_shot) {	do_exit = true;	}
 
-				else if(finite_mode && sweep_count == num_sweeps) {
-					do_exit = true;
-				}
+				//else if(finite_mode && sweep_count == num_sweeps) {	do_exit = true;	}
+
+				else if(counterSucess == TRIGGERING_TIMES) { do_exit = true; }
+
 			}
-			
+
 			sweep_started = true;
 		}
 
@@ -249,13 +289,11 @@ int rx_callback(hackrf_transfer* transfer) {
 		}
 
 		if(!sweep_started) {
-		//	fprintf(stderr, "sweep didnt started\n");
 			buf += BYTES_PER_BLOCK;
 			continue;
 		}
 
 		if((FREQ_MAX_MHZ * FREQ_ONE_MHZ) < frequency) {
-			//fprintf(stderr, "It should not enter\n");
 			buf += BYTES_PER_BLOCK;
 			continue;
 		}
@@ -273,10 +311,62 @@ int rx_callback(hackrf_transfer* transfer) {
 			pwr[i] = logPower(fftwOut[i], 1.0f / fftSize);
 		}
 
-		if(strstr(pathFits, "fits")!= NULL) //si el archivo no es .fits
-		{
+		/*
+		* To catch data is needed:
+			- A path with extension .fits +
+			- timerFlag set to 1 which means that 0.25s passed +
+			- frequency should be first frequency or this frecuency was caught
+		*/
+		if(strstr(pathFits, "fits")!= NULL && timerFlag == 1 && ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0]) || flag_initialFreqCaught == 1)) 
+		{			
+			if ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
+			{ 
+				flag_initialFreqCaught = 1; //First time will enter
+				fprintf(stderr, "First Frecuency caught. Setting flag to 1\n"); 			
+			}
+				
+			time_t time_stamp_seconds = usb_transfer_time.tv_sec;
+			fft_time = localtime(&time_stamp_seconds);
+			strftime(time_str, 50, "%Y-%m-%d, %H:%M:%S", fft_time);
+			printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
+				time_str,
+				(long int)usb_transfer_time.tv_usec,
+				(uint64_t)(frequency), //First time: 45MhZ
+				(uint64_t)(frequency+sampleRate/4), //45MHz + 5MHz
+				fft_bin_width,
+				fftSize);
 
-			/**HERE is where the samples are saved**/
+			for(i = 0; (fftSize / 4) > i; i++) 
+			{
+				printf(", %.2f", pwr[i + 1 + (fftSize*5)/8]);
+			}
+
+			printf("\n");
+			printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
+					time_str,
+					(long int)usb_transfer_time.tv_usec,
+					(uint64_t)(frequency+(sampleRate/2)),
+					(uint64_t)(frequency+((sampleRate*3)/4)),
+					fft_bin_width,	//	--> 49504,95			
+					fftSize);
+					
+			for(i = 0; (fftSize / 4) > i; i++) 
+			{
+				printf(", %.2f", pwr[i + 1 + (fftSize/8)]);
+			}
+			
+			printf("\n");
+			if ((uint64_t)(frequency+((sampleRate*3)/4)) == freq_max*FREQ_ONE_MHZ) //Where the sweep finished
+			{
+				counterSucess++;
+				printf("hackrf_sweep | rx_callback() | Data Caught. Iteration %d finished\n", counterSucess);			
+				fprintf(stderr, "hackrf_sweep | rx_callback() | Data Caught. Iteration %d finished\n", counterSucess);			
+				success = false;
+				timerFlag = 0; // flag down which means that data was caught
+				flag_initialFreqCaught = 0; //Set variable to finish iteration
+			}
+			/*ese
+			{
 				time_t time_stamp_seconds = usb_transfer_time.tv_sec;
 				fft_time = localtime(&time_stamp_seconds);
 				strftime(time_str, 50, "%Y-%m-%d, %H:%M:%S", fft_time);
@@ -287,12 +377,9 @@ int rx_callback(hackrf_transfer* transfer) {
 					(uint64_t)(frequency+sampleRate/4), //45MHz + 5MHz
 					fft_bin_width,
 					fftSize);
-
 				for(i = 0; (fftSize / 4) > i; i++) {
 					printf(", %.2f", pwr[i + 1 + (fftSize*5)/8]);
-					id_sample++;
 				}
-
 				printf("\n");
 				printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
 						time_str,
@@ -301,48 +388,21 @@ int rx_callback(hackrf_transfer* transfer) {
 						(uint64_t)(frequency+((sampleRate*3)/4)),
 						fft_bin_width,	//	--> 49504,95			
 						fftSize);
-
 				for(i = 0; (fftSize / 4) > i; i++) {
 					printf(", %.2f", pwr[i + 1 + (fftSize/8)]);
-					id_sample++;
 				}
+				
+				printf("\n");
+				if ((uint64_t)(frequency+((sampleRate*3)/4)) == freq_max*FREQ_ONE_MHZ) //Where the sweep finished
+				{
+					printf("hackrf_sweep | rx_callback() | No Capturing data for iteration %d\n", sweep_count);			
+					fprintf(stderr, "hackrf_sweep | rx_callback() | No Capturing data for iteration %d\n", sweep_count);			
+					success = false;
+				}
+			}*/
 
-				printf("\n");			
 		}
 		
-		/*else //FITS file
-		{
-			for(i = 0; (fftSize / 4) > i; i++) {
-				if(id_sample%nElements == 0)
-				{
-					printf("hackrf_sweep | rx_callback | Round Finished\n");
-				}
-
-				if(id_sample == nElements-1)
-				{
-					
-					do_exit = true;
-					break;
-				}
-					samples[id_sample] =- pwr[i + 1 + (fftSize*5)/8];
-					id_sample++;
-			}
-			for(i = 0; (fftSize / 4) > i; i++) 
-			{
-				if(id_sample%nElements == 0)
-				{
-					printf("hackrf_sweep | rx_callback | Round Finished");
-				}
-
-				if(id_sample == nElements -1)
-				{
-					do_exit = true;
-					break;
-				}
-					samples[id_sample] =- pwr[i + 1 + (fftSize/8)];
-					id_sample++;
-			}
-		}*/
 	}
 			
 	return 0;
@@ -426,19 +486,19 @@ static int checkParams(){
 static int initConfigureHackRF(){
 	result = hackrf_init();
 	if( result != HACKRF_SUCCESS ) {
-		fprintf(stderr, "hackrf_sweep | initConfigureHackRF | hackrf_init() failed: %s (%d)\n", hackrf_error_name(result), result);
+		fprintf(stderr, "hackrf_sweep | initConfigureHackRF() | hackrf_init() failed: %s (%d)\n", hackrf_error_name(result), result);
 		usage();
 		return EXIT_FAILURE;
 	}
 
 	result = hackrf_open_by_serial(serial_number, &device);
 	if( result != HACKRF_SUCCESS ) {
-		fprintf(stderr, "hackrf_sweep | initConfigureHackRF | hackrf_open() failed: %s (%d)\n", hackrf_error_name(result), result);
+		fprintf(stderr, "hackrf_sweep | initConfigureHackRF() | hackrf_open() failed: %s (%d)\n", hackrf_error_name(result), result);
 		usage();
 		return EXIT_FAILURE;
 	}
 
-	printf("hackrf_sweep | initConfigHackRF | Success\n");
+	printf("hackrf_sweep | initConfigHackRF() | Success\n");
 	return result;
 }
 
@@ -451,11 +511,11 @@ static int openFile(){
 	}
 
 	if(outfile == NULL) {
-		fprintf(stderr, "hackrf_sweep | openFile | Failed to open file: %s\n", path);
+		fprintf(stderr, "hackrf_sweep | openFile() | Failed to open file: %s\n", path);
 		return EXIT_FAILURE;
 	}
 
-	printf("hackrf_sweep | openFile | Success\n");
+	printf("hackrf_sweep | openFile() | Success\n");
 	return EXIT_SUCCESS;
 }
 
@@ -463,21 +523,21 @@ static int setBufOutFile(){
 	/* Change outfile buffer to have bigger one to store or read data on/to HDD */
 	result = setvbuf(outfile , NULL , _IOFBF , FD_BUFFER_SIZE);
 	if( result != 0 ) {
-		fprintf(stderr, "hackrf_sweep | setBufOutFile | setvbuf() failed: %d\n", result);
+		fprintf(stderr, "hackrf_sweep | setBufOutFile() | setvbuf() failed: %d\n", result);
 		usage();
 		return EXIT_FAILURE;
 	}
 
-	printf("hackrf_sweep | setBufOutFile | Success\n");
+	printf("hackrf_sweep | setBufOutFile() | Success\n");
 	return result;
 }
 
 static int setHackRFParams(){
-	printf("hackrf_sweep | setHackRFParams | call hackrf_sample_rate_set(%.03f MHz)\n",
+	printf("hackrf_sweep | setHackRFParams() | call hackrf_sample_rate_set(%.03f MHz)\n",
 		   ((float)sampleRate/(float)FREQ_ONE_MHZ));
 	result = hackrf_set_sample_rate_manual(device, sampleRate, 1);
 	if( result != HACKRF_SUCCESS ) {
-		fprintf(stderr, "hackrf_sweep | setHackRFParams | hackrf_sample_rate_set() failed: %s (%d)\n",
+		fprintf(stderr, "hackrf_sweep | setHackRFParams() | hackrf_sample_rate_set() failed: %s (%d)\n",
 			   hackrf_error_name(result), result);
 		usage();
 		return EXIT_FAILURE;
@@ -496,7 +556,7 @@ static int setHackRFParams(){
 	result = hackrf_set_vga_gain(device, vga_gain);
 	result |= hackrf_set_lna_gain(device, lna_gain);
 
-	printf("hackrf_sweep | setHackRFParams | Success\n");
+	printf("hackrf_sweep | setHackRFParams() | Success\n");
 	return result;
 }
 
@@ -506,7 +566,7 @@ static int setSweeping()
 	result = hackrf_init_sweep(device, frequencies, num_ranges, BYTES_PER_BLOCK,
 			customTuneStep * FREQ_ONE_MHZ, OFFSET, INTERLEAVED);
 	if( result != HACKRF_SUCCESS ) {
-		fprintf(stderr, "hackrf_sweep | setSweeping | hackrf_init_sweep() failed: %s (%d)\n",
+		fprintf(stderr, "hackrf_sweep | setSweeping() | hackrf_init_sweep() failed: %s (%d)\n",
 			   hackrf_error_name(result), result);
 		return EXIT_FAILURE;
 	}
@@ -518,12 +578,10 @@ static int sweeping()
 {
 	result |= hackrf_start_rx_sweep(device, rx_callback, NULL); //rx callback write are the values to save in the img
 	if (result != HACKRF_SUCCESS) {
-		fprintf(stderr, "hackrf_sweep | sweeping | hackrf_start_rx_sweep() failed: %s (%d)\n", hackrf_error_name(result), result);
+		fprintf(stderr, "hackrf_sweep | sweeping() | hackrf_start_rx_sweep() failed: %s (%d)\n", hackrf_error_name(result), result);
 		return EXIT_FAILURE;
 	}
 	
-	executionControl = false; //Set to false to not execute sweeping operation again until a new triggering action is thrown*/
-
 	return EXIT_SUCCESS;
 }
 
@@ -534,7 +592,7 @@ static float sweepDuration()
 	gettimeofday(&t_start, NULL);
 	time_prev = t_start;
 
-	printf("hackrf_sweep | sweepDuration");
+	printf("hackrf_sweep | sweepDuration\n");
 
 	while((hackrf_is_streaming(device) == HACKRF_TRUE) && (do_exit == false)) {
 		float time_difference;
@@ -672,54 +730,6 @@ static void freeFFTMemory()
 	fftwf_free(ifftwIn);
 	fftwf_free(ifftwOut);
 }
-/**Timer part**/
-
-/**
- * timer handler
- */
-void timerHandler(int sig)
-{
-    timerFlag = 1;
-} 
-
-/**
- * timer trigger
- */
-
-float hackRFTrigger()
-{ 
-	printf("hackrf_sweep | hackRFTrigger()\n");
-	gettimeofday(&preTriggering,NULL);
-
-    if(signal(SIGALRM, timerHandler) == SIG_ERR)
-    {
-        fprintf(stderr, "timer | hackRFTrigger | Unable to catch alarm signal");
-        return 0;
-    }
-   
-    if(setitimer(ITIMER_REAL, &timer, 0) == -1)
-    {
-        fprintf(stderr, "timer | hackRFTrigger | Error calling timer");
-        return 0;
-    }
-    
-    while(!timerFlag)
-	{ 
-		if(executionControl) //Just execute one time until handler flag is clean
-		{
-			if(sweeping() == EXIT_FAILURE){	return EXIT_FAILURE; }
-			do_exit = false; //to execute it again in one shot mode
-			sweep_started = false;
-			byte_count = 0;
-		}
-	}
-	
-	timerFlag = 0;      
-    gettimeofday(&postTriggering,NULL);    
-    durationIteration = TimevalDiff(&postTriggering, &preTriggering);
-    
-	return durationIteration;
-}
 
 /*****************/
 /**
@@ -727,12 +737,12 @@ float hackRFTrigger()
  */
 int main(int argc, char** argv) 
 {
-	int opt = 0, i, j, nElements;
-	float totalDuration = 0; //total duration (should be aroung 15 minutes)
+	int opt = 0, i, nElements;
 
 	showMenu(opt, argc, argv);
 
 	if(checkParams() == EXIT_FAILURE){ return EXIT_FAILURE; } 
+	while((fftSize +4) % 8){ fftSize++; }
 
 	fft_bin_width = (double)sampleRate / fftSize;
 	fftwIn = (fftwf_complex*)fftwf_malloc(sizeof(fftwf_complex) * fftSize);
@@ -781,7 +791,7 @@ int main(int argc, char** argv)
 				frequencies[2*i], frequencies[2*i+1]);
 	}
 
-	printf("hackrf_sweep | HackRF configuration DONE.\n");
+	printf("hackrf_sweep | HackRF One configuration DONE.\n");
 
 	nElements = naxes[0]*naxes[1];
 	//samples = (float*)calloc(nElements,sizeof(float));
@@ -796,35 +806,27 @@ int main(int argc, char** argv)
 
 	if (setSweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
-	printf("hackrf_sweep | Start triggering %d times\n", TRIGERRING_TIMES);
-	
-	for (i = 0; i < TRIGERRING_TIMES; i++)
-	{
-		printf("hackrf_sweep | ===SWEEPING STARTED===\n");
-		//fprintf(stderr, "Iteration %d started\n",i+1);
-		printf("Iteration %d started\n",i+1);
-		totalDuration += hackRFTrigger();
-		//success == true ? fprintf(stderr, "Iteration %d Success\n",i+1) : fprintf(stderr, "Iteration %d Failed\n",i+1);
-		success == true ? printf("Iteration %d Success\n",i+1) : printf("Iteration %d Failed\n",i+1);
-		
-		if (success == true) { counterSucess++; }
-		success = false;
-		printf("hackrf_sweep | ===SWEEPING DONE===\n");
-		if (reconfigureHackRF() == EXIT_FAILURE) { return EXIT_FAILURE; }
-		executionControl = true;
-		//printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
-	}
+	printf("hackrf_sweep | Start triggering %d times\n", TRIGGERING_TIMES);
+
+	printf("hackrf_sweep | ===SWEEPING STARTED===\n");
+
+    //Run timer for this iteration 
+	totalDuration = hackRFTrigger();
+
+	if (sweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
+
+	printf("hackrf_sweep | ===SWEEPING DONE===\n");
 
 	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE){ return EXIT_FAILURE; }
-	fprintf(stderr, "Total sweep completed successfully: %d out of %d", counterSucess, TRIGERRING_TIMES);
-	do_exit = true;
+	
+	//fprintf(stderr, "Total sweep completed successfully: %d out of %d", counterSucess, TRIGGERING_TIMES);
 	
 	durationSweeps += sweepDuration();
 
 	checkStreaming();   	
-    printf("hackrf_sweep | All triggering actions(%d) where completed\n", TRIGERRING_TIMES);
-
-    printf("Iterations: %d ||",TRIGERRING_TIMES);
+    
+	printf("hackrf_sweep | All triggering actions(%d) where completed\n", TRIGGERING_TIMES);
+    printf("Iterations: %d ||",TRIGGERING_TIMES);
 	printf("\tTotal duration: %.2f s ||",totalDuration);
 	printf("\t Total sweep time : %.2f s ||",durationSweeps);
 	printf("\t sweepingTime/totalDuration: %.2f%%\n", 100*durationSweeps/totalDuration);
