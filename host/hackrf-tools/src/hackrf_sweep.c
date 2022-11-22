@@ -53,7 +53,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFTSIZE_STD	(14400)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGERRING_TIMES (10)
+#define TRIGERING_TIMES (100)
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -92,6 +92,7 @@ char* path = NULL;
 char pathFits[] = "TFM.fits";
 float* samples;
 int id_sample = 0;
+int initialized = 0;
 
 uint32_t byte_count = 0;
 volatile uint64_t sweep_count = 0;
@@ -424,11 +425,16 @@ static int checkParams(){
 }
 
 static int initConfigureHackRF(){
-	result = hackrf_init();
-	if( result != HACKRF_SUCCESS ) {
-		fprintf(stderr, "hackrf_sweep | initConfigureHackRF | hackrf_init() failed: %s (%d)\n", hackrf_error_name(result), result);
-		usage();
-		return EXIT_FAILURE;
+	if (initialized == 0)
+	{
+		result = hackrf_init();
+		if( result != HACKRF_SUCCESS ) {
+			fprintf(stderr, "hackrf_sweep | initConfigureHackRF | hackrf_init() failed: %s (%d)\n", hackrf_error_name(result), result);
+			usage();
+			return EXIT_FAILURE;
+		}
+
+		initialized = 1;
 	}
 
 	result = hackrf_open_by_serial(serial_number, &device);
@@ -630,8 +636,11 @@ static int endConnection(){
 			printf("endConnection | hackrf_close() done\n");
 		}
 		
-		hackrf_exit();
-		printf("endConnection | hackrf_exit() done\n");
+		if (counterSucess == TRIGERING_TIMES)
+		{
+			hackrf_exit();
+			printf("endConnection | hackrf_exit() done\n");
+		}
 	}
 
 	fflush(outfile);
@@ -649,12 +658,14 @@ static int reconfigureHackRF()
 {
 	//gettimeofday(&time_preConfig, NULL);
 	
+	//if(hackrf_stop_rx(device) == EXIT_FAILURE){ return EXIT_FAILURE; }
+
 	if(endConnection() == EXIT_FAILURE){ return EXIT_FAILURE; }
 	
 	if(initConfigureHackRF() == EXIT_FAILURE){ return EXIT_FAILURE; }
 	
 	if(setHackRFParams() == EXIT_FAILURE){ return EXIT_FAILURE; }
-
+	
 	if(setSweeping() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
 	//gettimeofday(&time_postConfig, NULL);
@@ -727,7 +738,7 @@ float hackRFTrigger()
  */
 int main(int argc, char** argv) 
 {
-	int opt = 0, i, j, nElements;
+	int opt = 0, i, nElements;
 	float totalDuration = 0; //total duration (should be aroung 15 minutes)
 
 	showMenu(opt, argc, argv);
@@ -796,9 +807,9 @@ int main(int argc, char** argv)
 
 	if (setSweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
-	printf("hackrf_sweep | Start triggering %d times\n", TRIGERRING_TIMES);
+	printf("hackrf_sweep | Start triggering %d times\n", TRIGERING_TIMES);
 	
-	for (i = 0; i < TRIGERRING_TIMES; i++)
+	for (i = 0; i < TRIGERING_TIMES; i++)
 	{
 		printf("hackrf_sweep | ===SWEEPING STARTED===\n");
 		//fprintf(stderr, "Iteration %d started\n",i+1);
@@ -810,21 +821,24 @@ int main(int argc, char** argv)
 		if (success == true) { counterSucess++; }
 		success = false;
 		printf("hackrf_sweep | ===SWEEPING DONE===\n");
+
 		if (reconfigureHackRF() == EXIT_FAILURE) { return EXIT_FAILURE; }
 		executionControl = true;
 		//printf("timer | hackRFTrigger | Duration: %.2f s\n", durationIteration);
+		fprintf(stderr, "Total sweep completed successfully: %d out of %d\n", counterSucess, TRIGERING_TIMES);
+
 	}
 
 	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE){ return EXIT_FAILURE; }
-	fprintf(stderr, "Total sweep completed successfully: %d out of %d", counterSucess, TRIGERRING_TIMES);
+	//fprintf(stderr, "Total sweep completed successfully: %d out of %d\n", counterSucess, TRIGERING_TIMES);
 	do_exit = true;
 	
 	durationSweeps += sweepDuration();
 
 	checkStreaming();   	
-    printf("hackrf_sweep | All triggering actions(%d) where completed\n", TRIGERRING_TIMES);
+    printf("hackrf_sweep | All triggering actions(%d) where completed\n", TRIGERING_TIMES);
 
-    printf("Iterations: %d ||",TRIGERRING_TIMES);
+    printf("Iterations: %d ||",TRIGERING_TIMES);
 	printf("\tTotal duration: %.2f s ||",totalDuration);
 	printf("\t Total sweep time : %.2f s ||",durationSweeps);
 	printf("\t sweepingTime/totalDuration: %.2f%%\n", 100*durationSweeps/totalDuration);

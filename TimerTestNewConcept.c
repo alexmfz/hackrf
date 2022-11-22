@@ -51,9 +51,10 @@ static float TimevalDiff(const struct timeval *a, const struct timeval *b) {
 int main(int argc, char** argv) 
 {
     int initTimer = 0, iteration = 0;
+    gettimeofday(&preTriggering, NULL);
+
     setTimerParams();
 
-    gettimeofday(&preTriggering, NULL);
     execTimer();
     while(1)
     {
@@ -66,6 +67,9 @@ int main(int argc, char** argv)
             iteration++;
             execTimer();
         }
+
+        if (iteration == 100)
+            break;
     }
     
     return 0;
