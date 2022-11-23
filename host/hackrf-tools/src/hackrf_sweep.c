@@ -45,15 +45,15 @@ typedef int bool;
 #define false 0
 #endif
 
-#define FD_BUFFER_SIZE (8*1024)
+#define FD_BUFFER_SIZE (8*1024) // TODO: Check if is going to be used or not
 #define FREQ_ONE_MHZ (1000000ull)
 #define FREQ_MIN_MHZ (0)    /*    0 MHz */
 #define FREQ_MAX_MHZ (7250) /* 7250 MHz */
 
 #define FFTMAX 	(8180)
-#define FFTSIZE_STD	(14400)
+#define FFTMIN 	(4)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGGERING_TIMES (3600)
+#define TRIGGERING_TIMES (2)
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -68,95 +68,88 @@ typedef int bool;
 	#define m_sleep(a) usleep((a*1000))
 #endif
 
-#define ITERATIONS  10
-#define INTERVAL 25e4 //us => 25e4 us = 250 ms
-#define MICRO   1e6
+/********************/
+
+/*** My variables ***/
+int result = 0; // Result operation code of hackrf functions: EXIT_SUCCESS | EXIT FAILURE or  HACKRF_SUCCESS | HACKRF_ERROR
+float totalDuration = 0; // Total duration (should be aroung 15 minutes)
+bool success = false; // It determines if a iteration was successfull or not (frue => OK, false ==> Error)
+int counterSucess = 0; // It determines the number of iterations successfull
+int flag_initialFreqCaught = 0; // Flag to check if first frecuency (freq_min) was caught (0 => not capture, 1 => captured)
+float* samples; // Array of float samples where dbs measures will be saved
+int id_sample = 0; // Id samples (TODO: Check if replace with counterSucess variable)
+
+float step_value = 0; // (freqmax-freqmin)/nChannels (MHz) ==> Channel bandwidth
+int numberOfSteps = 0; // Number of channels
+
+int sampleRate = 0; // Custom sample rate 
+
+char pathFits[] = "TFM.fits"; // File name of fits file
+extern long naxes[2]; // Number of axis of fits file
+
+int timerFlag = 0; // Timer flag to check if was trigger or not (At handler is set to 1 which means that 0.25s had passed)
+extern struct itimerval timer; // Timer struct needed to create a timer
+extern struct timeval preTriggering; // Time measure before triggering (TODO: Change where it is measured)
+extern struct timeval postTriggering; // Time measure after triggering (TODO: Change where it is measured)
+
+float durationIteration = 0; // Duration of each iteration (TODO: Change where it is measured)
+float durationSweeps = 0; // Total duration of sweepings ( TODO: Change where it is measured)
 
 /********************/
 
-int result = 0;
-float totalDuration = 0; //total duration (should be aroung 15 minutes)
-bool success = false;
-bool executionControl = true;
-int counterSucess = 0;
-uint32_t num_sweeps = 0;
-int num_ranges = 0;
-uint16_t frequencies[MAX_SWEEP_RANGES*2];
-int step_count;
-unsigned int lna_gain=16, vga_gain=20;
-uint32_t freq_min = 0;
-uint32_t freq_max = 6000;
-float step_value = 0; //(freqmax-freqmin)/nChannels (MHz)
+/*** Predefined variables ***/
+uint32_t num_sweeps = 0; // Numbers of sweeps to do (successfull or not)
+int num_ranges = 0; // Number od ranges of the frequency (should be 2 always)
+uint16_t frequencies[MAX_SWEEP_RANGES*2]; // Array of frecuencies
+int step_count; // Step value
+unsigned int lna_gain=16, vga_gain=20; // Gains 
+uint32_t freq_min = 0; // Predefined min frequency if is not passed by argument
+uint32_t freq_max = 6000; // Predefined max frequency if is not passed by argument
 
-FILE* outfile = NULL;
-char* path = NULL;
-char pathFits[] = "TFM.fits";
-float* samples;
-int id_sample = 0;
-int flag_initialFreqCaught = 0;
+FILE* outfile = NULL; // Initial output file where samples will be saved
+char* path = NULL; // Path of the outfile
 
-uint32_t byte_count = 0;
-volatile uint64_t sweep_count = 0;
+uint32_t byte_count = 0; // Bytes transmitted
+volatile uint64_t sweep_count = 0; // Number of sweeps done (sucessfull or not)
 
-struct timeval time_start;
-struct timeval t_start;
+struct timeval time_start; // Reference time to check beggining of sweep
+struct timeval t_start; // Idem
+struct timeval time_now; // ""
+struct timeval time_prev; // ""
 
-/*Variables for sweepDuration*/
-struct timeval time_now;
-struct timeval time_prev;
+float sweep_rate = 0; // sweep rate which is sweep_count / time_difference
 
-struct timeval time_preConfig;
-struct timeval time_postConfig;
+bool amp = false; // amp parameter
+uint32_t amp_enable; // amp enabler
 
-int exit_code = EXIT_SUCCESS;
-float sweep_rate = 0;
-/*****/
+bool antenna = false; // antenna parameter
+uint32_t antenna_enable; // antenna enabler
 
-bool amp = false;
-uint32_t amp_enable;
+bool one_shot = false; // One shot mode (false => Down ; true => Up) set with -1 argument
+bool finite_mode = false; // Finite mode (false => Down ; true => Up) set if not -1 argument is given
+bool sweep_started = false; // Flag to check that sweeping has already started
 
-bool antenna = false;
-uint32_t antenna_enable;
+int fftSize = 20; // Size of a fft window (Max value = 8180 ; Min value = 4)
+double fft_bin_width; // Bandwidth fft 
 
-bool binary_output = false;
-bool ifft_output = false;
-bool one_shot = false;
-bool finite_mode = false;
-bool sweep_started = false;
+fftwf_complex *fftwIn = NULL; // FFT data
+fftwf_complex *fftwOut = NULL; // FFT data
+fftwf_plan fftwPlan = NULL; // FFT data
+fftwf_complex *ifftwIn = NULL; // FFT data
+fftwf_complex *ifftwOut = NULL; // FFT data
 
-int fftSize = 20;
-double fft_bin_width;
-fftwf_complex *fftwIn = NULL;
-fftwf_complex *fftwOut = NULL;
-fftwf_plan fftwPlan = NULL;
-fftwf_complex *ifftwIn = NULL;
-fftwf_complex *ifftwOut = NULL;
-fftwf_plan ifftwPlan = NULL;
-uint32_t ifft_idx = 0;
-float* pwr;
+float* pwr; // Power measures
 float* window;
-hackrf_device* device = NULL;
-const char*serial_number = NULL;
+hackrf_device* device = NULL; // Struct of device
+const char*serial_number = NULL; // Serial number of hackrf device
 
-int numberOfSteps = 0; //(FMax-FMin)/Width
-uint32_t requested_fft_bin_width = 0;
-int sampleRate = 0;
-	
+uint32_t requested_fft_bin_width = 0;// Argument to set bandwidth (but is in this case configured to not give argument's use)
 
-extern long naxes[2];
-static float TimevalDiff(const struct timeval *a, const struct timeval *b) {
-   return (a->tv_sec - b->tv_sec) + 1e-6f * (a->tv_usec - b->tv_usec);
-}
+bool do_exit = false; // It determines if sweeping end or not ( true => Stop sweeping ; false => Keep sweeping)
 
- bool do_exit = false;
+/********************/
 
-int timerFlag = 0;
-extern struct itimerval timer;
-extern struct timeval preTriggering;
-extern struct timeval postTriggering;
-float durationIteration = 0;
-float durationSweeps = 0;
-
+/** Signal Handler**/
 #ifdef _MSC_VER
 BOOL WINAPI
 sighandler(int signum) {
@@ -174,20 +167,36 @@ void sigint_callback_handler(int signum)  {
 }
 #endif
 
-/**Timer part**/
+/**
+ * @brief  Calculates difference between 2 times
+ * @note   
+ * @param  *a: last time 
+ * @param  *b: first time
+ * @retval difference time
+ */
+static float TimevalDiff(const struct timeval *a, const struct timeval *b) 
+{
+   return (a->tv_sec - b->tv_sec) + 1e-6f * (a->tv_usec - b->tv_usec);
+}
+
 
 /**
- * timer handler
+ * @brief  Set timerFlag to 1 when signal control is captured
+ * @note   
+ * @param  sig: Signal to be control
+ * @retval None
  */
 void timerHandler(int sig)
 {
     timerFlag = 1;
 } 
 
-/**
- * timer trigger
- */
 
+/**
+ * @brief  Starts a timer which will be thrown periodically
+ * @note   
+ * @retval TODO: Should be void
+ */
 float hackRFTrigger()
 { 
 	printf("hackrf_sweep | hackRFTrigger()\n");
@@ -212,6 +221,13 @@ float hackRFTrigger()
 	return durationIteration;
 }
 
+/**
+ * @brief  Converts a power sample value into logarithmic value
+ * @note   
+ * @param  in: Input value
+ * @param  scale: Reescale value
+ * @retval  Value in log format
+ */
 float logPower(fftwf_complex in, float scale)
 {
 	float re = in[0] * scale;
@@ -220,6 +236,12 @@ float logPower(fftwf_complex in, float scale)
 	return (float) (log2(magsq) * 10.0f / log2(10.0f));
 }
 
+/**
+ * @brief  Callback function which sweep n times between freq_min and freq_max
+ * @note   
+ * @param  transfer: Struct where data is being transfered
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
 int rx_callback(hackrf_transfer* transfer) {
 	int8_t* buf;
 	uint8_t* ubuf;
@@ -365,42 +387,6 @@ int rx_callback(hackrf_transfer* transfer) {
 				timerFlag = 0; // flag down which means that data was caught
 				flag_initialFreqCaught = 0; //Set variable to finish iteration
 			}
-			/*ese
-			{
-				time_t time_stamp_seconds = usb_transfer_time.tv_sec;
-				fft_time = localtime(&time_stamp_seconds);
-				strftime(time_str, 50, "%Y-%m-%d, %H:%M:%S", fft_time);
-				printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
-					time_str,
-					(long int)usb_transfer_time.tv_usec,
-					(uint64_t)(frequency), //First time: 45MhZ
-					(uint64_t)(frequency+sampleRate/4), //45MHz + 5MHz
-					fft_bin_width,
-					fftSize);
-				for(i = 0; (fftSize / 4) > i; i++) {
-					printf(", %.2f", pwr[i + 1 + (fftSize*5)/8]);
-				}
-				printf("\n");
-				printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
-						time_str,
-						(long int)usb_transfer_time.tv_usec,
-						(uint64_t)(frequency+(sampleRate/2)),
-						(uint64_t)(frequency+((sampleRate*3)/4)),
-						fft_bin_width,	//	--> 49504,95			
-						fftSize);
-				for(i = 0; (fftSize / 4) > i; i++) {
-					printf(", %.2f", pwr[i + 1 + (fftSize/8)]);
-				}
-				
-				printf("\n");
-				if ((uint64_t)(frequency+((sampleRate*3)/4)) == freq_max*FREQ_ONE_MHZ) //Where the sweep finished
-				{
-					printf("hackrf_sweep | rx_callback() | No Capturing data for iteration %d\n", sweep_count);			
-					fprintf(stderr, "hackrf_sweep | rx_callback() | No Capturing data for iteration %d\n", sweep_count);			
-					success = false;
-				}
-			}*/
-
 		}
 		
 	}
@@ -409,24 +395,28 @@ int rx_callback(hackrf_transfer* transfer) {
 }
 
 /**
- * Checks the paramsf not possible values to throw an error
+ * @brief Checks the params. If not possible values EXIT_FAILURE is returned
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
 static int checkParams(){
+	printf("hackrf_sweep | checkParams() | Checking if parameters values are correct\n");
+
 	if (lna_gain % 8)
 	{
-		fprintf(stderr, "hackrf_sweep | checkParams | warning: lna_gain (-l) must be a multiple of 8\n");
+		fprintf(stderr, "hackrf_sweep | checkParams() | warning: lna_gain (-l) must be a multiple of 8\n");
 	}
 
 	if (vga_gain % 2)
 	{
-		fprintf(stderr, "hackrf_sweep | checkParams | warning: vga_gain (-g) must be a multiple of 2\n");
+		fprintf(stderr, "hackrf_sweep | checkParams() | warning: vga_gain (-g) must be a multiple of 2\n");
 	}
 	
 	if( amp ) 
 	{
 		if( amp_enable > 1 ) 
 		{
-			fprintf(stderr, "hackrf_sweep | checkParams | argument error: amp_enable shall be 0 or 1.\n");
+			fprintf(stderr, "hackrf_sweep | checkParams() | argument error: amp_enable shall be 0 or 1.\n");
 			usage();
 			return EXIT_FAILURE;
 		}
@@ -436,7 +426,7 @@ static int checkParams(){
 	{
 		if (antenna_enable > 1) 
 		{
-			fprintf(stderr, "hackrf_sweep | checkParams | argument error: antenna_enable shall be 0 or 1.\n");
+			fprintf(stderr, "hackrf_sweep | checkParams() | argument error: antenna_enable shall be 0 or 1.\n");
 			usage();
 			return EXIT_FAILURE;
 		}
@@ -449,41 +439,36 @@ static int checkParams(){
 		num_ranges++;
 	}
 
-	if(binary_output && ifft_output) 
-	{
-		fprintf(stderr, "hackrf_sweep | checkParams | argument error: binary output (-B) and IFFT output (-I) are mutually exclusive.\n");
-		return EXIT_FAILURE;
-	}
-
-	if(ifft_output && (1 < num_ranges)) 
-	{
-		fprintf(stderr, "hackrf_sweep | checkParams | argument error: only one frequency range is supported in IFFT output (-I) mode.\n");
-		return EXIT_FAILURE;
-	}
-
 	/*
 	 * The FFT bin width must be no more than a quarter of the sample rate
 	 * for interleaved mode. With our fixed sample rate of 20 Msps, that
 	 * results in a maximum bin width of 5000000 Hz.
 	 */
-	if(fftSize < 4) 
+	if(fftSize < FFTMIN) 
 	{
-		fprintf(stderr, "checkParams | argument error: FFT bin width (-w) must be no more than 5000000\n");
+		fprintf(stderr, "hackrf_sweep | checkParams() | argument error: FFT bin width (-w) must be no more than 5000000\n");
 		return EXIT_FAILURE;
 	}
 
-	if(fftSize > 8180) 
+	if(fftSize > FFTMAX) 
 	{
-		fprintf(stderr, "checkParams | argument error: FFT bin width (-w) must be no less than 2445\n");
+		fprintf(stderr, "hackrf_sweep | checkParams() | argument error: FFT bin width (-w) must be no less than 2445\n");
 		return EXIT_FAILURE;
 	}
 
-	printf("hackrf_sweep | checkParams | Success\n");
+	printf("hackrf_sweep | checkParams() | Execution Success\n");
 	return EXIT_SUCCESS;
 
 }
 
+/**
+ * @brief  Initialize hackrf and open the serial to able it to communicate
+ * 
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
 static int initConfigureHackRF(){
+	printf("hackrf_sweep | initConfigHackRF() | Initialize configuration of HackRF One\n");
 	result = hackrf_init();
 	if( result != HACKRF_SUCCESS ) {
 		fprintf(stderr, "hackrf_sweep | initConfigureHackRF() | hackrf_init() failed: %s (%d)\n", hackrf_error_name(result), result);
@@ -498,11 +483,17 @@ static int initConfigureHackRF(){
 		return EXIT_FAILURE;
 	}
 
-	printf("hackrf_sweep | initConfigHackRF() | Success\n");
+	printf("hackrf_sweep | initConfigHackRF() | Execution Success\n");
 	return result;
 }
 
+/**
+ * @brief  It just open a file
+ * @note   TODO: Will be used?
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
 static int openFile(){
+	printf("hackrf_sweep | openFile() | Opening file\n");
 
 	if((path == NULL) || (strcmp(path, "-") == 0)) {
 		outfile = stdout;
@@ -515,11 +506,18 @@ static int openFile(){
 		return EXIT_FAILURE;
 	}
 
-	printf("hackrf_sweep | openFile() | Success\n");
+	printf("hackrf_sweep | openFile() | Execution Success\n");
 	return EXIT_SUCCESS;
 }
 
+/**
+ * @brief  Set buffer to an output file
+ * @note   TODO: Will be used?
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
 static int setBufOutFile(){
+	printf("hackrf_sweep | setBufOutFile() | Setting buffer to the outfile\n");
+
 	/* Change outfile buffer to have bigger one to store or read data on/to HDD */
 	result = setvbuf(outfile , NULL , _IOFBF , FD_BUFFER_SIZE);
 	if( result != 0 ) {
@@ -528,10 +526,15 @@ static int setBufOutFile(){
 		return EXIT_FAILURE;
 	}
 
-	printf("hackrf_sweep | setBufOutFile() | Success\n");
+	printf("hackrf_sweep | setBufOutFile() | Execution Success\n");
 	return result;
 }
 
+/**
+ * @brief  Set HackRF parameters such as sample rate, gains... to start working
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
 static int setHackRFParams(){
 	printf("hackrf_sweep | setHackRFParams() | call hackrf_sample_rate_set(%.03f MHz)\n",
 		   ((float)sampleRate/(float)FREQ_ONE_MHZ));
@@ -556,12 +559,18 @@ static int setHackRFParams(){
 	result = hackrf_set_vga_gain(device, vga_gain);
 	result |= hackrf_set_lna_gain(device, lna_gain);
 
-	printf("hackrf_sweep | setHackRFParams() | Success\n");
+	printf("hackrf_sweep | setHackRFParams() | Execution Success\n");
 	return result;
 }
 
+/**
+ * @brief  Set params of sweeping (frecuencies, number ranges, type of sweeping...)
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
 static int setSweeping()
 {
+	printf("hackrf_sweep | setSweeping() | Configuring sweeping parameters\n");
 	int customTuneStep = sampleRate/FREQ_ONE_MHZ;
 	result = hackrf_init_sweep(device, frequencies, num_ranges, BYTES_PER_BLOCK,
 			customTuneStep * FREQ_ONE_MHZ, OFFSET, INTERLEAVED);
@@ -571,20 +580,35 @@ static int setSweeping()
 		return EXIT_FAILURE;
 	}
 
+	printf("hackrf_sweep | setSweeping() | Execution Sucess\n");
 	return EXIT_SUCCESS;
 }
 
+/**
+ * @brief  It invokes callback function to receive data from a hackrf one
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
 static int sweeping()
 {
+	printf("hackrf_sweep | sweeping() | ===SWEEPING STARTED===\n");
+	printf("hackrf_sweep | Start triggering %d times\n", TRIGGERING_TIMES);
+
 	result |= hackrf_start_rx_sweep(device, rx_callback, NULL); //rx callback write are the values to save in the img
 	if (result != HACKRF_SUCCESS) {
 		fprintf(stderr, "hackrf_sweep | sweeping() | hackrf_start_rx_sweep() failed: %s (%d)\n", hackrf_error_name(result), result);
 		return EXIT_FAILURE;
 	}
 	
+	printf("hackrf_sweep | sweeping() | ===SWEEPING DONE===\n");
 	return EXIT_SUCCESS;
 }
 
+/**
+ * @brief  calculates duration of sweeping 
+ * @note   TODO: Check it that time is correct
+ * @retval duration of sweeping
+ */
 static float sweepDuration()
 {
 	float durationSweep;
@@ -592,7 +616,7 @@ static float sweepDuration()
 	gettimeofday(&t_start, NULL);
 	time_prev = t_start;
 
-	printf("hackrf_sweep | sweepDuration\n");
+	printf("hackrf_sweep | sweepDuration()\n");
 
 	while((hackrf_is_streaming(device) == HACKRF_TRUE) && (do_exit == false)) {
 		float time_difference;
@@ -603,12 +627,11 @@ static float sweepDuration()
 		if (durationSweep >= 1.0f) {
 			time_difference = TimevalDiff(&time_now, &t_start);
 			sweep_rate = (float)sweep_count / time_difference;
-			fprintf(stderr, "%" PRIu64 "hackrf_sweep | sweepDuration | total sweeps completed, %.2f sweeps/second\n",
+			fprintf(stderr, "%" PRIu64 "hackrf_sweep | sweepDuration() | total sweeps completed, %.2f sweeps/second\n",
 					sweep_count, sweep_rate);
 
 			if (byte_count == 0) {
-				exit_code = EXIT_FAILURE;
-				fprintf(stderr, "\n hackrf_sweep | Couldn't transfer any data for one second.\n");
+				fprintf(stderr, "\n hackrf_sweep | sweepDuration() | Couldn't transfer any data for one second.\n");
 				break;
 			}
 
@@ -620,13 +643,22 @@ static float sweepDuration()
 
 }
 
+/** 
+ * @brief  Checks if amp option is enable to activate it
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
 static int checkAvailabilityAmpOption()
 {
-	if (amp) {
-		printf("hackrf_sweep | checkAvailabilityAmpOption | call hackrf_set_amp_enable(%u)\n", amp_enable);
+	printf("hackrf_sweep | checkAvailabilityAmpOption() | Checking availabilty amp option\n");
+
+	if (amp) 
+	{
+		printf("hackrf_sweep | checkAvailabilityAmpOption() | call hackrf_set_amp_enable(%u)\n", amp_enable);
 		result = hackrf_set_amp_enable(device, (uint8_t)amp_enable);
-		if (result != HACKRF_SUCCESS) {
-			fprintf(stderr, "hackrf_sweep | checkAvailabilityAmpOption | hackrf_set_amp_enable() failed: %s (%d)\n",
+		if (result != HACKRF_SUCCESS) 
+		{
+			fprintf(stderr, "hackrf_sweep | checkAvailabilityAmpOption() | hackrf_set_amp_enable() failed: %s (%d)\n",
 				   hackrf_error_name(result), result);
 			usage();
 			return EXIT_FAILURE;
@@ -634,16 +666,25 @@ static int checkAvailabilityAmpOption()
 
 		return result;
 	}
-
-	return HACKRF_SUCCESS;
+	
+	printf("hackrf_sweep | checkAvailabilityAmpOption() | Execution Success\n");
+	return EXIT_SUCCESS;
 }
 
-static int checkAvailabilityAntennaOption(){
-	if (antenna) {
-		printf("hackrf_sweep | checkAvailabilityAntennaOption | call hackrf_set_antenna_enable(%u)\n", antenna_enable);
+/**
+ * @brief  Checks if antenna option is enabled to activate it
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+static int checkAvailabilityAntennaOption()
+{
+	printf("hackrf_sweep | checkAvailabilityAntennaOption() | Checking availability of antenna option\n");
+	if (antenna) 
+	{
+		printf("hackrf_sweep | checkAvailabilityAntennaOption() | call hackrf_set_antenna_enable(%u)\n", antenna_enable);
 		result = hackrf_set_antenna_enable(device, (uint8_t)antenna_enable);
 		if (result != HACKRF_SUCCESS) {
-			fprintf(stderr, "hackrf_sweep | checkAvailabilityAntennaOption | hackrf_set_antenna_enable() failed: %s (%d)\n",
+			fprintf(stderr, "hackrf_sweep | checkAvailabilityAntennaOption() | hackrf_set_antenna_enable() failed: %s (%d)\n",
 				   hackrf_error_name(result), result);
 			usage();
 			return EXIT_FAILURE;
@@ -652,11 +693,18 @@ static int checkAvailabilityAntennaOption(){
 		return result;
 	}
 
+	printf("hackrf_sweep | checkAvailabilityAntennaOption() | Execution Success\n");
 	return HACKRF_SUCCESS;
 }
 
+/**
+ * @brief  Check if hackrf one is still streaming
+ * @note   
+ * @retval None
+ */
 static void checkStreaming()
 {
+	printf("hackrf_sweep() | checkStreaming() | Checking streaming status\n");
 	result = hackrf_is_streaming(device);	
 	
 	if(do_exit) 
@@ -670,57 +718,52 @@ static void checkStreaming()
 			   hackrf_error_name(result), result);
 	}
 
+	printf("hackrf_sweep() | checkStreaming() | Execution Success\n");
 }
 
-static int endConnection(){
+/**
+ * @brief  Closes connection with hackrf one and stops receiving data
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+static int endConnection()
+{
+	printf("hackrf_sweep | endConnection() | Ending connection with HackRF One\n");
 	if(device != NULL) 
 	{
 		result = hackrf_close(device);
 		if(result != HACKRF_SUCCESS) 
 		{
-			fprintf(stderr, "endConnection | hackrf_close() failed: %s (%d)\n",
+			fprintf(stderr, "hackrf_sweep | endConnection() | hackrf_close() failed: %s (%d)\n",
 				   hackrf_error_name(result), result);
 				   return EXIT_FAILURE;
 		} 
 		
 		else 
 		{
-			printf("endConnection | hackrf_close() done\n");
+			printf("hackrf_sweep | endConnection() | hackrf_close() done\n");
 		}
 		
 		hackrf_exit();
-		printf("endConnection | hackrf_exit() done\n");
+		printf("hackrf_sweep | endConnection() | hackrf_exit() done\n");
 	}
 
 	fflush(outfile);
 	if ( ( outfile != NULL ) && ( outfile != stdout ) ) {
 		fclose(outfile);
 		outfile = NULL;
-		printf("hackrf_sweep | endConnection | fclose() done\n");
+		printf("hackrf_sweep | endConnection() | fclose() done\n");
 	}
 
-	printf("hackrf_sweep | endConnection | Connection close with hackrf success\n");
+	printf("hackrf_sweep | endConnection() | Execution Success\n");
 	return EXIT_SUCCESS;
 }
 
-static int reconfigureHackRF()
-{
-	//gettimeofday(&time_preConfig, NULL);
-	
-	if(endConnection() == EXIT_FAILURE){ return EXIT_FAILURE; }
-	
-	if(initConfigureHackRF() == EXIT_FAILURE){ return EXIT_FAILURE; }
-	
-	if(setHackRFParams() == EXIT_FAILURE){ return EXIT_FAILURE; }
-
-	if(setSweeping() == EXIT_FAILURE){ return EXIT_FAILURE; }
-
-	//gettimeofday(&time_postConfig, NULL);
-
-	//printf("Time during reconfiguring hackRF: %f\n", TimevalDiff(&time_postConfig, &time_preConfig));
-	return EXIT_SUCCESS;
-}
-
+/**
+ * @brief  Free reserved memory for fft data
+ * @note   
+ * @retval None
+ */
 static void freeFFTMemory()
 {
 	fftwf_free(fftwIn);
@@ -731,9 +774,13 @@ static void freeFFTMemory()
 	fftwf_free(ifftwOut);
 }
 
-/*****************/
+
 /**
- * MAIN
+ * @brief  Main thread 
+ * @note   Execution example: ./hackrf_sweep -f45:245 > test.out
+ * @param  argc: 
+ * @param  argv: 
+ * @retval EXIT_SUCCESS
  */
 int main(int argc, char** argv) 
 {
@@ -754,15 +801,10 @@ int main(int argc, char** argv)
 		window[i] = (float) (0.5f * (1.0f - cos(2 * M_PI * i / (fftSize - 1))));
 	}
 
-#ifdef _MSC_VER
-	if(binary_output) {
-		_setmode(_fileno(stdout), _O_BINARY);
-	}
-#endif
 
 	if(initConfigureHackRF() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
-	if(strstr(pathFits, "fits") != NULL) // AQUI
+	if(strstr(pathFits, "fits") != NULL) // TODO: BUG HERE
 	{	
 		if(openFile() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
@@ -801,21 +843,14 @@ int main(int argc, char** argv)
 	//	exit(0);
 	//}
 
-	printf("hackrf_sweep | calling configuration timer\n");
 	setTimerParams();
 
 	if (setSweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
-
-	printf("hackrf_sweep | Start triggering %d times\n", TRIGGERING_TIMES);
-
-	printf("hackrf_sweep | ===SWEEPING STARTED===\n");
 
     //Run timer for this iteration 
 	totalDuration = hackRFTrigger();
 
 	if (sweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
-
-	printf("hackrf_sweep | ===SWEEPING DONE===\n");
 
 	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE){ return EXIT_FAILURE; }
 	
@@ -826,7 +861,6 @@ int main(int argc, char** argv)
 	checkStreaming();   	
     
 	printf("hackrf_sweep | All triggering actions(%d) where completed\n", TRIGGERING_TIMES);
-    printf("Iterations: %d ||",TRIGGERING_TIMES);
 	printf("\tTotal duration: %.2f s ||",totalDuration);
 	printf("\t Total sweep time : %.2f s ||",durationSweeps);
 	printf("\t sweepingTime/totalDuration: %.2f%%\n", 100*durationSweeps/totalDuration);
@@ -854,6 +888,6 @@ int main(int argc, char** argv)
 	free(samples);
 	printf("hackrf_sweep | The dynamic memory used was successfully released.\nEND.\n");
 
-	return exit_code;
+	return EXIT_SUCCESS;
 	
 }

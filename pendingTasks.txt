@@ -3,5 +3,6 @@ Status:  OK | PENDING
 1. Adapt timer handler into main --> OK
 2. Update logs to detect bugs better --> OK
 3. Generate fits file with correct format --> PENDING
-4. Resolve output bug detected in hackrf_sweep --> PENDING
-5. Update firmware --> PENDING
+4. Resolve output bug detected in hackrf_sweep --> OK
+5. Update firmware --> OK
+6. Optimize code to run faster and comment code--> PENDING

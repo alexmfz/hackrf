@@ -74,7 +74,9 @@ uint32_t nChannels = 200;
 /*******/
 
 /**
- * Modos de uso de la app. Ejemplo: ./hackrf_sweep f45:870 -w50000 -1 -r a.out
+ * @brief  Shows how to use the API
+ * @note   
+ * @retval None
  */
 void usage() {
 	fprintf(stderr, "Usage:\n");
@@ -89,8 +91,6 @@ void usage() {
 	fprintf(stderr, "\t[-w bin_width] # FFT bin width (frequency resolution) in Hz, 2445-5000000\n");
 	fprintf(stderr, "\t[-1] # one shot mode\n");
 	fprintf(stderr, "\t[-N num_sweeps] # Number of sweeps to perform\n");
-	fprintf(stderr, "\t[-B] # binary output\n");
-	fprintf(stderr, "\t[-I] # binary inverse FFT output\n");
 	fprintf(stderr, "\t-r filename # output file\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Output fields:\n");
@@ -98,6 +98,13 @@ void usage() {
 	printf("functions | Usage\n");
 }
 
+/**
+ * @brief  Parse uint32 data
+ * @note   
+ * @param  s: sring expected
+ * @param  value: value expected
+ * @retval Returns the result of the operation (HACKRF_SUCCESS => OK ; HACKRF_ERROR_INVALID_PARAM => WRONG)
+ */
 int parse_u32(char* s, uint32_t* const value) {
 	uint_fast8_t base = 10;
 	char* s_end;
@@ -125,6 +132,14 @@ int parse_u32(char* s, uint32_t* const value) {
 	}
 }
 
+/**
+ * @brief  Parses the frequency range
+ * @note   
+ * @param  s: string expected as parameter
+ * @param  value_min: min value of the range
+ * @param  value_max: max value of the range
+ * @retval Returns the result of the operation (HACKRF_SUCCESS => OK ; HACKRF_ERROR_INVALID_PARAM => WRONG)
+ */
 int parse_u32_range(char* s, uint32_t* const value_min, uint32_t* const value_max) {
 	int result;
 
@@ -145,10 +160,16 @@ int parse_u32_range(char* s, uint32_t* const value_min, uint32_t* const value_ma
 }
 
 
-/*Parameters for fits file*/
+/**
+ * @brief  Assing the parameters of the fits file
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
 int assignFitsParameters()
 {
-	printf("functions | assignFitsParameters | Filaname: %s\n",pathFits);
+	printf("functions | assignFitsParameters() | Assigning parameters of fits file\n");
+	printf("functions | assignFitsParameters() | Filaname: %s\n",pathFits);
+
 	if(strstr(pathFits, "fits") != NULL)
 	{
 		naxes[0] = TOTAL_SAMPLES_PER_FREQUENCY; //3600
@@ -157,40 +178,45 @@ int assignFitsParameters()
 
 		if(naxes[1] <=2)
 		{
-			perror("functions | assignFitsParameters | Number of steps cannot be less than 0");
+			fprintf(stderr, "functions | assignFitsParameters() | Number of steps cannot be less than 0");
 			return EXIT_FAILURE;
 		}
 
 		if(naxes[0] <= 0)
 		{
-			perror("functions | assignFitsParameters | Number of samples cannot be less than 0");
+			fprintf(stderr, "functions | assignFitsParameters() | Number of samples cannot be less than 0");
 			return EXIT_FAILURE;
 		}
 
 		/*Creating Fits File*/
-		printf("functions | Receiving measures and saving as a FITS file\n\n||===Parameters FITS file===||\n");
-		printf("functions | assignFitsParameters | Freq min: %d\n", freq_min);
-		printf("functions | assignFitsParameters | Freq max: %d\n", freq_max);
-		printf("functions | assignFitsParameters | Step Value: %lf\n",step_value);
-		printf("functions | assignFitsParameters | Number of steps(X): %ld\n",naxes[0]);
-		printf("functions | assignFitsParameters | Number of samples(Z) per frequency: %d\n", fftSize/4);
-		printf("functions | assignFitsParameters | Number of total samples : %ld\n", naxes[0]*naxes[1]);
+		printf("functions | assignFitsParameters() | Receiving measures and saving as a FITS file\n\n||===Parameters FITS file===||\n");
+		printf("functions | assignFitsParameters() | Freq min: %d\n", freq_min);
+		printf("functions | assignFitsParameters() | Freq max: %d\n", freq_max);
+		printf("functions | assignFitsParameters() | Step Value: %lf\n",step_value);
+		printf("functions | assignFitsParameters() | Number of steps(X): %ld\n",naxes[0]);
+		printf("functions | assignFitsParameters() | Number of samples(Z) per frequency: %d\n", fftSize/4);
+		printf("functions | assignFitsParameters() | Number of total samples : %ld\n", naxes[0]*naxes[1]);
 		
 		if(pathFits==NULL )
 		{
-			perror("functions | assignFitsParameters | File not able");
+			fprintf(stderr, "functions | assignFitsParameters() | File not able\n");
 			return EXIT_FAILURE;
 		}
 	}
+	
+	printf("functions | assignFitsParameters() | Execution Sucess\n");
 	return EXIT_SUCCESS;
 }
 
 /**
- * Asigna los parametros genericos de la API
- * 
+ * @brief  Assign to variables the values of generic parameters of the API to custome it
+ * @note   
+ * @retval None
  */
 void assignGenericParameters()
-{	
+{
+	printf("functions | assignGenericParameters() | Assigning parameters of API\n ===GENERIC PARAMS===\n");
+	
 	numberOfSteps = nChannels;
 
 	step_value = (float)(freq_max - freq_min)/numberOfSteps;
@@ -200,19 +226,25 @@ void assignGenericParameters()
 
 	fftSize = sampleRate/requested_fft_bin_width;
 
-	printf("functions | assignGenericParameters | Step Value: %f MHz\n", step_value);
-	printf("functions | assignGenericParameters | Number of Steps (channels): %d\n", numberOfSteps);
-	printf("functions | assignGenericParameters | Sample Rate: %d MHz\n", sampleRate);
-	printf("functions | assignGenericParameters | FFT size: %d\n", fftSize);
-	printf("functions | assignGenericParameters | Samples per channel:\n %d", fftSize/4);
+	printf("functions | assignGenericParameters() | Step Value: %f MHz\n", step_value);
+	printf("functions | assignGenericParameters() | Number of Steps (channels): %d\n", numberOfSteps);
+	printf("functions | assignGenericParameters() | Sample Rate: %d MHz\n", sampleRate);
+	printf("functions | assignGenericParameters() | FFT size: %d\n", fftSize);
+	printf("functions | assignGenericParameters() | Samples per channel:\n %d", fftSize/4);
+
+	printf("functions | assignGenericParameters() | Execution Success\n");
 }
 
 /**
- * Menu of the API
+ * @brief  Menu of the API that will assign values dependly of argumentsa
+ * @note   
+ * @param  opt: possible options
+ * @param  argc: argument
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
 int showMenu(int opt, int argc, char**argv)
 {
-while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1BIr:h?")) != EOF ) {
+while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 		result = HACKRF_SUCCESS;
 		switch( opt ) 
 		{
@@ -282,14 +314,6 @@ while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1BIr:h?")) != EOF ) {
 			one_shot = true;
 			break;
 
-		case 'B':
-			binary_output = true;
-			break;
-
-		case 'I':
-			ifft_output = true;
-			break;
-
 		case 'r':
 			path = optarg;
 			strcpy(pathFits,optarg);
@@ -315,5 +339,4 @@ while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1BIr:h?")) != EOF ) {
 
 	assignGenericParameters();
 	assignFitsParameters();
-
 }
