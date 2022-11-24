@@ -191,6 +191,15 @@ int main(int argc, char** argv)
     printf("\n");
     printf("Press 'Enter' to continue....");
     while(getchar()!='\n');
+
+    char texto[100], texto2[5];
+    int numero = 2012;
+    sprintf(texto, "%d", numero);
+    sprintf(texto2, "%d", numero);
+    printf("Texto1: %s\n",texto);
+    printf("Texto2: %s\n",texto2);
+    strncpy("text", texto, 3);
+    printf("%s\n",texto2);
     
     return 0;
 }

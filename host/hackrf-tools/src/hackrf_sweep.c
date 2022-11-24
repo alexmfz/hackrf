@@ -53,7 +53,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFTMIN 	(4)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGGERING_TIMES (2)
+#define TRIGGERING_TIMES (200)
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -86,6 +86,7 @@ char pathFits[] = "TFM.fits"; // File name of fits file
 extern long naxes[2]; // Number of axis of fits file
 extern float *frequencyDatas;
 extern float* samples; // Array of float samples where dbs measures will be saved
+extern char timeDatas[TRIGGERING_TIMES][57]; // Time Datas of the sweeping | 3600 dates
 int id_sample = 0; // Id samples (TODO: Check if replace with counterSucess variable)
 
 int timerFlag = 0; // Timer flag to check if was trigger or not (At handler is set to 1 which means that 0.25s had passed)
@@ -249,7 +250,7 @@ int rx_callback(hackrf_transfer* transfer) {
 	uint64_t frequency; /* in Hz */
 	int i, j;
 	struct tm *fft_time;
-	char time_str[50];
+	char time_str[57];
 	struct timeval usb_transfer_time;
 
 	if(NULL == outfile){// || strstr(pathFits,"fits")==NULL) {
@@ -343,13 +344,27 @@ int rx_callback(hackrf_transfer* transfer) {
 		{			
 			if ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
 			{ 
+				char sweepingTime[57];
+				char decimalTime[6] = {"."};
+				char totalDecimalsTime[6];
 				flag_initialFreqCaught = 1; //First time will enter
-				fprintf(stderr, "First Frecuency caught. Setting flag to 1\n"); 			
-			}
+				fprintf(stderr, "First Frecuency caught. Setting flag to 1\n"); 
 				
+				time_t time_stamp_seconds = usb_transfer_time.tv_sec;
+				fft_time = localtime(&time_stamp_seconds);
+				strftime(time_str, 57, "%Y-%m-%d, %H:%M:%S", fft_time);
+
+				strcpy(sweepingTime, time_str);
+				sprintf(totalDecimalsTime, "%ld", (long int)usb_transfer_time.tv_usec);
+				strncat(decimalTime, totalDecimalsTime, 3);
+				strncat(sweepingTime, decimalTime, 4);
+
+				saveTimes(counterSucess, TRIGGERING_TIMES, sweepingTime);	
+			}
+
 			time_t time_stamp_seconds = usb_transfer_time.tv_sec;
 			fft_time = localtime(&time_stamp_seconds);
-			strftime(time_str, 50, "%Y-%m-%d, %H:%M:%S", fft_time);
+			strftime(time_str, 57, "%Y-%m-%d, %H:%M:%S", fft_time);
 			printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
 				time_str,
 				(long int)usb_transfer_time.tv_usec,
@@ -886,7 +901,11 @@ int main(int argc, char** argv)
 		generateFitsFile(pathFits, samples);
 	}
 */
-	
+	for (i = 0; i< TRIGGERING_TIMES; i++)
+	{
+		printf("Time[%d]: %s\n", i, timeDatas[i]);	
+	}
+
 	freeFFTMemory();
 	freeFitsMemory();
 	

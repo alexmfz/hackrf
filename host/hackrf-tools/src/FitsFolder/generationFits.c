@@ -15,10 +15,12 @@
 #include <sys/types.h>
 #include <inttypes.h>
 
+#define TRIGGERING_TIMES (200)
+
 /*** Global Variables***/
 fitsfile *fptr =NULL;
 float *frequencyDatas; // Frecuency Datas of the sweeping
-char timeDatas[3600][50] = {""}; // Time Datas of the sweeping | 3600 dates
+char timeDatas[TRIGGERING_TIMES][57] = {""}; // Time Datas of the sweeping | 3600 dates
 float* samples; // Array of float samples where dbs measures will be saved
 
 int exist = 0;
