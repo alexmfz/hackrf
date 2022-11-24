@@ -168,11 +168,46 @@ void saveSamplesLoopTest()
 
 }
 
+void stringTest()
+{
+    char texto[100], texto2[100], texto3[100], texto4[100], texto5[100], texto6[100]={""};
+    long int numero = 212;
+    
+    fprintf(stderr, "Prueba con numero con 0 delante: %ld\n", numero);
+    sprintf(texto, "%04ld", numero);
+    sprintf(texto2, "%04ld", numero);
+    printf("Texto1: %s\n",texto);
+    printf("Texto2: %s\n",texto2);
+    strncat(texto2, texto, 2);
+    printf("%s\n",texto2);
+
+
+    fprintf(stderr, "Prueba con mismo numero pero sin 0 delante\n");
+    int numero2 = 2012;
+
+    sprintf(texto3, "%d", numero2);
+    sprintf(texto4, "%d", numero2);
+    printf("Texto3: %s\n",texto3);
+    printf("Texto4: %s\n",texto4);
+    strncat(texto4, texto3, 2);
+    printf("%s\n",texto4);
+
+
+    fprintf(stderr, "Prueba con cadena con 0 delante\n");
+    strcpy(texto5, "02012");
+    strncat(texto6, "02012",3);
+    printf("Texto 5: %s\n",texto5);
+    printf("Texto6: %s\n",texto6);
+
+
+
+}
+
 int main(int argc, char** argv) 
 {
     /*fprintf(stderr, "timerNewConceptTest()\n");
     timerNewConceptTest(); // Is in a while(1), discomment to test*/
-    
+    gettimeofday(&preTriggering, NULL);
     fprintf(stderr, "saveTimesLoopTest()\n");
     saveTimesLoopTest("Sweeping Time");
     printf("\n");
@@ -192,14 +227,16 @@ int main(int argc, char** argv)
     printf("Press 'Enter' to continue....");
     while(getchar()!='\n');
 
-    char texto[100], texto2[5];
-    int numero = 2012;
-    sprintf(texto, "%d", numero);
-    sprintf(texto2, "%d", numero);
-    printf("Texto1: %s\n",texto);
-    printf("Texto2: %s\n",texto2);
-    strncpy("text", texto, 3);
-    printf("%s\n",texto2);
+    stringTest();
+    printf("\n");
+    printf("Press 'Enter' to continue....");
+    while(getchar()!='\n');
+
+
+
+
+
+
     
     return 0;
 }

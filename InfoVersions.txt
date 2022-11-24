@@ -1,5 +1,5 @@
-v2.6: 
+v2.6.1: 
 - Corrected and reformated some logs
 - Frequencies from sweeping saved into a function defined in generationFits.c called saveFrequencies()
-- times from sweeping saved into a function defined in generationFits.c called saveTimes()
+- times from sweeping saved into a function defined in generationFits.c called saveTimes() => bugs with zeros resolved
 - power samples from sweeping saved into a function defined in generationFits.c called saveSamples()
