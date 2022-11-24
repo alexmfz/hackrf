@@ -15,7 +15,7 @@
 #include <sys/types.h>
 #include <inttypes.h>
 
-#define TRIGGERING_TIMES (10)
+#define TRIGGERING_TIMES (30)
 
 /*** Global Variables***/
 fitsfile *fptr =NULL;
