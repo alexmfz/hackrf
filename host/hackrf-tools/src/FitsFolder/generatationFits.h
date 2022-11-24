@@ -15,8 +15,14 @@
 #include <unistd.h>
 #include <sys/time.h>
 #endif
+
+
 int create(char filename[]);
 void updateHeadersFitsFile();
 int insertData(float* samples);
 void closeFits();
-int generateFitsFile(char filename[], float* samples);
+int generateFitsFile(char filename[], float* samples, uint32_t freq_min, uint32_t freq_max, float step_value);
+int saveFrequencies(uint32_t freq_min, uint32_t freq_max, float step_value);
+int saveTimes(int i, int triggeringTimes, char* sweepingTime);
+int saveSamples(int i, float powerSample, int nElements);
+

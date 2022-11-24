@@ -1,7 +1,5 @@
-v2.5: 
-- Solution found to the bug
-    Execute hackrf_sweep in infinite mode and trigger timer inside callback function getting data each 0.25s
-
-- Code commented and removed stuffs not used
-- Logs reformated to follow same criteria
-
+v2.6: 
+- Corrected and reformated some logs
+- Frequencies from sweeping saved into a function defined in generationFits.c called saveFrequencies()
+- times from sweeping saved into a function defined in generationFits.c called saveTimes()
+- power samples from sweeping saved into a function defined in generationFits.c called saveSamples()

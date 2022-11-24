@@ -5,4 +5,6 @@ Status:  OK | PENDING
 3. Generate fits file with correct format --> PENDING
 4. Resolve output bug detected in hackrf_sweep --> OK
 5. Update firmware --> OK
-6. Optimize code to run faster and comment code--> PENDING
+6. Optimize code to run faster and comment code--> OK
+7. Resolve pending bugs and TODO --> PENDING
+8. Save in dinamic memory frequencies, times(between 0.25 s) and power samples --> PENDING (leaves to check)

@@ -76,8 +76,6 @@ float totalDuration = 0; // Total duration (should be aroung 15 minutes)
 bool success = false; // It determines if a iteration was successfull or not (frue => OK, false ==> Error)
 int counterSucess = 0; // It determines the number of iterations successfull
 int flag_initialFreqCaught = 0; // Flag to check if first frecuency (freq_min) was caught (0 => not capture, 1 => captured)
-float* samples; // Array of float samples where dbs measures will be saved
-int id_sample = 0; // Id samples (TODO: Check if replace with counterSucess variable)
 
 float step_value = 0; // (freqmax-freqmin)/nChannels (MHz) ==> Channel bandwidth
 int numberOfSteps = 0; // Number of channels
@@ -86,6 +84,9 @@ int sampleRate = 0; // Custom sample rate
 
 char pathFits[] = "TFM.fits"; // File name of fits file
 extern long naxes[2]; // Number of axis of fits file
+extern float *frequencyDatas;
+extern float* samples; // Array of float samples where dbs measures will be saved
+int id_sample = 0; // Id samples (TODO: Check if replace with counterSucess variable)
 
 int timerFlag = 0; // Timer flag to check if was trigger or not (At handler is set to 1 which means that 0.25s had passed)
 extern struct itimerval timer; // Timer struct needed to create a timer
@@ -250,7 +251,6 @@ int rx_callback(hackrf_transfer* transfer) {
 	struct tm *fft_time;
 	char time_str[50];
 	struct timeval usb_transfer_time;
-	//int nElements = naxes[0]*naxes[1];
 
 	if(NULL == outfile){// || strstr(pathFits,"fits")==NULL) {
 		return -1;
@@ -774,6 +774,16 @@ static void freeFFTMemory()
 	fftwf_free(ifftwOut);
 }
 
+/**
+ * @brief  Free reserved memory for fits data
+ * @note   
+ * @retval None
+ */
+static void freeFitsMemory()
+{
+	free(samples);
+	free(frequencyDatas);
+}
 
 /**
  * @brief  Main thread 
@@ -786,7 +796,7 @@ int main(int argc, char** argv)
 {
 	int opt = 0, i, nElements;
 
-	showMenu(opt, argc, argv);
+	if (execApiBasicConfiguration(opt, argc, argv) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
 	if(checkParams() == EXIT_FAILURE){ return EXIT_FAILURE; } 
 	while((fftSize +4) % 8){ fftSize++; }
@@ -836,12 +846,6 @@ int main(int argc, char** argv)
 	printf("hackrf_sweep | HackRF One configuration DONE.\n");
 
 	nElements = naxes[0]*naxes[1];
-	//samples = (float*)calloc(nElements,sizeof(float));
-	//if(samples == NULL)
-	//{
-	//	printf("hackrf_sweep | Samples not allocated in memory.\n");
-	//	exit(0);
-	//}
 
 	setTimerParams();
 
@@ -864,8 +868,7 @@ int main(int argc, char** argv)
 	printf("\tTotal duration: %.2f s ||",totalDuration);
 	printf("\t Total sweep time : %.2f s ||",durationSweeps);
 	printf("\t sweepingTime/totalDuration: %.2f%%\n", 100*durationSweeps/totalDuration);
-	
-
+		
 	/*if(strstr(path,"fits") != NULL)
 	{
 		fflush(outfile);
@@ -885,7 +888,8 @@ int main(int argc, char** argv)
 */
 	
 	freeFFTMemory();
-	free(samples);
+	freeFitsMemory();
+	
 	printf("hackrf_sweep | The dynamic memory used was successfully released.\nEND.\n");
 
 	return EXIT_SUCCESS;

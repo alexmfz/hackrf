@@ -227,7 +227,7 @@ void assignGenericParameters()
 	fftSize = sampleRate/requested_fft_bin_width;
 
 	printf("functions | assignGenericParameters() | Step Value: %f MHz\n", step_value);
-	printf("functions | assignGenericParameters() | Number of Steps (channels): %d\n", numberOfSteps);
+	printf("functions | assignGenericParameters() | Number of Channels: %d\n", nChannels);
 	printf("functions | assignGenericParameters() | Sample Rate: %d MHz\n", sampleRate);
 	printf("functions | assignGenericParameters() | FFT size: %d\n", fftSize);
 	printf("functions | assignGenericParameters() | Samples per channel:\n %d", fftSize/4);
@@ -236,13 +236,13 @@ void assignGenericParameters()
 }
 
 /**
- * @brief  Menu of the API that will assign values dependly of argumentsa
+ * @brief  Basic configuration of the API that will assign values dependly of argumentsa
  * @note   
  * @param  opt: possible options
  * @param  argc: argument
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int showMenu(int opt, int argc, char**argv)
+int execApiBasicConfiguration(int opt, int argc, char**argv)
 {
 while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 		result = HACKRF_SUCCESS;
@@ -339,4 +339,5 @@ while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 
 	assignGenericParameters();
 	assignFitsParameters();
+	return EXIT_SUCCESS;
 }
