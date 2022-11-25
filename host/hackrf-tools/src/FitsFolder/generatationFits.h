@@ -23,6 +23,9 @@ int insertData(float* samples);
 void closeFits();
 int generateFitsFile(char filename[], float* samples, uint32_t freq_min, uint32_t freq_max, float step_value);
 int saveFrequencies(uint32_t freq_min, uint32_t freq_max, float step_value);
-int saveTimes(int i, int triggeringTimes, char* sweepingTime);
-int saveSamples(int i, float powerSample, int nElements);
+int saveTimes(int i, int triggeringTimes, char* sweepingTime); // Wont be used by the moment
+int saveSamples(int i, float powerSample, int nElements); // Wont be used by the moment
+int checkSavedData(int nElements);
+
+
 

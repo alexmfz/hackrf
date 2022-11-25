@@ -37,11 +37,14 @@ typedef int bool;
 #define FREQ_ONE_MHZ (1000000ull)
 #define FREQ_MAX_MHZ (7250) /* 7250 MHz */
 #define FFTMAX 	(8180)
-#define FFTSIZE_STD	(14400)
+
+#define TRIGGERING_TIMES (5)
+
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)
 #define CONVERSION_MIN_TO_S (60)
 #define TOTAL_SAMPLES_PER_FREQUENCY (MAX_TIME_MINUTES*CONVERSION_MIN_TO_S*SAMPLES_PER_S)
+
 extern int numberOfSteps;
 extern long naxes[2];
 extern float step_value;
@@ -172,7 +175,7 @@ int assignFitsParameters()
 
 	if(strstr(pathFits, "fits") != NULL)
 	{
-		naxes[0] = TOTAL_SAMPLES_PER_FREQUENCY; //3600
+		naxes[0] = TRIGGERING_TIMES;//TOTAL_SAMPLEST_PER_FREQUENCY; //3600
 		naxes[1] = numberOfSteps; //200
 		//naxes[3] = naxes[0] * naxes[1];
 

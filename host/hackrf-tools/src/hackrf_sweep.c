@@ -53,7 +53,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFTMIN 	(4)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGGERING_TIMES (30)
+#define TRIGGERING_TIMES (5)
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -341,7 +341,11 @@ int rx_callback(hackrf_transfer* transfer) {
 			- frequency should be first frequency or this frecuency was caught
 		*/
 		if(strstr(pathFits, "fits")!= NULL && timerFlag == 1 && ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0]) || flag_initialFreqCaught == 1)) 
-		{			
+		{	
+			time_t time_stamp_seconds = usb_transfer_time.tv_sec;
+			fft_time = localtime(&time_stamp_seconds);
+			strftime(time_str, 60, "%Y-%m-%d, %H:%M:%S", fft_time);
+
 			if ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
 			{ 
 				char sweepingTime[60];
@@ -349,23 +353,16 @@ int rx_callback(hackrf_transfer* transfer) {
 				char totalDecimalsTime[8];
 				flag_initialFreqCaught = 1; //First time will enter
 				fprintf(stderr, "First Frecuency caught. Setting flag to 1\n"); 
-				
-				time_t time_stamp_seconds = usb_transfer_time.tv_sec;
-				fft_time = localtime(&time_stamp_seconds);
-				strftime(time_str, 60, "%Y-%m-%d, %H:%M:%S", fft_time);
 
 				strcpy(sweepingTime, time_str);
 				sprintf(totalDecimalsTime, "%06ld", (long int)usb_transfer_time.tv_usec);
 				strncat(decimalTime, totalDecimalsTime, 3);
 				strncat(sweepingTime, decimalTime, 4);
-				fprintf(stderr, "Mi tiempo total: %s\n", sweepingTime);
 
-				saveTimes(counterSucess, TRIGGERING_TIMES, sweepingTime);	
+				//Save times
+				strcpy(timeDatas[counterSucess], sweepingTime);
 			}
 
-			time_t time_stamp_seconds = usb_transfer_time.tv_sec;
-			fft_time = localtime(&time_stamp_seconds);
-			strftime(time_str, 60, "%Y-%m-%d, %H:%M:%S", fft_time);
 			printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
 				time_str,
 				(long int)usb_transfer_time.tv_usec,
@@ -377,6 +374,10 @@ int rx_callback(hackrf_transfer* transfer) {
 			for(i = 0; (fftSize / 4) > i; i++) 
 			{
 				printf(", %.2f", pwr[i + 1 + (fftSize*5)/8]);
+				
+				// Save power sample
+				samples[id_sample] = pwr[i + 1 + (fftSize*5)/8];
+				id_sample++;
 			}
 
 			printf("\n");
@@ -391,6 +392,10 @@ int rx_callback(hackrf_transfer* transfer) {
 			for(i = 0; (fftSize / 4) > i; i++) 
 			{
 				printf(", %.2f", pwr[i + 1 + (fftSize/8)]);
+				
+				// Save power sample
+				samples[id_sample] = pwr[i + 1 + (fftSize/8)];
+				id_sample++;
 			}
 			
 			printf("\n");
@@ -400,8 +405,8 @@ int rx_callback(hackrf_transfer* transfer) {
 				printf("hackrf_sweep | rx_callback() | Data Caught. Iteration %d finished\n", counterSucess);			
 				fprintf(stderr, "hackrf_sweep | rx_callback() | Data Caught. Iteration %d finished\n", counterSucess);			
 				success = false;
-				timerFlag = 0; // flag down which means that data was caught
-				flag_initialFreqCaught = 0; //Set variable to finish iteration
+				timerFlag = 0; // Flag down which means that data was caught
+				flag_initialFreqCaught = 0; // Set variable to finish iteration
 			}
 		}
 		
@@ -867,6 +872,16 @@ int main(int argc, char** argv)
 
 	if (setSweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
+	// Reserve memory for power sample data
+    samples = (float*)calloc(nElements,sizeof(float));
+	
+    if (samples == NULL)
+    {
+        fprintf(stderr, "generationFits | checkSavedData() | Was not possible to allocate memory for power samples\n");
+        return EXIT_FAILURE;
+    }
+	printf("hackrf_sweep | Memory allocated for power samples\n");	
+
     //Run timer for this iteration 
 	totalDuration = hackRFTrigger();
 
@@ -884,7 +899,8 @@ int main(int argc, char** argv)
 	printf("\tTotal duration: %.2f s ||",totalDuration);
 	printf("\t Total sweep time : %.2f s ||",durationSweeps);
 	printf("\t sweepingTime/totalDuration: %.2f%%\n", 100*durationSweeps/totalDuration);
-		
+	
+	if(checkSavedData(nElements) == EXIT_FAILURE){ return EXIT_FAILURE; }
 	/*if(strstr(path,"fits") != NULL)
 	{
 		fflush(outfile);
@@ -902,10 +918,20 @@ int main(int argc, char** argv)
 		generateFitsFile(pathFits, samples);
 	}
 */
+	printf("Data results | Timing\n");
+	
 	for (i = 0; i< TRIGGERING_TIMES; i++)
 	{
 		printf("Time[%d]: %s\n", i, timeDatas[i]);	
 	}
+
+	printf("Data results | Power sample\n");
+
+	for (i = 0; i < nElements; i++)
+	{
+		printf("Power sample[%d]: %f\n", i, samples[i]);
+	}
+	
 
 	freeFFTMemory();
 	freeFitsMemory();

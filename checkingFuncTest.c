@@ -15,6 +15,7 @@ struct timeval postTriggering;
 int timerFlag = 0;
 char timeDatas[3600][50] = {""}; // Time Datas of the sweeping | 3600 dates
 float *samples;
+float *example;
 
 void timerHandler(int sig)
 {
@@ -102,17 +103,31 @@ int saveTimesTest(int i, int triggeringTimes, char* sweepingTime)
 void saveTimesLoopTest(char *sweepingTime)
 {
     int i = 0; 
-    int triggeringTimes = 10;
+    int triggeringTimes = 3600;
+    char assignation[50];
+
+    gettimeofday(&preTriggering, NULL);
     for (i = 0; i < triggeringTimes; i++)
         if (saveTimesTest( i, triggeringTimes, sweepingTime) == -1)
         {
             fprintf(stderr, "Exiting\n");
             return;
         }
+    gettimeofday(&postTriggering, NULL);
+    fprintf(stderr, "Time with checking: %f\n", TimevalDiff(&postTriggering, &preTriggering));
 
-    printf("Printing results:\n");
+   /*printf("Printing results:\n");
     for (i = 0; i < triggeringTimes; i++)
         printf("Result %i: %s\n", i, timeDatas[i]);
+*/
+    /**Time with just assignation**/
+    gettimeofday(&preTriggering, NULL);
+    for(i = 0; i< triggeringTimes; i++)
+    {
+        strcpy(assignation, sweepingTime);
+    }
+    gettimeofday(&postTriggering, NULL);
+    fprintf(stderr, "Time without checking: %f", TimevalDiff(&postTriggering, &preTriggering));
 }
 
 int saveSamplesTest(int i, float powerSample, int nElements)
@@ -232,11 +247,5 @@ int main(int argc, char** argv)
     printf("Press 'Enter' to continue....");
     while(getchar()!='\n');
 
-
-
-
-
-
-    
     return 0;
 }

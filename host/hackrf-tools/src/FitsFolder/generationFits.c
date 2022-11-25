@@ -15,7 +15,7 @@
 #include <sys/types.h>
 #include <inttypes.h>
 
-#define TRIGGERING_TIMES (30)
+#define TRIGGERING_TIMES (5)
 
 /*** Global Variables***/
 fitsfile *fptr =NULL;
@@ -207,7 +207,7 @@ int saveFrequencies(uint32_t freq_min, uint32_t freq_max, float step_value)
 
 /**
  * @brief  Save the times from the sweeping to insert into fits file has headers data
- * @note   
+ * @note   Wont be used by the moment
  * @param  i: Actual iteration  
  * @param  triggeringTimes: Number of correct iterations
  * @param  sweepingTime: parameter of time where sweeping it happens
@@ -240,7 +240,7 @@ int saveTimes(int i, int triggeringTimes, char* sweepingTime)
 
 /**
  * @brief  Save the samples from the sweeping to insert into fits file has data
- * @note   
+ * @note   Wont be used by the moment
  * @param  i: Actual iteration 
  * @param  powerSample: parameter of power sample from sweeping
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
@@ -270,6 +270,42 @@ int saveSamples(int i, float powerSample, int nElements)
         printf("generationFits | saveSamples() | Execution Sucess\n");
     }
 
+    return EXIT_SUCCESS;
+}
+
+/**
+ * @brief  Checks if saved Times and power samples are correct
+ * @note
+ * @param nElements Number of power samples   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+int checkSavedData(int nElements)
+{
+    int i = 0;
+    printf("generationFits | checkSavedData() | Start checking saved times data to generate fits file\n");
+    
+    // Check timing data
+    for (i = 0; i < TRIGGERING_TIMES; i++)
+    {
+        if (strcmp(timeDatas[i], "") == 0)
+        {
+            fprintf(stderr, "generationFits | checkSavedData() | Was not possible to save timing data\n");
+            return EXIT_FAILURE;
+        }
+    }
+
+    printf("generationFits | checkSavedData() | Start checking saved power sample data to generate fits file\n");
+    // Check power sample data
+    for (i = 0; i < nElements; i++)
+    {
+        if (samples[i] == 0)
+        {
+            fprintf(stderr, "Data not saved correctly\n");
+            return EXIT_FAILURE;
+        }
+    }
+
+    printf("generationFits | checkSavedData() | Execution Sucess\n");
     return EXIT_SUCCESS;
 }
 
