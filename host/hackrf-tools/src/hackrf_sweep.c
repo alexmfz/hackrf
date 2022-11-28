@@ -108,8 +108,8 @@ unsigned int lna_gain=16, vga_gain=20; // Gains
 uint32_t freq_min = 0; // Predefined min frequency if is not passed by argument
 uint32_t freq_max = 6000; // Predefined max frequency if is not passed by argument
 
-FILE* outfile = NULL; // Initial output file where samples will be saved
-char* path = NULL; // Path of the outfile
+FILE* outfile = NULL; // TODO: Initial output file where samples will be saved
+char* path = NULL; // TODO: Path of the outfile
 
 uint32_t byte_count = 0; // Bytes transmitted
 volatile uint64_t sweep_count = 0; // Number of sweeps done (sucessfull or not)
@@ -253,8 +253,15 @@ int rx_callback(hackrf_transfer* transfer) {
 	char time_str[60];
 	struct timeval usb_transfer_time;
 
-	if(NULL == outfile){// || strstr(pathFits,"fits")==NULL) {
+	// TODO: Check if it can be deleted
+	/*if(NULL == outfile){// || strstr(pathFits,"fits")==NULL) {
 		return -1;
+	}*/
+
+	if (strstr(pathFits,"fits")==NULL) 
+	{
+		fprintf(stderr, "hackrf_sweep | rx_callback() | pathFits is null");
+		return EXIT_FAILURE;
 	}
 
 	if(do_exit) {
@@ -386,7 +393,7 @@ int rx_callback(hackrf_transfer* transfer) {
 					(long int)usb_transfer_time.tv_usec,
 					(uint64_t)(frequency+(sampleRate/2)),
 					(uint64_t)(frequency+((sampleRate*3)/4)),
-					fft_bin_width,	//	--> 49504,95			
+					fft_bin_width,			
 					fftSize);
 					
 			for(i = 0; (fftSize / 4) > i; i++) 
@@ -768,13 +775,13 @@ static int endConnection()
 		hackrf_exit();
 		printf("hackrf_sweep | endConnection() | hackrf_exit() done\n");
 	}
-
-	fflush(outfile);
+	// TODO:  check if can be deleted
+	/*fflush(outfile);
 	if ( ( outfile != NULL ) && ( outfile != stdout ) ) {
 		fclose(outfile);
 		outfile = NULL;
 		printf("hackrf_sweep | endConnection() | fclose() done\n");
-	}
+	}*/
 
 	printf("hackrf_sweep | endConnection() | Execution Success\n");
 	return EXIT_SUCCESS;
@@ -807,6 +814,35 @@ static void freeFitsMemory()
 }
 
 /**
+ * @brief Function just to check values
+ * @note   
+ * @retval None
+ */
+void printValuesHackRFOne()
+{
+	int i = 0;
+	int nElements = naxes[0]*naxes[1];
+
+	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Timing\n");
+	for (i = 0; i< TRIGGERING_TIMES; i++)
+	{
+		printf("Time[%d]: %s\n", i, timeDatas[i]);	
+	}
+	
+	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Power samples\n");
+	for (i = 0; i < nElements; i++)
+	{
+		printf("Power sample[%d]: %f\n", i, samples[i]);
+	}
+
+	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Frequencies\n");
+	for (i = 0; i< numberOfSteps; i++)
+	{
+		printf("Frequency[%d]: %f MHz", i, frequencyDatas[i]);
+	}
+}
+
+/**
  * @brief  Main thread 
  * @note   Execution example: ./hackrf_sweep -f45:245 > test.out
  * @param  argc: 
@@ -816,6 +852,17 @@ static void freeFitsMemory()
 int main(int argc, char** argv) 
 {
 	int opt = 0, i, nElements;
+	
+	time_t now = time(NULL);
+    struct tm localTime = *localtime(&now);
+	char startDate[70];
+	char timeStart[70];
+	
+	char endDate[70];
+	char timeEnd[70];
+
+	strftime(startDate, sizeof startDate,"%Y-%m-%d", &localTime);
+	strftime(timeStart, sizeof timeStart, "%Y-%m-%d %H:%M:%S", &localTime);
 
 	if (execApiBasicConfiguration(opt, argc, argv) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
@@ -835,12 +882,12 @@ int main(int argc, char** argv)
 
 	if(initConfigureHackRF() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
-	if(strstr(pathFits, "fits") != NULL) // TODO: BUG HERE
+	/*if(strstr(pathFits, "fits") != NULL) // TODO: BUG HERE
 	{	
 		if(openFile() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
 		if(setBufOutFile() == EXIT_FAILURE){ return EXIT_FAILURE; }
-	}
+	}*/
 
 #ifdef _MSC_VER
 	SetConsoleCtrlHandler( (PHANDLER_ROUTINE) sighandler, TRUE );
@@ -891,6 +938,11 @@ int main(int argc, char** argv)
 	
 	//fprintf(stderr, "Total sweep completed successfully: %d out of %d", counterSucess, TRIGGERING_TIMES);
 	
+	now = time(NULL);
+    localTime = *localtime(&now);
+	strftime(endDate, sizeof endDate,"%Y-%m-%d", &localTime);
+	strftime(timeEnd, sizeof timeEnd, "%Y-%m-%d %H:%M:%S", &localTime);
+
 	durationSweeps += sweepDuration();
 
 	checkStreaming();   	
@@ -907,31 +959,13 @@ int main(int argc, char** argv)
 	}*/
 
 	if(endConnection() == EXIT_FAILURE){ return EXIT_FAILURE; }
-/*	
-	for (i = 0; i< nElements; i++)
-	{
-		printf("%\n",samples[i]);
-		
-	}*/
+
 /*	if(strstr(pathFits,"fits")!=NULL)
 	{
 		generateFitsFile(pathFits, samples);
 	}
 */
-	printf("Data results | Timing\n");
-	
-	for (i = 0; i< TRIGGERING_TIMES; i++)
-	{
-		printf("Time[%d]: %s\n", i, timeDatas[i]);	
-	}
-
-	printf("Data results | Power sample\n");
-
-	for (i = 0; i < nElements; i++)
-	{
-		printf("Power sample[%d]: %f\n", i, samples[i]);
-	}
-	
+	//printValuesHackRFOne();
 
 	freeFFTMemory();
 	freeFitsMemory();

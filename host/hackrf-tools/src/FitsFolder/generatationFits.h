@@ -18,14 +18,12 @@
 
 
 int create(char filename[]);
-void updateHeadersFitsFile();
+void updateHeadersFitsFile( char startDate[], char timeStart[], char endDate[], char timeEnd[]);
 int insertData(float* samples);
 void closeFits();
-int generateFitsFile(char filename[], float* samples, uint32_t freq_min, uint32_t freq_max, float step_value);
+int generateFitsFile(char filename[], float* samples, uint32_t freq_min, uint32_t freq_max, float step_value, char startDate[], char timeStart[], char endDate[], char timeEnd[]);
 int saveFrequencies(uint32_t freq_min, uint32_t freq_max, float step_value);
-int saveTimes(int i, int triggeringTimes, char* sweepingTime); // Wont be used by the moment
-int saveSamples(int i, float powerSample, int nElements); // Wont be used by the moment
+int saveTimes(int i, int triggeringTimes, char* sweepingTime); // TODO: Wont be used by the moment
+int saveSamples(int i, float powerSample, int nElements); // TODO: Wont be used by the moment
 int checkSavedData(int nElements);
-
-
-
+void associateFreqsToSample(); // TODO: Still not develop

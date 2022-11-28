@@ -69,8 +69,6 @@ extern uint32_t requested_fft_bin_width;
 extern int fftSize;
 extern bool one_shot;
 extern bool finite_mode;
-extern bool binary_output;
-extern bool ifft_output;
 extern int sampleRate;
 uint32_t nChannels = 200;
 

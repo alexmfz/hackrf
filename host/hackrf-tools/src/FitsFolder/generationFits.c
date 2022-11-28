@@ -26,7 +26,7 @@ float* samples; // Array of float samples where dbs measures will be saved
 int exist = 0;
 int status = 0, ii, jj;
 int fpixel = 1;
-int naxis = 3, nElements, exposure;
+int naxis = 2, nElements, exposure;
 long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
 float array_img[3600][200]; //naxes[0]naxes[y] (axis x ,axis y)
 
@@ -86,7 +86,7 @@ int create(char fileFitsName[])
             return EXIT_FAILURE;
         }
 
-        printf("generationFits | create() | Execution Sucess. File created: %s\n", fileFitsName);
+        printf("generationFits | create() | Execution Sucess. File created: %s with dimensions [%ld]x[%ld]\n", fileFitsName, naxes[0], naxes[1]);
         return EXIT_SUCCESS;
     }
 }
@@ -96,31 +96,50 @@ int create(char fileFitsName[])
  * @note   
  * @retval None
  */
-void updateHeadersFitsFile()
+void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char *timeEnd)
 {
-    /*Write a keyword; must pass the ADDRESS of the value*/
-    time_t now = time(0);
-    char *time_str = ctime(&now);
-    time_str[strlen(time_str)-1] = '\0';
-    long stepX = 0.25, stepY = -1, dataMax = UINT8_MAX, dataMin= 0, crPix1 = 0, crPix2 = 0,crVal1 = 3599., crVal2 = 200, bzero = 0., bscale = 1.;
-    fits_update_key(fptr,TSTRING,"DATE", time_str,"Time of observation" ,&status); //Date observation
-    fits_update_key(fptr,TSTRING, "OBJECT", "Space", "Object name", &status ); //Object Description
-    fits_update_key(fptr,TLONG, "DATAMAX", &dataMax, "Max pixel data", &status);
-    fits_update_key(fptr,TLONG, "DATAMIN", &dataMin, "Min pixel data", &status);
-    fits_update_key(fptr,TSTRING, "ORIGIN", "TFM Alejandro", "Property", &status ); //Organization name
-    fits_update_key(fptr,TSTRING, "TELESCOP","Radio", "Type of intrument", &status); //Instrument type
-    fits_update_key(fptr,TSTRING, "INSTRUME","HackRF One", "Name of the instrument", &status); //Instrument type
-    fits_update_key(fptr,TSTRING, "CTYPE1", "Frequency[MHz]", "MHz", &status ); //Title axis 1
-    fits_update_key(fptr,TSTRING, "CTYPE2", "Power[dB]", "Power (dB)", &status ); //Title axis 2
-  /*  fits_update_key(fptr,TLONG, "CDELT1", &stepX, "Steps Frequency", &status); //Steps axis X
-    fits_update_key(fptr,TLONG, "CDELT2", &stepY, "Steps samples", &status); //Steps axis Y
-    fits_update_key(fptr,TLONG, "CRPIX1", &crPix1, "reference Pixel 1", &status); 
-    fits_update_key(fptr,TLONG, "CRPIX2", &crPix2, "reference Pixel 2 ", &status); 
-    fits_update_key(fptr,TLONG, "CRVAL1", &crVal1, "Value reference Pixel 1", &status); 
-    fits_update_key(fptr,TLONG, "CRVAL2", &crVal2, "Value reference Pixel 2 ", &status); 
-    fits_update_key(fptr,TLONG, "BZERO", &bzero, "Scaling offset", &status); 
-    fits_update_key(fptr,TLONG, "BSCALE", &bscale, "Scaling factor", &status); 
-*/
+    printf("generationFits | updateHeadersFitsFile | Updating fits headers to format\n");
+
+    long bzero = 0., bscale = 1.;
+    long dataMax = 0, dataMin= -200;
+    long crVal1 = 900., crPix1 = 0, stepX = 0.25;
+    long crVal2 = 200., crPix2 = 0, stepY = -1;
+
+    fits_update_key(fptr, TSTRING,"DATE", startDate, "Time of observation" ,&status); // Date observation
+
+    fits_update_key(fptr, TSTRING, "CONTENT", "Sweeping hackRF Operation", "Title", &status);
+
+    fits_update_key(fptr, TSTRING, "ORIGIN", "University of Alcala de Henares", "Organization name", &status); // Organization name
+
+    fits_update_key(fptr, TSTRING, "TELESCOP","SDR", "Type of intrument", &status); // Instrument type
+    fits_update_key(fptr, TSTRING, "INSTRUME","HACKRF One", "Name of the instrument", &status); // Instrument name
+
+    fits_update_key(fptr, TSTRING, "OBJECT", "Space", "Object name", &status); // Object Description
+
+    fits_update_key(fptr, TSTRING, "DATE-OBS", startDate, "Date observation starts", &status); // Date observation starts
+    fits_update_key(fptr, TSTRING, "TIME-OBS", timeStart, "Time observation starts", &status); // Time observation starts
+    fits_update_key(fptr, TSTRING, "DATE-OBS", endDate, "Time observation starts", &status); // Date observation ends
+    fits_update_key(fptr, TSTRING, "TIME-END", timeEnd, "Time observation starts", &status); // Time observation ends
+
+    fits_update_key(fptr, TLONG, "BZERO", &bzero, "Scaling offset", &status); // Scaling offset
+    fits_update_key(fptr, TLONG, "BSCALE", &bscale, "Scaling factor", &status);  // Scaling factor
+    
+    fits_update_key(fptr, TSTRING, "BUNIT", "digits", "Z - axis title", &status); // z- axis title
+
+    fits_update_key(fptr, TLONG, "DATAMAX", &dataMax, "Max pixel data", &status);
+    fits_update_key(fptr, TLONG, "DATAMIN", &dataMin, "Min pixel data", &status);
+
+    fits_update_key(fptr, TLONG, "CRVAL1", &crVal1, "Value on axis 1 at the reference pixel [sec of a day]", &status);  // Value on axis 1 at reference pixel [sec of a day]
+    fits_update_key(fptr, TLONG, "CRPIX1", &crPix1, "Reference pixel of axis 1", &status); // Reference pixel of axis 1
+    fits_update_key(fptr, TSTRING, "CTYPE1", "Time [UT]", "Title of axis 1", &status ); // Title of axis 1
+    fits_update_key(fptr, TLONG, "CDELT1", &stepX, "Step between first and second element in x-axis", &status); // Step between first and second element in x-axis (0.25 s)
+
+// TODO: CHECK CRVAL2 && STEP Y
+    fits_update_key(fptr, TLONG, "CRVAL2", &crVal2, "Value on axis 2 at the reference pixel", &status);  // Value on axis 2 at the reference pixel
+    fits_update_key(fptr, TLONG, "CRPIX2", &crPix2, "reference Pixel 2 ", &status); 
+    fits_update_key(fptr, TSTRING, "CTYPE2", "Frequency [MHz]", "Title of axis 2", &status ); // Title of axis 2
+    fits_update_key(fptr, TLONG, "CDELT2", &stepY, "Steps samples", &status); // Steps axis Y
+
     printf("generationFits | updateHeadersFitsFile | Execution Sucess\n");
 }
 
@@ -207,7 +226,7 @@ int saveFrequencies(uint32_t freq_min, uint32_t freq_max, float step_value)
 
 /**
  * @brief  Save the times from the sweeping to insert into fits file has headers data
- * @note   Wont be used by the moment
+ * @note   TODO: Wont be used by the moment
  * @param  i: Actual iteration  
  * @param  triggeringTimes: Number of correct iterations
  * @param  sweepingTime: parameter of time where sweeping it happens
@@ -240,7 +259,7 @@ int saveTimes(int i, int triggeringTimes, char* sweepingTime)
 
 /**
  * @brief  Save the samples from the sweeping to insert into fits file has data
- * @note   Wont be used by the moment
+ * @note   TODO: Wont be used by the moment
  * @param  i: Actual iteration 
  * @param  powerSample: parameter of power sample from sweeping
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
@@ -309,6 +328,15 @@ int checkSavedData(int nElements)
     return EXIT_SUCCESS;
 }
 
+/** 
+ * @brief  Freqs are not in ordered so sample values must be reorganizated
+ * @note   TODO: still not developed
+ * @retval None
+ */
+void associateFreqsToSample()
+{
+}
+
 /**
  * @brief Invokes all the functionality to have a correct fits file 
  * @note   
@@ -319,19 +347,17 @@ int checkSavedData(int nElements)
  * @param  step_value: step value between frequencies
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int generateFitsFile(char fileFitsName[], float*samples, uint32_t freq_min, uint32_t freq_max, float step_value)
+int generateFitsFile(char fileFitsName[], float*samples, uint32_t freq_min, uint32_t freq_max, float step_value, char startDate[], char timeStart[], char endDate[], char timeEnd[])
 {   
+    printf("generationFits | generateFitsFile() | Start generating fits file\n");
     //save frequency data | Timing data should before calling this function
     if (saveFrequencies(freq_min, freq_max, step_value) == EXIT_FAILURE) { return EXIT_FAILURE; } 
 
     //Creation
-    printf("generationFits | generateFitsFile() | Generating Filename: %s\n",fileFitsName);
-    printf("generationFits | generateFitsFile() | Dimensions of Filename:[%ld][%ld]\n",naxes[0],naxes[1]);
-    
     if (create(fileFitsName) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
     //Update
-    updateHeadersFitsFile();
+    updateHeadersFitsFile(startDate, timeStart, endDate, timeEnd);
    
     //Insert info
     if(insertData(samples) == EXIT_FAILURE)  { return EXIT_FAILURE;  }
@@ -339,5 +365,7 @@ int generateFitsFile(char fileFitsName[], float*samples, uint32_t freq_min, uint
 
     //CloseFile
     closeFits();
+
+    printf("generationFits | generateFitsFile() | Execution Sucess\n");
     return EXIT_SUCCESS;
 }

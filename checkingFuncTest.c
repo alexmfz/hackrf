@@ -218,6 +218,14 @@ void stringTest()
 
 }
 
+void format_headerFitsTest()
+{
+    time_t now = time(0);
+    char *time_str = ctime(&now);
+    time_str[strlen(time_str)-1] = '\0';
+    printf("%s", time_str);
+}
+
 int main(int argc, char** argv) 
 {
     /*fprintf(stderr, "timerNewConceptTest()\n");
@@ -243,6 +251,11 @@ int main(int argc, char** argv)
     while(getchar()!='\n');
 
     stringTest();
+    printf("\n");
+    printf("Press 'Enter' to continue....");
+    while(getchar()!='\n');
+
+    format_headerFitsTest();
     printf("\n");
     printf("Press 'Enter' to continue....");
     while(getchar()!='\n');
