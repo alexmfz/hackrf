@@ -30,6 +30,7 @@ int naxis = 2, nElements, exposure;
 long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
 float array_img[3600][200]; //naxes[0]naxes[y] (axis x ,axis y)
 
+extern struct tm timeFirstSweeping;
 /********************/
 
 /**
@@ -92,18 +93,75 @@ int create(char fileFitsName[])
 }
 
 /**
+ * @brief  Get the min value of the array of powers
+ * @note   
+ * @param  samples: power sample 
+ * @retval Min value of the power samples
+ */
+long minData(float * samples)
+{
+    int  i = 0;
+    long minimum = (long)samples[0];
+
+    for (i = 0; i< nElements; i++)
+    {
+        if (minimum > (long)samples[i])
+        {
+            minimum = (long)samples[i];
+        }
+    }
+
+    return minimum;
+}
+
+/**
+ * @brief  Get the max value of the array of powers
+ * @note   
+ * @param  samples: power sample
+ * @retval Max value of power samples
+ */
+long maxData(float * samples)
+{
+    int  i = 0;
+    long maximum = (long)samples[0];
+
+    for (i = 0; i< nElements; i++)
+    {
+        if (maximum < (long)samples[i])
+        {
+            maximum = (long)samples[i];
+        }
+    }
+
+    return maximum;
+}
+
+/**
+ * @brief  Converts a date into secs of day
+ * @note   
+ * @param  timeFirstSweeping: Time when first sweeeping was done
+ * @retval sec of day when first sweeping was done
+ */
+long getSecondsOfDayOfFirstSweeping(struct tm timeFirstSweeping)
+{
+    long sec_of_day = timeFirstSweeping.tm_hour*3600 + timeFirstSweeping.tm_min*60 + timeFirstSweeping.tm_sec;
+    printf("Sec of day: %ld\n", sec_of_day);
+    return sec_of_day;
+}
+
+/**
  * @brief  Update header values of the fits file
  * @note   
  * @retval None
  */
-void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char *timeEnd)
+void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char *timeEnd, uint32_t freq_min, struct tm timeFirstSweeping)
 {
     printf("generationFits | updateHeadersFitsFile | Updating fits headers to format\n");
-
+    
     long bzero = 0., bscale = 1.;
-    long dataMax = 0, dataMin= -200;
-    long crVal1 = 900., crPix1 = 0, stepX = 0.25;
-    long crVal2 = 200., crPix2 = 0, stepY = -1;
+    long dataMax = maxData(samples), dataMin= minData(samples);
+    long crVal1 = getSecondsOfDayOfFirstSweeping(timeFirstSweeping), crPix1 = 0, stepX = 0.25;   // Time axis value must be sec of a day (where it starts the sweeping)
+    long crVal2 = (long)freq_min, crPix2 = 0, stepY = 1; // Frequencies axis value must start at freq_min 
 
     fits_update_key(fptr, TSTRING,"DATE", startDate, "Time of observation" ,&status); // Date observation
 
@@ -134,7 +192,6 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
     fits_update_key(fptr, TSTRING, "CTYPE1", "Time [UT]", "Title of axis 1", &status ); // Title of axis 1
     fits_update_key(fptr, TLONG, "CDELT1", &stepX, "Step between first and second element in x-axis", &status); // Step between first and second element in x-axis (0.25 s)
 
-// TODO: CHECK CRVAL2 && STEP Y
     fits_update_key(fptr, TLONG, "CRVAL2", &crVal2, "Value on axis 2 at the reference pixel", &status);  // Value on axis 2 at the reference pixel
     fits_update_key(fptr, TLONG, "CRPIX2", &crPix2, "reference Pixel 2 ", &status); 
     fits_update_key(fptr, TSTRING, "CTYPE2", "Frequency [MHz]", "Title of axis 2", &status ); // Title of axis 2
@@ -145,7 +202,7 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
 
 /**
  * @brief  Insert data into fits file
- * @note   
+ * @note   TODO: Revisar
  * @param  samples: Data to be inserted into fits file from callback function
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
@@ -156,16 +213,14 @@ int insertData(float* samples)
     //naxes[1] = 200
     //naxes[0] = 3600
     nElements = naxes[0]*naxes[1];
-    {
-        for(ii= 0; ii< naxes[1]; ii++ )
-        {        
-            for (jj=naxes[0]; jj< naxes[0]; jj++)
-            {
-                array_img[jj][ii] = (uint8_t)(-samples[jj]);
-            }
-            
-        }    
-    }
+    for(ii= 0; ii< naxes[1]; ii++ )
+    {        
+        for (jj=naxes[0]; jj< naxes[0]; jj++)
+        {
+            array_img[jj][ii] = (uint8_t)(-samples[jj]);
+        }
+        
+    }   
 
     /*Write the array of integers of the image*/
     if(fits_write_img(fptr, TFLOAT, fpixel, nElements, array_img[0], &status))
@@ -347,7 +402,7 @@ void associateFreqsToSample()
  * @param  step_value: step value between frequencies
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int generateFitsFile(char fileFitsName[], float*samples, uint32_t freq_min, uint32_t freq_max, float step_value, char startDate[], char timeStart[], char endDate[], char timeEnd[])
+int generateFitsFile(char fileFitsName[], float*samples, uint32_t freq_min, uint32_t freq_max, float step_value, char startDate[], char timeStart[], char endDate[], char timeEnd[], struct tm timeFirstSweeping)
 {   
     printf("generationFits | generateFitsFile() | Start generating fits file\n");
     //save frequency data | Timing data should before calling this function
@@ -357,7 +412,7 @@ int generateFitsFile(char fileFitsName[], float*samples, uint32_t freq_min, uint
     if (create(fileFitsName) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
     //Update
-    updateHeadersFitsFile(startDate, timeStart, endDate, timeEnd);
+    updateHeadersFitsFile(startDate, timeStart, endDate, timeEnd, freq_min, timeFirstSweeping);
    
     //Insert info
     if(insertData(samples) == EXIT_FAILURE)  { return EXIT_FAILURE;  }

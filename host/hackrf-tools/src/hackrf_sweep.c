@@ -93,6 +93,7 @@ int timerFlag = 0; // Timer flag to check if was trigger or not (At handler is s
 extern struct itimerval timer; // Timer struct needed to create a timer
 extern struct timeval preTriggering; // Time measure before triggering (TODO: Change where it is measured)
 extern struct timeval postTriggering; // Time measure after triggering (TODO: Change where it is measured)
+struct tm timeFirstSweeping;
 
 float durationIteration = 0; // Duration of each iteration (TODO: Change where it is measured)
 float durationSweeps = 0; // Total duration of sweepings ( TODO: Change where it is measured)
@@ -299,7 +300,12 @@ int rx_callback(hackrf_transfer* transfer) {
 		if (frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
 		{	
 			success = true;
-
+			if (counterSucess == 0)
+			{
+				time_t now = time(NULL);
+				timeFirstSweeping = *localtime(&now);
+			}
+			
 			if(sweep_started) 
 			{
 				sweep_count++;

@@ -1,3 +1,4 @@
-v2.7: 
-- Outfile part commented for not being used
-- Updated and reorginized headers fits file
+v2.8: 
+- Test added to check generationFitsFile
+- Added functions to get min and max values of power samples and the sec of day of the first sweeping.
+- Setted headers fits file correctly

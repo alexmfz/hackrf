@@ -16,12 +16,14 @@
 #include <sys/time.h>
 #endif
 
-
+long minData(float * samples);
+long maxData(float * samples);
+long getSecondsOfDayOfFirstSweeping(struct tm timeFirstSweeping);
 int create(char filename[]);
-void updateHeadersFitsFile( char startDate[], char timeStart[], char endDate[], char timeEnd[]);
+void updateHeadersFitsFile( char startDate[], char timeStart[], char endDate[], char timeEnd[], uint32_t freq_min, struct tm timeFirstSweeping);
 int insertData(float* samples);
 void closeFits();
-int generateFitsFile(char filename[], float* samples, uint32_t freq_min, uint32_t freq_max, float step_value, char startDate[], char timeStart[], char endDate[], char timeEnd[]);
+int generateFitsFile(char filename[], float* samples, uint32_t freq_min, uint32_t freq_max, float step_value, char startDate[], char timeStart[], char endDate[], char timeEnd[], struct tm timeFirstSweeping);
 int saveFrequencies(uint32_t freq_min, uint32_t freq_max, float step_value);
 int saveTimes(int i, int triggeringTimes, char* sweepingTime); // TODO: Wont be used by the moment
 int saveSamples(int i, float powerSample, int nElements); // TODO: Wont be used by the moment
