@@ -15,7 +15,8 @@
 #include <sys/types.h>
 #include <inttypes.h>
 
-#define TRIGGERING_TIMES (5)
+// -I/usr/local/src/cfitsio-4.1.0 -lcfitsio
+#define TRIGGERING_TIMES (3600)
 
 /*** Global Variables***/
 fitsfile *fptr =NULL;
@@ -28,7 +29,7 @@ int status = 0, ii, jj;
 int fpixel = 1;
 int naxis = 2, nElements, exposure;
 long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
-float array_img[3600][200]; //naxes[0]naxes[y] (axis x ,axis y)
+float array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
 
 extern struct tm timeFirstSweeping;
 /********************/
@@ -123,8 +124,7 @@ long minData(float * samples)
 long maxData(float * samples)
 {
     int  i = 0;
-    long maximum = (long)samples[0];
-
+    long maximum = (long)samples[i];
     for (i = 0; i< nElements; i++)
     {
         if (maximum < (long)samples[i])
@@ -209,18 +209,35 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
 int insertData(float* samples)
 {
     /*Initialize the values in the image with a linear ramp function*/
-    printf("generationFits | insertData() | Inserting data...\n");
-    //naxes[1] = 200
-    //naxes[0] = 3600
-    nElements = naxes[0]*naxes[1];
-    for(ii= 0; ii< naxes[1]; ii++ )
+    printf("generationFits | insertDta() | Inserting data...\n");
+    int id = 0;
+    for(ii= 0; ii< naxes[0]; ii++ ) 
     {        
-        for (jj=naxes[0]; jj< naxes[0]; jj++)
+        for (jj=0; jj< naxes[1]; jj++) // TODO: Review (add id sample variable which ++ for each insert)
         {
-            array_img[jj][ii] = (uint8_t)(-samples[jj]);
+            array_img[jj][ii] = samples[id];
+            id++;
         }
         
-    }   
+    }
+
+    /* TEST
+    printf("Iteration 0; Value sample[0]: %lf\n", samples[0]);
+    printf("Iteration 0; img[0][0]: %lf\n", array_img[0][0]);
+
+    printf("Iteration 0; Value sample[1]: %lf\n", samples[1]);
+    printf("Iteration 0; img[1][0]: %lf\n", array_img[1][0]);
+
+
+    printf("Iteration 1; Value sample[200]: %lf\n", samples[200]);
+    printf("Iteration 1; img[0][1]: %lf\n", array_img[0][1]);
+
+
+    printf("Iteration 4; Value sample[998]: %lf\n", samples[998]);
+    printf("Iteration 4; img[198][4]: %lf\n", array_img[198][4]);
+    */
+    
+    printf("generationFits | insertData() | Inserting data finished. Creating fits image...\n");
 
     /*Write the array of integers of the image*/
     if(fits_write_img(fptr, TFLOAT, fpixel, nElements, array_img[0], &status))
@@ -404,6 +421,8 @@ void associateFreqsToSample()
  */
 int generateFitsFile(char fileFitsName[], float*samples, uint32_t freq_min, uint32_t freq_max, float step_value, char startDate[], char timeStart[], char endDate[], char timeEnd[], struct tm timeFirstSweeping)
 {   
+    nElements = naxes[0]*naxes[1];
+
     printf("generationFits | generateFitsFile() | Start generating fits file\n");
     //save frequency data | Timing data should before calling this function
     if (saveFrequencies(freq_min, freq_max, step_value) == EXIT_FAILURE) { return EXIT_FAILURE; } 

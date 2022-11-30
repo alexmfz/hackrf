@@ -254,6 +254,10 @@ int rx_callback(hackrf_transfer* transfer) {
 	char time_str[60];
 	struct timeval usb_transfer_time;
 
+	// TODO: Check if it can be deleted
+	if(NULL == outfile){// || strstr(pathFits,"fits")==NULL) {
+		return -1;
+	}
 
 	if (strstr(pathFits,"fits")==NULL) 
 	{
@@ -293,11 +297,11 @@ int rx_callback(hackrf_transfer* transfer) {
 		if (frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
 		{	
 			success = true;
-			if (counterSucess == 0)
+		/*	if (counterSucess == 0)
 			{
 				time_t now = time(NULL);
 				timeFirstSweeping = *localtime(&now);
-			}
+			}*/
 			
 			if(sweep_started) 
 			{
@@ -351,64 +355,66 @@ int rx_callback(hackrf_transfer* transfer) {
 			time_t time_stamp_seconds = usb_transfer_time.tv_sec;
 			fft_time = localtime(&time_stamp_seconds);
 			strftime(time_str, 60, "%Y-%m-%d, %H:%M:%S", fft_time);
+			fprintf(stderr, "First Frecuency caught. Setting flag to 1\n"); 
 			if ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
 			{ 
-				char sweepingTime[60];
+				/*char sweepingTime[60];
 				char decimalTime[8] = {"."};
-				char totalDecimalsTime[8];
+				char totalDecimalsTime[8];*/
 				flag_initialFreqCaught = 1; //First time will enter
 				fprintf(stderr, "First Frecuency caught. Setting flag to 1\n"); 
 
-				strcpy(sweepingTime, time_str);
+
+				/*strcpy(sweepingTime, time_str);
 				sprintf(totalDecimalsTime, "%06ld", (long int)usb_transfer_time.tv_usec);
 				strncat(decimalTime, totalDecimalsTime, 3);
 				strncat(sweepingTime, decimalTime, 4);
-
+*/
 				//Save times
-				strcpy(timeDatas[counterSucess], sweepingTime);
+				//strcpy(timeDatas[counterSucess], sweepingTime);
 			}
 
-			/*printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
+			printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
 				time_str,
 				(long int)usb_transfer_time.tv_usec,
 				(uint64_t)(frequency), //First time: 45MhZ
 				(uint64_t)(frequency+sampleRate/4), //45MHz + 5MHz
 				fft_bin_width,
 				fftSize);
-			*/
+
 			for(i = 0; (fftSize / 4) > i; i++) 
 			{
-			//	printf(", %.2f", pwr[i + 1 + (fftSize*5)/8]);
+				printf(", %.2f", pwr[i + 1 + (fftSize*5)/8]);
 				
 				// Save power sample
-				samples[id_sample] = pwr[i + 1 + (fftSize*5)/8];
+			//	samples[id_sample] = pwr[i + 1 + (fftSize*5)/8];
 				id_sample++;
 			}
 
-			//printf("\n");
-			/*printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
+			printf("\n");
+			printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
 					time_str,
 					(long int)usb_transfer_time.tv_usec,
 					(uint64_t)(frequency+(sampleRate/2)),
 					(uint64_t)(frequency+((sampleRate*3)/4)),
 					fft_bin_width,			
 					fftSize);
-			*/				
+					
 			for(i = 0; (fftSize / 4) > i; i++) 
 			{
-			//	printf(", %.2f", pwr[i + 1 + (fftSize/8)]);
+				printf(", %.2f", pwr[i + 1 + (fftSize/8)]);
 				
 				// Save power sample
-				samples[id_sample] = pwr[i + 1 + (fftSize/8)];
+				//samples[id_sample] = pwr[i + 1 + (fftSize/8)];
 				id_sample++;
 			}
 			
-			//printf("\n");
+			printf("\n");
 			if ((uint64_t)(frequency+((sampleRate*3)/4)) == freq_max*FREQ_ONE_MHZ) //Where the sweep finished
 			{
 				counterSucess++;
 				printf("hackrf_sweep | rx_callback() | Data Caught. Iteration %d finished\n", counterSucess);			
-				//fprintf(stderr, "hackrf_sweep | rx_callback() | Data Caught. Iteration %d finished\n", counterSucess);			
+				fprintf(stderr, "hackrf_sweep | rx_callback() | Data Caught. Iteration %d finished\n", counterSucess);			
 				success = false;
 				timerFlag = 0; // Flag down which means that data was caught
 				flag_initialFreqCaught = 0; // Set variable to finish iteration
@@ -510,6 +516,49 @@ static int initConfigureHackRF(){
 	}
 
 	printf("hackrf_sweep | initConfigHackRF() | Execution Success\n");
+	return result;
+}
+
+/**
+ * @brief  It just open a file
+ * @note   TODO: Will be used?
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+static int openFile(){
+	printf("hackrf_sweep | openFile() | Opening file\n");
+
+	if((path == NULL) || (strcmp(path, "-") == 0)) {
+		outfile = stdout;
+	} else {
+		outfile = fopen(path, "wb");
+	}
+
+	if(outfile == NULL) {
+		fprintf(stderr, "hackrf_sweep | openFile() | Failed to open file: %s\n", path);
+		return EXIT_FAILURE;
+	}
+
+	printf("hackrf_sweep | openFile() | Execution Success\n");
+	return EXIT_SUCCESS;
+}
+
+/**
+ * @brief  Set buffer to an output file
+ * @note   TODO: Will be used?
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+static int setBufOutFile(){
+	printf("hackrf_sweep | setBufOutFile() | Setting buffer to the outfile\n");
+
+	/* Change outfile buffer to have bigger one to store or read data on/to HDD */
+	result = setvbuf(outfile , NULL , _IOFBF , FD_BUFFER_SIZE);
+	if( result != 0 ) {
+		fprintf(stderr, "hackrf_sweep | setBufOutFile() | setvbuf() failed: %d\n", result);
+		usage();
+		return EXIT_FAILURE;
+	}
+
+	printf("hackrf_sweep | setBufOutFile() | Execution Success\n");
 	return result;
 }
 
@@ -730,6 +779,13 @@ static int endConnection()
 		hackrf_exit();
 		printf("hackrf_sweep | endConnection() | hackrf_exit() done\n");
 	}
+	// TODO:  check if can be deleted
+	fflush(outfile);
+	if ( ( outfile != NULL ) && ( outfile != stdout ) ) {
+		fclose(outfile);
+		outfile = NULL;
+		printf("hackrf_sweep | endConnection() | fclose() done\n");
+	}
 
 	printf("hackrf_sweep | endConnection() | Execution Success\n");
 	return EXIT_SUCCESS;
@@ -782,7 +838,7 @@ void printValuesHackRFOne()
 	{
 		printf("Power sample[%d]: %f\n", i, samples[i]);
 	}
-		
+
 	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Frequencies\n");
 	for (i = 0; i< numberOfSteps; i++)
 	{
@@ -830,6 +886,12 @@ int main(int argc, char** argv)
 
 	if(initConfigureHackRF() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
+	if(strstr(pathFits, "fits") != NULL) // TODO: BUG HERE
+	{	
+		if(openFile() == EXIT_FAILURE){ return EXIT_FAILURE; }
+
+		if(setBufOutFile() == EXIT_FAILURE){ return EXIT_FAILURE; }
+	}
 
 #ifdef _MSC_VER
 	SetConsoleCtrlHandler( (PHANDLER_ROUTINE) sighandler, TRUE );
@@ -878,7 +940,6 @@ int main(int argc, char** argv)
 
 	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE){ return EXIT_FAILURE; }
 	
-	printf("Total sweep completed successfully: %d out of %d", counterSucess, TRIGGERING_TIMES);
 	//fprintf(stderr, "Total sweep completed successfully: %d out of %d", counterSucess, TRIGGERING_TIMES);
 	
 	now = time(NULL);
@@ -896,10 +957,14 @@ int main(int argc, char** argv)
 	printf("\t sweepingTime/totalDuration: %.2f%%\n", 100*durationSweeps/totalDuration);
 	
 	if(checkSavedData(nElements) == EXIT_FAILURE){ return EXIT_FAILURE; }
-	
+	if(strstr(path,"fits") != NULL)
+	{
+		fflush(outfile);
+	}
+
 	if(endConnection() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
-	if(strstr(pathFits,"fits")==NULL || (generateFitsFile(pathFits,
+	/*if(strstr(pathFits,"fits")==NULL || (generateFitsFile(pathFits,
 														  samples,
 														  freq_min,freq_max,
 														  fftSize/4, 
@@ -908,7 +973,7 @@ int main(int argc, char** argv)
 														  timeFirstSweeping)) == EXIT_FAILURE)						
 	{
 		return EXIT_FAILURE; 
-	}
+	}*/
 
 	//printValuesHackRFOne();
 
