@@ -160,7 +160,7 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
     
     long bzero = 0., bscale = 1.;
     long dataMax = maxData(samples), dataMin= minData(samples);
-    long crVal1 = getSecondsOfDayOfFirstSweeping(timeFirstSweeping), crPix1 = 0, stepX = 0.25;   // Time axis value must be sec of a day (where it starts the sweeping)
+    long crVal1 = getSecondsOfDayOfFirstSweeping(timeFirstSweeping), crPix1 = 0, stepX = 1; //0.25   // Time axis value must be sec of a day (where it starts the sweeping)
     long crVal2 = (long)freq_min, crPix2 = 0, stepY = 1; // Frequencies axis value must start at freq_min 
 
     fits_update_key(fptr, TSTRING,"DATE", startDate, "Time of observation" ,&status); // Date observation
