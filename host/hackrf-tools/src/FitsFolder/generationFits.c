@@ -102,7 +102,7 @@ int create(char fileFitsName[])
 long minData(float * samples)
 {
     int  i = 0;
-    long minimum = (long)samples[0];
+    long minimum = (long)samples[i];
 
     for (i = 0; i< nElements; i++)
     {
@@ -176,7 +176,7 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
 
     fits_update_key(fptr, TSTRING, "DATE-OBS", startDate, "Date observation starts", &status); // Date observation starts
     fits_update_key(fptr, TSTRING, "TIME-OBS", timeStart, "Time observation starts", &status); // Time observation starts
-    fits_update_key(fptr, TSTRING, "DATE-OBS", endDate, "Time observation starts", &status); // Date observation ends
+    fits_update_key(fptr, TSTRING, "DATE-END", endDate, "Date observation ends", &status); // Date observation ends
     fits_update_key(fptr, TSTRING, "TIME-END", timeEnd, "Time observation starts", &status); // Time observation ends
 
     fits_update_key(fptr, TLONG, "BZERO", &bzero, "Scaling offset", &status); // Scaling offset

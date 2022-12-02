@@ -801,16 +801,16 @@ int main(int argc, char** argv)
 {
 	int opt = 0, i, nElements;
 	
-	time_t now = time(NULL);
-    struct tm localTime = *localtime(&now);
+	time_t beginning = time(NULL);
+    struct tm localTimeBeginning = *localtime(&beginning);
 	char startDate[70];
 	char timeStart[70];
 	
 	char endDate[70];
 	char timeEnd[70];
 
-	strftime(startDate, sizeof startDate,"%Y-%m-%d", &localTime);
-	strftime(timeStart, sizeof timeStart, "%Y-%m-%d %H:%M:%S", &localTime);
+	strftime(startDate, sizeof startDate,"%Y-%m-%d", &localTimeBeginning);
+	strftime(timeStart, sizeof timeStart, "%Y-%m-%d %H:%M:%S", &localTimeBeginning);
 
 	if (execApiBasicConfiguration(opt, argc, argv) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
@@ -881,10 +881,11 @@ int main(int argc, char** argv)
 	printf("Total sweep completed successfully: %d out of %d", counterSucess, TRIGGERING_TIMES);
 	//fprintf(stderr, "Total sweep completed successfully: %d out of %d", counterSucess, TRIGGERING_TIMES);
 	
-	now = time(NULL);
-    localTime = *localtime(&now);
-	strftime(endDate, sizeof endDate,"%Y-%m-%d", &localTime);
-	strftime(timeEnd, sizeof timeEnd, "%Y-%m-%d %H:%M:%S", &localTime);
+	time_t end = time(NULL);
+    struct tm localTimeEnd = *localtime(&end);
+
+	strftime(endDate, sizeof endDate,"%Y-%m-%d", &localTimeEnd);
+	strftime(timeEnd, sizeof timeEnd, "%Y-%m-%d %H:%M:%S", &localTimeEnd);
 
 	durationSweeps += sweepDuration();
 

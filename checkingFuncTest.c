@@ -21,6 +21,18 @@ int timerFlag = 0;
 char timeDatas[3600][50] = {""}; // Time Datas of the sweeping | 3600 dates
 float *samples;
 float *example;
+int *flagsOrder;
+/**TEST FITS**/
+fitsfile *fptr =NULL;
+int exist = 0;
+int status = 0, ii, jj;
+int fpixel = 1;
+int naxis = 2, nElements, exposure;
+long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x
+float array_img[200][200]; //naxes[0]naxes[y] (axis x ,axis y)
+
+/**Test order**/
+int orderValue = 1; 
 
 void timerHandler(int sig)
 {
@@ -91,7 +103,7 @@ int saveTimesTest(int i, int triggeringTimes, char* sweepingTime)
     // Checks
     if (strcmp(timeDatas[i], "") == 0)
     {
-        fprintf(stderr, "generationFits | saveTimes() | Was not possible to save timing data\n");
+        fprintf(stderr, "generationFits | saveTimes() | Was not possible to allocate timing data\n");
         return -1;
     }
 
@@ -150,7 +162,7 @@ int saveSamplesTest(int i, float powerSample, int nElements)
     
     if (samples == NULL)
     {
-        fprintf(stderr, "generationFits | saveSamples() | Was not possible to save power samples\n");
+        fprintf(stderr, "generationFits | saveSamples() | Was not possible to allocate power samples\n");
         return -1;
     }
 
@@ -229,18 +241,6 @@ void format_headerFitsTest()
     time_str[strlen(time_str)-1] = '\0';
     printf("%s", time_str);
 }
-
-/**TEST FITS**/
-fitsfile *fptr =NULL;
-int exist = 0;
-int status = 0, ii, jj;
-int fpixel = 1;
-int naxis = 2, nElements, exposure;
-long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
-
-float array_img[200][200]; //naxes[0]naxes[y] (axis x ,axis y)
-float* samples; // Array of float samples where dbs measures will be saved
-
 
 long minData(float * samples)
 {
@@ -424,7 +424,7 @@ void closeFits()
 int generateFitsFile_test(char fileFitsName[], float*samples, char startDate[], char timeStart[], char endDate[], char timeEnd[], uint32_t freq_min, struct tm timeFirstSweeping)
 {   
     printf("generationFits | generateFitsFile() | Start generating fits file\n");
-    //save frequency data | Timing data should before calling this function
+    //allocate frequency data | Timing data should before calling this function
     //if (saveFrequencies(freq_min, freq_max, step_value) == EXIT_FAILURE) { return EXIT_FAILURE; } 
 
     //Creation
@@ -444,10 +444,122 @@ int generateFitsFile_test(char fileFitsName[], float*samples, char startDate[], 
     return EXIT_SUCCESS;
 }
 
+int checkOrderFreqs_test(float *list_frequencies, int *real_order_frequencies, uint32_t freq_min, int nRanges) // WIll be invoke at hackrf_sweep callback
+{
+    int i = 0;
+    
+  //  printf("hackrf_sweep | checkOrder() | Ordering insertion of frequencies\n");
+    if (list_frequencies == NULL || real_order_frequencies == NULL)
+    {
+        fprintf(stderr, "hackrf_sweep | checkOrder() | Not reserved memory correctly\n");
+        return EXIT_FAILURE;
+    }
+
+    for (i = 0; i < nRanges; i++)
+    {
+        if (list_frequencies[i] == freq_min)
+        {
+            real_order_frequencies[i] = orderValue;
+            orderValue++;
+            break;
+        }
+    }
+    
+    //printf("hackrf_sweep | checkOrder() | Execution Success\n");
+    return EXIT_SUCCESS;
+}
+
+void printOrder(int *real_order_frequencies)
+{
+    int i = 0;
+    for(i = 0; i < 40; i++)
+    {
+        printf("frequency_order[%d]: %d\n", i, real_order_frequencies[i]);
+    }
+}
+
+int reorganizeSamples_test(int ordered_frecuency_position, int real_order_frequency_position, int nRanges, float* samples, float* samplesOrdered, int nElements, int valuesPerFreq, int nChannels)
+{
+    int j = 0, z = 0, i = 0;
+    int samplesPerSweeping = valuesPerFreq*nRanges; // 200
+    int actualElementIndex = 0; //Actual element index
+    float sampleToSave; //sample to backup
+    printf("hackrf_sweep | reorganizeSamples() | Reorganizing Samples;\n");
+
+    if (samplesOrdered == NULL || samples == NULL)
+    {
+        fprintf(stderr, "hackrf_sweep | reorganizeSamples() | Was not possible to allocate memory\n");
+        return EXIT_FAILURE;
+    }
+
+    // Initial positions at first iteration
+    j = (ordered_frecuency_position-1)*valuesPerFreq; 
+    z = (real_order_frequency_position-1)*valuesPerFreq;
+    fprintf(stderr , "Here 1: j=%d, z=%d\n",j, z);
+    for(i = j; i < j+5; i ++)
+    {
+        printf("sample[%d]:%f\n", i, samples[i] );
+    }
+
+    printf("\n");
+    for(i = z; i < z+5; i ++)
+    {
+        printf("sample[%d]: %f\n", i ,samples[i] );
+    }
+    printf("\n");
+    /*while (actualElementIndex < 25 && j < 25 && z < 25)
+    {
+        fprintf(stderr , "Here 2\n");
+
+        while(j < j+valuesPerFreq) // valuesPerFreq = fftSize/4
+        {
+         //   fprintf(stderr, "Here 2\n");
+            sampleToSave = samples[j]; // samples[i] at this moment are in incorrect order
+            samplesOrdered[j] = samples[z]; // samples[z] are the ones we want to move to the correct order
+            samplesOrdered[z] = sampleToSave; // Recover of samples saves as backup
+            j++;
+            z++;
+        }
+
+        fprintf(stderr , "Here 2\n");
+
+        actualElementIndex+= samplesPerSweeping; // nRanges of frequencies * valuesPerfrequency index
+        j+= actualElementIndex;
+    }*/
+
+    flagsOrder[real_order_frequency_position-1] = 1;
+    flagsOrder[ordered_frecuency_position-1] = 1;
+    
+    /*
+        5 values for each frequency (fftSize/4):
+    *   Example (first Iteration)
+    *   45MHz - 50MHz (samples[0]:samples[4]): 0.1, -0.9, -1.9, -2.9, -3.9
+    *   50MHz - 55MHz (samples[5]:samples[9]): -4.9., -5.9, -6.9, -7.9, -8.9
+    *   End iteration at samples[999]
+    *   Example (second Iteration):
+    *   45MHz - 50MHz (samples[1000]:samples[1004]): -998.9, -999.9, -1000.9, -1001.9, -1002.9
+    *  50MHz - 55MHz (samples[1005]:samples[1009]): -1003.9., -1004.9, -1005.9, -1006.9, -1007.9
+    */
+
+    printf("hackrf_sweep | reorganizeSamples() | Execution Success;\n");
+    return EXIT_SUCCESS;
+}
 
 int main(int argc, char** argv) 
 {
-    int testData = 0;
+    int testData = 2;
+    int i = 0;
+    int nChannels = 200;
+    int stepValue = 5;
+    int nRanges = nChannels/stepValue;
+    int valuesPerFreq = 5;
+    float* list_frequencies;
+    float * samplesOrdered;
+    uint32_t freq_min = 45;
+    int * real_order_frequencies;
+    naxes[0] = 200;
+    naxes[1] = 200;
+    nElements = naxes[0] * naxes[1];
 
     /*fprintf(stderr, "timerNewConceptTest()\n");
     timerNewConceptTest(); // Is in a while(1), discomment to test*/
@@ -484,14 +596,10 @@ int main(int argc, char** argv)
         while(getchar()!='\n');
     }
 
-    else
+    else if (testData == 1)
     {
         fprintf(stderr, "testGenenerationFitsFile\n");
         char pathFits[] = "testGenenerationFitsFile.fits"; // File name of fits file
-        int i = 0;
-        naxes[0] = 200;
-        naxes[1] = 200;
-        nElements = naxes[0] * naxes[1];
         
         time_t now = time(NULL);
         struct tm localTimeFirst = *localtime(&now);
@@ -516,7 +624,121 @@ int main(int argc, char** argv)
         localTimeLast = *localtime(&after);
         strftime(endDate, sizeof endDate,"%Y-%m-%d", &localTimeLast);
 	    strftime(timeEnd, sizeof timeEnd, "%Y-%m-%d %H:%M:%S", &localTimeLast);
-        generateFitsFile_test(pathFits,samples, startDate, timeStart, endDate, timeEnd, 45, localTimeFirst);
+        generateFitsFile_test(pathFits,samples, startDate, timeStart, endDate, timeEnd, freq_min, localTimeFirst);
     }
+    
+    
+    else // For ordered samples
+    {
+        fprintf(stderr, "Execution of ordered samples logic\n");
+
+        float actual_freq = (float)freq_min;
+        
+        list_frequencies = (float*)calloc(nRanges,sizeof(float)); // from 45MHz to 245MHz
+        real_order_frequencies = (int*) calloc(nRanges, sizeof(int)); // positions of frecuencies
+        flagsOrder = (int*)calloc(nRanges, sizeof(int));
+
+        for (i = 0; i< nRanges; i++)
+        {
+            list_frequencies[i] = actual_freq;
+            actual_freq+=stepValue;
+            flagsOrder[i] = 0;
+        }
+
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //45
+        
+        freq_min+=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //50
+        
+        freq_min+=10; 
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //60 => wrong
+        
+        freq_min-=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //55 => wrong
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //65
+        
+        //printOrder(real_order_frequencies);
+
+        samples = (float*)calloc(nElements, sizeof(float));
+        samplesOrdered = (float*)calloc(nElements,sizeof(float)); // At the beginning will be a copy of samples
+
+        freq_min = 45;
+
+        for(i = 0; i< nElements; i++)
+        {
+            samples[i] = -i + 0.1;
+            samplesOrdered[i] = samples[i];
+        }
+        
+        printf("Before ordering:\n");
+        for (i = 0; i< 25; i++)
+        {
+            if (i % 5 == 0 || i == 0)
+            {
+                printf("\nFrequency %d MHz\n", freq_min);
+                freq_min+=stepValue;
+            }
+            printf("sample[%d]: %lf\t", i, samples[i]);
+        }
+
+
+        freq_min = 45;
+
+        printf("\n\n");
+        printf("Flags Before:\n");
+        for (i = 0; i< 5; i++)
+        {
+            printf("Flag[%d]: %d\n", i, flagsOrder[i]);
+        }
+
+        for (i = 0; i < 5; i++)
+        {
+            if ((i+1) != real_order_frequencies[i] && flagsOrder[i] == 0) //i+1 is the position that should have
+            {
+                printf("Frequency %d MHz is located at wrong position\n", freq_min + i * 5);
+
+                if (reorganizeSamples_test(i+1, real_order_frequencies[i], nRanges, samples, samplesOrdered, nElements, valuesPerFreq, nChannels) == EXIT_FAILURE) { return EXIT_FAILURE; }
+            }
+
+            else
+            {
+                flagsOrder[i] = 1;
+            }
+
+        }
+
+
+        printf("After ordering:\n");
+        for (i = 0; i< 25; i++)
+        {
+            if (i % 5 == 0 || i == 0)
+            {
+                printf("\nFrequency %d MHz\n", freq_min);
+                freq_min+=stepValue;
+            }
+            printf("sampleOrdered[%d]: %lf\t", i, samplesOrdered[i]);
+        }
+
+        printf("\n\n");
+        printf("Flags After:\n");
+        for (i = 0; i< 5; i++)
+        {
+            printf("Flag[%d]: %d\n", i, flagsOrder[i]);
+        }
+
+    
+      /* for (i = 0; i < 5; i++)
+       {
+            printf("Flag for frequency %d MHz: %d \t Order: %d\n", freq_min + i * 5, flagsOrder[i], real_order_frequencies[i]);
+       }*/
+
+        free(list_frequencies);
+        free(samplesOrdered);
+        free(samples);
+        free(flagsOrder);
+    }
+
     return 0;
 }
