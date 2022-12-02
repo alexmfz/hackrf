@@ -20,6 +20,8 @@ struct timeval postTriggering;
 int timerFlag = 0;
 char timeDatas[3600][50] = {""}; // Time Datas of the sweeping | 3600 dates
 float *samples;
+float * samplesOrdered;
+
 float *example;
 int *flagsOrder;
 /**TEST FITS**/
@@ -465,7 +467,7 @@ int checkOrderFreqs_test(float *list_frequencies, int *real_order_frequencies, u
         }
     }
     
-    //printf("hackrf_sweep | checkOrder() | Execution Success\n");
+    printf("hackrf_sweep | checkOrder() | Execution Success\n");
     return EXIT_SUCCESS;
 }
 
@@ -474,10 +476,23 @@ void printOrder(int *real_order_frequencies)
     int i = 0;
     for(i = 0; i < 40; i++)
     {
-        printf("frequency_order[%d]: %d\n", i, real_order_frequencies[i]);
+        printf("frequency_order[%d]: %d - samples[%d...%d] - Frequency: %d\n", i, real_order_frequencies[i], (real_order_frequencies[i]-1)*5, (real_order_frequencies[i]-1)*5-1 + 5, 45 +(real_order_frequencies[i]-1)*5);
     }
 }
 
+/**
+ * @brief  Reorganize power samples into the correct position
+ * @note   
+ * @param  ordered_frecuency_position: Correct order of frequency
+ * @param  real_order_frequency_position: Real order of frequency at sweeping
+ * @param  nRanges: Nº of ranges of frequencies 
+ * @param  samples: power samples at sweeping
+ * @param  samplesOrdered: power samples organized after sweeping
+ * @param  nElements: nElements of total sweepings
+ * @param  valuesPerFreq: values per frequency (fftSize/4)
+ * @param  nChannels: number of channels 
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
 int reorganizeSamples_test(int ordered_frecuency_position, int real_order_frequency_position, int nRanges, float* samples, float* samplesOrdered, int nElements, int valuesPerFreq, int nChannels)
 {
     int j = 0, z = 0, i = 0;
@@ -492,54 +507,45 @@ int reorganizeSamples_test(int ordered_frecuency_position, int real_order_freque
         return EXIT_FAILURE;
     }
 
+    printf("ordered_frequency_position: %d \t real_order_frequency_position:%d\n", ordered_frecuency_position, real_order_frequency_position);
+
     // Initial positions at first iteration
-    j = (ordered_frecuency_position-1)*valuesPerFreq; 
-    z = (real_order_frequency_position-1)*valuesPerFreq;
-    fprintf(stderr , "Here 1: j=%d, z=%d\n",j, z);
-    for(i = j; i < j+5; i ++)
-    {
-        printf("sample[%d]:%f\n", i, samples[i] );
-    }
+    j = (ordered_frecuency_position-1)*valuesPerFreq;  // Index of ordered samples
+    i = j + valuesPerFreq; // actual Index
+    z = (real_order_frequency_position-1)*valuesPerFreq; // Index of disordered samples
 
-    printf("\n");
-    for(i = z; i < z+5; i ++)
+    printf("j = %d\t i = %d\t z = %d\n", j, i ,z);
+    while (actualElementIndex < 1000 ) // 1000 => nElements
     {
-        printf("sample[%d]: %f\n", i ,samples[i] );
-    }
-    printf("\n");
-    /*while (actualElementIndex < 25 && j < 25 && z < 25)
-    {
-        fprintf(stderr , "Here 2\n");
-
-        while(j < j+valuesPerFreq) // valuesPerFreq = fftSize/4
+        while(j < i) // valuesPerFreq = fftSize/4
         {
-         //   fprintf(stderr, "Here 2\n");
             sampleToSave = samples[j]; // samples[i] at this moment are in incorrect order
             samplesOrdered[j] = samples[z]; // samples[z] are the ones we want to move to the correct order
             samplesOrdered[z] = sampleToSave; // Recover of samples saves as backup
+           /* printf("j = %d\t z = %d\t i = %d\t sampleToSave: %lf\t samples[%d]: %lf\t samplesOrdered[%d]: %lf\t samplesOrdered[%d]: %lf\n", 
+                j, z, i,
+                sampleToSave,
+                z, samples[z],
+                j, samplesOrdered[j],
+                z, samplesOrdered[z]);
+            printf("Press 'Enter' to continue....");
+            while(getchar()!='\n');*/
             j++;
-            z++;
+            z++;         
         }
 
-        fprintf(stderr , "Here 2\n");
-
-        actualElementIndex+= samplesPerSweeping; // nRanges of frequencies * valuesPerfrequency index
-        j+= actualElementIndex;
-    }*/
+        actualElementIndex += samplesPerSweeping; // nRanges of frequencies * valuesPerfrequency index
+        j += samplesPerSweeping-valuesPerFreq;
+        z += samplesPerSweeping-valuesPerFreq;
+        i += samplesPerSweeping;
+        /* printf("Finished iteration\n actualElementIndex: %d\t j = %d \t i = %d\t z = %d\n Press 'Enter' to continue....", actualElementIndex, j, i , z);
+            while(getchar()!='\n');*/
+        printf("\n");
+    }
 
     flagsOrder[real_order_frequency_position-1] = 1;
     flagsOrder[ordered_frecuency_position-1] = 1;
     
-    /*
-        5 values for each frequency (fftSize/4):
-    *   Example (first Iteration)
-    *   45MHz - 50MHz (samples[0]:samples[4]): 0.1, -0.9, -1.9, -2.9, -3.9
-    *   50MHz - 55MHz (samples[5]:samples[9]): -4.9., -5.9, -6.9, -7.9, -8.9
-    *   End iteration at samples[999]
-    *   Example (second Iteration):
-    *   45MHz - 50MHz (samples[1000]:samples[1004]): -998.9, -999.9, -1000.9, -1001.9, -1002.9
-    *  50MHz - 55MHz (samples[1005]:samples[1009]): -1003.9., -1004.9, -1005.9, -1006.9, -1007.9
-    */
 
     printf("hackrf_sweep | reorganizeSamples() | Execution Success;\n");
     return EXIT_SUCCESS;
@@ -554,7 +560,6 @@ int main(int argc, char** argv)
     int nRanges = nChannels/stepValue;
     int valuesPerFreq = 5;
     float* list_frequencies;
-    float * samplesOrdered;
     uint32_t freq_min = 45;
     int * real_order_frequencies;
     naxes[0] = 200;
@@ -645,21 +650,129 @@ int main(int argc, char** argv)
             flagsOrder[i] = 0;
         }
 
-        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //45
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //45 => ok
         
-        freq_min+=5;
-        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //50
-        
-        freq_min+=10; 
-        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //60 => wrong
-        
-        freq_min-=5;
+        freq_min+=10;
         if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //55 => wrong
+        
+        freq_min-=5; 
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //50 => wrong
+        
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //60 => ok
+
+        freq_min+=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //65 => ok        
 
         freq_min+=10;
-        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //65
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //75 => wrong
+
+        freq_min-=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //70 => wrong
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //80 => ok
+
+        freq_min+=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //85 => ok
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //95 => wrong
+
+        freq_min-=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //90 => wrong
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //100 => ok
+
+        freq_min+=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //105 => ok
         
-        //printOrder(real_order_frequencies);
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //115 => wrong
+        
+        freq_min-=5; 
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //110 => wrong
+        
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //120 => ok
+
+        freq_min+=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //125 => ok        
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //135 => wrong
+
+        freq_min-=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //130 => wrong
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //140 => ok
+
+        freq_min+=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //145 => ok
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //155 => wrong
+
+        freq_min-=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //150 => wrong
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //160 => ok
+
+        freq_min+=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //165 => ok
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //175 => wrong
+
+        freq_min-=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //170 => wrong
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //180 => ok
+
+        freq_min+=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //185 => ok
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //195 => wrong
+
+        freq_min-=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //190 => wrong
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //200 => ok
+
+        freq_min+=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //205 => ok
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //215 => wrong
+
+        freq_min-=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //210 => wrong
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //220 => ok
+
+        freq_min+=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //225 => ok
+        
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //235 => wrong
+
+        freq_min-=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //230 => wrong
+
+        freq_min+=10;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //240 => ok
+
+        freq_min+=5;
+        if (checkOrderFreqs_test(list_frequencies, real_order_frequencies, freq_min, nRanges) == EXIT_FAILURE) { return EXIT_FAILURE; } //245 => ok
+
+        printOrder(real_order_frequencies);
 
         samples = (float*)calloc(nElements, sizeof(float));
         samplesOrdered = (float*)calloc(nElements,sizeof(float)); // At the beginning will be a copy of samples
@@ -672,33 +785,31 @@ int main(int argc, char** argv)
             samplesOrdered[i] = samples[i];
         }
         
-        printf("Before ordering:\n");
-        for (i = 0; i< 25; i++)
-        {
-            if (i % 5 == 0 || i == 0)
-            {
-                printf("\nFrequency %d MHz\n", freq_min);
-                freq_min+=stepValue;
-            }
-            printf("sample[%d]: %lf\t", i, samples[i]);
-        }
 
-
-        freq_min = 45;
-
-        printf("\n\n");
-        printf("Flags Before:\n");
-        for (i = 0; i< 5; i++)
+        printf("Flags before ordering:\n");
+        for (i = 0; i< nRanges; i++)
         {
             printf("Flag[%d]: %d\n", i, flagsOrder[i]);
         }
 
-        for (i = 0; i < 5; i++)
+        printf("\n Values before ordering:\n");
+        for (i = 0; i< 1000; i++) // 5 iterations
+        {
+            if (i % 5 == 0 || i == 0)
+            {
+                printf("\n");
+            }
+
+            printf("sample[%d]: %lf\t", i, samples[i]);
+        }
+
+        printf("\n\n");
+
+        for (i = 0; i < nRanges; i++)
         {
             if ((i+1) != real_order_frequencies[i] && flagsOrder[i] == 0) //i+1 is the position that should have
             {
-                printf("Frequency %d MHz is located at wrong position\n", freq_min + i * 5);
-
+              //  printf("Frequency %d MHz is located at wrong position\n", freq_min + i * 5);
                 if (reorganizeSamples_test(i+1, real_order_frequencies[i], nRanges, samples, samplesOrdered, nElements, valuesPerFreq, nChannels) == EXIT_FAILURE) { return EXIT_FAILURE; }
             }
 
@@ -709,25 +820,28 @@ int main(int argc, char** argv)
 
         }
 
+        printf("\nFlags after ordering:\n");
+        for (i = 0; i< nRanges; i++)
+        {
+            printf("Flag[%d]: %d\n", i, flagsOrder[i]);
+        }
 
-        printf("After ordering:\n");
-        for (i = 0; i< 25; i++)
+        printf("\n Values after ordering:\n");
+        for (i = 0; i< 1000; i++) // 5 iterations
         {
             if (i % 5 == 0 || i == 0)
             {
-                printf("\nFrequency %d MHz\n", freq_min);
-                freq_min+=stepValue;
+                printf("\n");
+            }
+            if (i %200 == 0)
+            {
+                printf("Iteration %d\n", i/200);
             }
             printf("sampleOrdered[%d]: %lf\t", i, samplesOrdered[i]);
         }
 
         printf("\n\n");
-        printf("Flags After:\n");
-        for (i = 0; i< 5; i++)
-        {
-            printf("Flag[%d]: %d\n", i, flagsOrder[i]);
-        }
-
+       
     
       /* for (i = 0; i < 5; i++)
        {
