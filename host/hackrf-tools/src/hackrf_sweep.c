@@ -45,7 +45,6 @@ typedef int bool;
 #define false 0
 #endif
 
-#define FD_BUFFER_SIZE (8*1024) // TODO: Check if is going to be used or not
 #define FREQ_ONE_MHZ (1000000ull)
 #define FREQ_MIN_MHZ (0)    /*    0 MHz */
 #define FREQ_MAX_MHZ (7250) /* 7250 MHz */
@@ -82,7 +81,7 @@ int numberOfSteps = 0; // Number of channels
 
 int sampleRate = 0; // Custom sample rate 
 
-char pathFits[] = "TFM.fits"; // File name of fits file
+char pathFits[50]; // File name of fits file
 extern long naxes[2]; // Number of axis of fits file
 extern float *frequencyDatas;
 extern float* samples; // Array of float samples where dbs measures will be saved (but are disordered)
@@ -116,9 +115,6 @@ int step_count; // Step value
 unsigned int lna_gain=16, vga_gain=20; // Gains 
 uint32_t freq_min = 0; // Predefined min frequency if is not passed by argument
 uint32_t freq_max = 6000; // Predefined max frequency if is not passed by argument
-
-FILE* outfile = NULL; // TODO: Initial output file where samples will be saved
-char* path = NULL; // TODO: Paht of the outfile
 
 uint32_t byte_count = 0; // Bytes transmitted
 volatile uint64_t sweep_count = 0; // Number of sweeps done (sucessfull or not)
@@ -937,6 +933,8 @@ int main(int argc, char** argv)
 
 	beginning = time(NULL);
 	localtime_r(&beginning, &localTimeBeginning);
+	generateDynamicName(localTimeBeginning);
+
 	strftime(startDate, sizeof startDate,"%Y-%m-%d", &localTimeBeginning);
 	strftime(timeStart, sizeof timeStart, "%Y-%m-%d %H:%M:%S", &localTimeBeginning);
 
@@ -1077,7 +1075,6 @@ int main(int argc, char** argv)
 	printf("hackrf_sweep | reorganizeSamples() | Execution Success;\n");
 
 	//printValuesHackRFOne();
-	fprintf(stderr, "Start date: %s\t timeStart: %s\nEnd date: %s\t timeEnd: %s\n", startDate, timeStart, endDate, timeEnd);
 
 	if(strstr(pathFits,"fits")==NULL || (generateFitsFile(pathFits,
 														  samplesOrdered,

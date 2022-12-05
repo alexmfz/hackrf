@@ -346,7 +346,8 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
     printf("Min Value: %ld\n", dataMin);
     printf("Max Value: %ld\n", dataMax);
 
-    long crVal1 = getSecondsOfDayOfFirstSweeping(timeFirstSweeping), crPix1 = 0, stepX = 1; // crVal1 Start axis x value 0 [sec of a day]
+    long crVal1 = getSecondsOfDayOfFirstSweeping(timeFirstSweeping), crPix1 = 0;
+    float stepX = 0.25; // crVal1 Start axis x value 0 [sec of a day]
     
     long crVal2 = 45, crPix2 = 0, stepY = 1.; // crVal2 Start axis y value 0
 
@@ -377,7 +378,7 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
     fits_update_key(fptr, TLONG, "CRVAL1", &crVal1, "Value on axis 1 at the reference pixel [sec of a day]", &status);  // Value on axis 1 at reference pixel [sec of a day]
     fits_update_key(fptr, TLONG, "CRPIX1", &crPix1, "Reference pixel of axis 1", &status); // Reference pixel of axis 1
     fits_update_key(fptr, TSTRING, "CTYPE1", "Time [UT]", "Title of axis 1", &status ); // Title of axis 1
-    fits_update_key(fptr, TLONG, "CDELT1", &stepX, "Step between first and second element in x-axis", &status); // Step between first and second element in x-axis (0.25 s)
+    fits_update_key(fptr, TFLOAT, "CDELT1", &stepX, "Step between first and second element in x-axis", &status); // Step between first and second element in x-axis (0.25 s)
 
     fits_update_key(fptr, TLONG, "CRVAL2", &crVal2, "Value on axis 2 at the reference pixel", &status);  // Value on axis 2 at the reference pixel
     fits_update_key(fptr, TLONG, "CRPIX2", &crPix2, "reference Pixel 2 ", &status); 
@@ -552,9 +553,54 @@ int reorganizeSamples_test(int ordered_frecuency_position, int real_order_freque
     return EXIT_SUCCESS;
 }
 
+void generateDinamicNameTest()
+{
+    //Format name: hackRFOne_UAH_DDMMYYYY_HH_MM.fits
+    time_t timeNow;
+    struct tm basename;
+
+    char fileName[50];
+    char name[50];
+    char suffix[50] = ".fits";
+    char preffix[50] = "hackRFOne_UAH_";
+
+    timeNow = time(NULL);
+    localtime_r(&timeNow, &basename);
+    strftime(name, sizeof(name), "%d%m%Y_%Hh_%Mm", &basename);
+    
+    strcat(preffix, strcat(name, suffix));
+    strcpy(fileName, preffix);
+
+    printf("%s\n", fileName);
+}
+
+void anotherTimingTest()
+{
+
+        struct tm info1;
+        struct tm info2;
+      	time_t beginning = time(NULL);
+
+       	char timeStart[70];
+        char timeEnd[70];
+
+
+        localtime_r(&beginning, &info1);
+        
+        sleep(2);
+        time_t end = time(NULL);
+        localtime_r(&end, &info2);
+
+	    strftime(timeStart, sizeof timeStart, "%Y-%m-%d %H:%M:%S", &info1);
+        strftime(timeEnd, sizeof timeStart, "%Y-%m-%d %H:%M:%S", &info2);
+        printf("%s\n", timeStart);
+        printf("%s\n", timeEnd);
+ 
+}
+
 int main(int argc, char** argv) 
 {
-    int testData = 3;
+    int testData = 1;
     int i = 0;
     int nChannels = 200;
     int stepValue = 5;
@@ -569,7 +615,7 @@ int main(int argc, char** argv)
 
     /*fprintf(stderr, "timerNewConceptTest()\n");
     timerNewConceptTest(); // Is in a while(1), discomment to test*/
-    if (testData ==1)
+    if (testData ==0)
     {
         gettimeofday(&preTriggering, NULL);
         fprintf(stderr, "saveTimesLoopTest()\n");
@@ -631,8 +677,7 @@ int main(int argc, char** argv)
         strftime(endDate, sizeof endDate,"%Y-%m-%d", &localTimeLast);
 	    strftime(timeEnd, sizeof timeEnd, "%Y-%m-%d %H:%M:%S", &localTimeLast);
         generateFitsFile_test(pathFits,samples, startDate, timeStart, endDate, timeEnd, freq_min, localTimeFirst);
-    }
-    
+    }  
     
     else if (testData == 2)// For ordered samples
     {
@@ -850,27 +895,13 @@ int main(int argc, char** argv)
         free(flagsOrder);
     }
 
-    else
+    else  if (testData == 3)
     {
-        struct tm info1;
-        struct tm info2;
-      	time_t beginning = time(NULL);
-
-       	char timeStart[70];
-        char timeEnd[70];
-
-
-        localtime_r(&beginning, &info1);
-        
-        sleep(2);
-        time_t end = time(NULL);
-        localtime_r(&end, &info2);
-
-	    strftime(timeStart, sizeof timeStart, "%Y-%m-%d %H:%M:%S", &info1);
-        strftime(timeEnd, sizeof timeStart, "%Y-%m-%d %H:%M:%S", &info2);
-        printf("%s\n", timeStart);
-        printf("%s\n", timeEnd);
-        
+        anotherTimingTest();       
+    }
+    else if (testData == 4)
+    {
+        generateDinamicNameTest();
     }
     return 0;
 }

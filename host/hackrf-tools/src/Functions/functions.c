@@ -61,8 +61,7 @@ extern uint16_t frequencies[MAX_SWEEP_RANGES*2];
 extern uint32_t num_sweeps;
 extern int num_ranges;
 extern int result;
-extern char* path;
-extern char pathFits[];
+ extern char pathFits[];
 extern unsigned int vga_gain;
 extern unsigned int lna_gain;
 extern uint32_t requested_fft_bin_width;
@@ -70,6 +69,7 @@ extern int fftSize;
 extern bool one_shot;
 extern bool finite_mode;
 extern int sampleRate;
+
 uint32_t nChannels = 200;
 
 /*******/
@@ -160,6 +160,25 @@ int parse_u32_range(char* s, uint32_t* const value_min, uint32_t* const value_ma
 	return HACKRF_SUCCESS;
 }
 
+/**
+ * @brief  Generate a fits name in a dynamic way with this format - hackRFOne_UAH_DDMMYYYY_HH_MM.fits
+ * @note   
+ * @param baseName: Time when program was executed
+ * @retval None
+ */
+void generateDynamicName(struct tm baseName)
+{
+    char date[50]="";
+    char suffix[50] = ".fits";
+    char preffix[50] = "hackRFOne_UAH_";
+
+    strftime(date, sizeof date, "%d%m%Y_%Hh_%Mm", &baseName);
+    
+	strcat(date, suffix);
+	strcat(preffix,date);
+	strcpy(pathFits, preffix);
+	fprintf(stderr, "Filename: %s\n", pathFits);
+}
 
 /**
  * @brief  Assing the parameters of the fits file
@@ -231,7 +250,7 @@ void assignGenericParameters()
 	printf("functions | assignGenericParameters() | Number of Channels: %d\n", nChannels);
 	printf("functions | assignGenericParameters() | Sample Rate: %d MHz\n", sampleRate);
 	printf("functions | assignGenericParameters() | FFT size: %d\n", fftSize);
-	printf("functions | assignGenericParameters() | Samples per channel:\n %d", fftSize/4);
+	printf("functions | assignGenericParameters() | Samples per channel: %d\n", fftSize/4);
 
 	printf("functions | assignGenericParameters() | Execution Success\n");
 }
@@ -316,7 +335,7 @@ while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 			break;
 
 		case 'r':
-			path = optarg;
+			//path = optarg;
 			strcpy(pathFits,optarg);
 			break;
 

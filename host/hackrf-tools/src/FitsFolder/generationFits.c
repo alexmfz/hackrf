@@ -160,7 +160,8 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
     
     long bzero = 0., bscale = 1.;
     long dataMax = maxData(samples), dataMin= minData(samples);
-    long crVal1 = getSecondsOfDayOfFirstSweeping(timeFirstSweeping), crPix1 = 0, stepX = 1; //0.25   // Time axis value must be sec of a day (where it starts the sweeping)
+    long crVal1 = getSecondsOfDayOfFirstSweeping(timeFirstSweeping), crPix1 = 0; //0.25   // Time axis value must be sec of a day (where it starts the sweeping)
+    float stepX = 0.25;
     long crVal2 = (long)freq_min, crPix2 = 0, stepY = 1; // Frequencies axis value must start at freq_min 
 
     fits_update_key(fptr, TSTRING,"DATE", startDate, "Time of observation" ,&status); // Date observation
@@ -190,7 +191,7 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
     fits_update_key(fptr, TLONG, "CRVAL1", &crVal1, "Value on axis 1 at the reference pixel [sec of a day]", &status);  // Value on axis 1 at reference pixel [sec of a day]
     fits_update_key(fptr, TLONG, "CRPIX1", &crPix1, "Reference pixel of axis 1", &status); // Reference pixel of axis 1
     fits_update_key(fptr, TSTRING, "CTYPE1", "Time [UT]", "Title of axis 1", &status ); // Title of axis 1
-    fits_update_key(fptr, TLONG, "CDELT1", &stepX, "Step between first and second element in x-axis", &status); // Step between first and second element in x-axis (0.25 s)
+    fits_update_key(fptr, TFLOAT, "CDELT1", &stepX, "Step between first and second element in x-axis", &status); // Step between first and second element in x-axis (0.25 s)
 
     fits_update_key(fptr, TLONG, "CRVAL2", &crVal2, "Value on axis 2 at the reference pixel", &status);  // Value on axis 2 at the reference pixel
     fits_update_key(fptr, TLONG, "CRPIX2", &crPix2, "reference Pixel 2 ", &status); 
@@ -202,7 +203,7 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
 
 /**
  * @brief  Insert data into fits file
- * @note   TODO: Revisar
+ * @note  
  * @param  samples: Data to be inserted into fits file from callback function
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
@@ -213,29 +214,13 @@ int insertData(float* samples)
     int id = 0;
     for(ii= 0; ii< naxes[0]; ii++ ) 
     {        
-        for (jj=0; jj< naxes[1]; jj++) // TODO: Review (add id sample variable which ++ for each insert)
+        for (jj=0; jj< naxes[1]; jj++) 
         {
             array_img[jj][ii] = samples[id];
             id++;
         }
         
     }
-
-    /* TEST
-    printf("Iteration 0; Value sample[0]: %lf\n", samples[0]);
-    printf("Iteration 0; img[0][0]: %lf\n", array_img[0][0]);
-
-    printf("Iteration 0; Value sample[1]: %lf\n", samples[1]);
-    printf("Iteration 0; img[1][0]: %lf\n", array_img[1][0]);
-
-
-    printf("Iteration 1; Value sample[200]: %lf\n", samples[200]);
-    printf("Iteration 1; img[0][1]: %lf\n", array_img[0][1]);
-
-
-    printf("Iteration 4; Value sample[998]: %lf\n", samples[998]);
-    printf("Iteration 4; img[198][4]: %lf\n", array_img[198][4]);
-    */
     
     printf("generationFits | insertData() | Inserting data finished. Creating fits image...\n");
 
@@ -400,15 +385,6 @@ int checkSavedData(int nElements)
 
     printf("generationFits | checkSavedData() | Execution Sucess\n");
     return EXIT_SUCCESS;
-}
-
-/** 
- * @brief  Freqs are not in ordered so sample values must be reorganizated
- * @note   TODO: still not developed
- * @retval None
- */
-void associateFreqsToSample()
-{
 }
 
 /**
