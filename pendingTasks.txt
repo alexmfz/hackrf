@@ -8,5 +8,6 @@ Status:  OK | PENDING
 6. Optimize code to run faster and comment code--> OK
 7. TODO: Resolve pending bugs and TODO --> PENDING
 8. Save in dinamic memory frequencies, times(between 0.25 s) and power samples --> OK
-9. TODO: Resolve ordered samples-frequencies
-10. Resolve header step x (0.25) and header times (start/end)
+9. Resolve ordered samples-frequencies --> OK
+10. Resolve header step x (0.25) and header times (start/end) --> OK
+11. Test with another ranges --> PENDING
