@@ -24,6 +24,7 @@ float * samplesOrdered;
 
 float *example;
 int *flagsOrder;
+
 /**TEST FITS**/
 fitsfile *fptr =NULL;
 int exist = 0;
@@ -553,7 +554,7 @@ int reorganizeSamples_test(int ordered_frecuency_position, int real_order_freque
 
 int main(int argc, char** argv) 
 {
-    int testData = 2;
+    int testData = 3;
     int i = 0;
     int nChannels = 200;
     int stepValue = 5;
@@ -633,7 +634,7 @@ int main(int argc, char** argv)
     }
     
     
-    else // For ordered samples
+    else if (testData == 2)// For ordered samples
     {
         fprintf(stderr, "Execution of ordered samples logic\n");
 
@@ -786,7 +787,7 @@ int main(int argc, char** argv)
         }
         
 
-        printf("Flags before ordering:\n");
+        /*printf("Flags before ordering:\n");
         for (i = 0; i< nRanges; i++)
         {
             printf("Flag[%d]: %d\n", i, flagsOrder[i]);
@@ -804,7 +805,7 @@ int main(int argc, char** argv)
         }
 
         printf("\n\n");
-
+*/
         for (i = 0; i < nRanges; i++)
         {
             if ((i+1) != real_order_frequencies[i] && flagsOrder[i] == 0) //i+1 is the position that should have
@@ -820,7 +821,8 @@ int main(int argc, char** argv)
 
         }
 
-        printf("\nFlags after ordering:\n");
+       
+        /*printf("\nFlags after ordering:\n");
         for (i = 0; i< nRanges; i++)
         {
             printf("Flag[%d]: %d\n", i, flagsOrder[i]);
@@ -840,13 +842,7 @@ int main(int argc, char** argv)
             printf("sampleOrdered[%d]: %lf\t", i, samplesOrdered[i]);
         }
 
-        printf("\n\n");
-       
-    
-      /* for (i = 0; i < 5; i++)
-       {
-            printf("Flag for frequency %d MHz: %d \t Order: %d\n", freq_min + i * 5, flagsOrder[i], real_order_frequencies[i]);
-       }*/
+        printf("\n\n");*/
 
         free(list_frequencies);
         free(samplesOrdered);
@@ -854,5 +850,27 @@ int main(int argc, char** argv)
         free(flagsOrder);
     }
 
+    else
+    {
+        struct tm info1;
+        struct tm info2;
+      	time_t beginning = time(NULL);
+
+       	char timeStart[70];
+        char timeEnd[70];
+
+
+        localtime_r(&beginning, &info1);
+        
+        sleep(2);
+        time_t end = time(NULL);
+        localtime_r(&end, &info2);
+
+	    strftime(timeStart, sizeof timeStart, "%Y-%m-%d %H:%M:%S", &info1);
+        strftime(timeEnd, sizeof timeStart, "%Y-%m-%d %H:%M:%S", &info2);
+        printf("%s\n", timeStart);
+        printf("%s\n", timeEnd);
+        
+    }
     return 0;
 }

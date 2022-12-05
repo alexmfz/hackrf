@@ -38,7 +38,7 @@ typedef int bool;
 #define FREQ_MAX_MHZ (7250) /* 7250 MHz */
 #define FFTMAX 	(8180)
 
-#define TRIGGERING_TIMES (3600)
+#define TRIGGERING_TIMES (3600) //3600
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)

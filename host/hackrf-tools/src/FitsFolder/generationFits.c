@@ -16,7 +16,7 @@
 #include <inttypes.h>
 
 // -I/usr/local/src/cfitsio-4.1.0 -lcfitsio
-#define TRIGGERING_TIMES (3600)
+#define TRIGGERING_TIMES (3600) //3600
 
 /*** Global Variables***/
 fitsfile *fptr =NULL;
@@ -265,27 +265,29 @@ void closeFits()
 }
 
 /**
- * @brief  Save the frequencies from the sweeping to insert into fits file has headers data
+ * @brief  Save the frequencies from the sweeping to insert into fits file has headers data in ranges of stepValues
  * @note   
  * @param  freq_min: Min freq of the sweeping
  * @param  freq_max: Max freq of the sweeping
- * @param  step_value: value between frequencies
+ * @param  step_value_between_ranges: value between frequencies
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int saveFrequencies(uint32_t freq_min, uint32_t freq_max, float step_value)
+int saveFrequencies(uint32_t freq_min, uint32_t freq_max, float step_value_between_ranges)
 {   
     int i = 0;
-    int numberFrequencies = naxes[1];
+    int numberRangeFrequencies = naxes[1]/step_value_between_ranges; // 200/5
+    float actualFrequency = (float)freq_min;
     
-    printf("generationFits | saveFrequencies() | Start saving index data to generate fits file\n");
+    printf("generationFits | saveFrequencies() | Start saving index data frequencies in ranges to generate fits file\n");
     
-    frequencyDatas = (float*)calloc(numberFrequencies,sizeof(float));
-    for(i = 0; i< numberFrequencies; i++)
+    frequencyDatas = (float*)calloc(numberRangeFrequencies,sizeof(float));
+    for(i = 0; i< numberRangeFrequencies; i++)
     {
-        frequencyDatas[i] = freq_min + step_value;
+        frequencyDatas[i] = actualFrequency;
+        actualFrequency += step_value_between_ranges;
     }
     
-    if (frequencyDatas == NULL && frequencyDatas[numberFrequencies] != freq_max) 
+    if (frequencyDatas == NULL && frequencyDatas[numberRangeFrequencies] != freq_max) 
     {
         fprintf(stderr, "generationFits | saveFrequencies() | Was not possible to save frequencies.\n");
         return EXIT_FAILURE; 
@@ -424,9 +426,7 @@ int generateFitsFile(char fileFitsName[], float*samples, uint32_t freq_min, uint
     nElements = naxes[0]*naxes[1];
 
     printf("generationFits | generateFitsFile() | Start generating fits file\n");
-    //save frequency data | Timing data should before calling this function
-    if (saveFrequencies(freq_min, freq_max, step_value) == EXIT_FAILURE) { return EXIT_FAILURE; } 
-
+    
     //Creation
     if (create(fileFitsName) == EXIT_FAILURE) { return EXIT_FAILURE; }
 

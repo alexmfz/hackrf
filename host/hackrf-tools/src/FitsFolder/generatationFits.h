@@ -24,7 +24,7 @@ void updateHeadersFitsFile( char startDate[], char timeStart[], char endDate[], 
 int insertData(float* samples);
 void closeFits();
 int generateFitsFile(char filename[], float* samples, uint32_t freq_min, uint32_t freq_max, float step_value, char startDate[], char timeStart[], char endDate[], char timeEnd[], struct tm timeFirstSweeping);
-int saveFrequencies(uint32_t freq_min, uint32_t freq_max, float step_value);
+int saveFrequencies(uint32_t freq_min, uint32_t freq_max, float step_value_between_ranges);
 int saveTimes(int i, int triggeringTimes, char* sweepingTime); // TODO: Wont be used by the moment
 int saveSamples(int i, float powerSample, int nElements); // TODO: Wont be used by the moment
 int checkSavedData(int nElements);
