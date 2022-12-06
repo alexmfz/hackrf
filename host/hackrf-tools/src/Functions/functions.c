@@ -361,3 +361,35 @@ while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 	assignFitsParameters();
 	return EXIT_SUCCESS;
 }
+
+/**
+ * @brief  Wait until the time is multiple of 15 minutes and 0 seconds to execute sweepings
+ * @note   
+ * @retval Return 1 when time matches with the conditions of start XX:MM/15:00
+ */
+void startExecution()
+{
+    time_t tStart;
+    struct tm tmStart;
+    char startString[50];
+    tStart = time(NULL);
+    localtime_r(&tStart, &tmStart);
+    
+    tmStart.tm_min = tmStart.tm_min + 15 - tmStart.tm_min%15;
+    tmStart.tm_sec = 0;
+    strftime(startString, sizeof(startString), "%H:%M:%S", &tmStart);
+    
+    tStart = time(NULL);
+    localtime_r(&tStart, &tmStart);
+    
+    printf("functions| startExecution() | Execution will start at %s\n", startString);
+
+    while(tmStart.tm_min %15 != 0 || tmStart.tm_sec != 0 )
+    {
+        tStart = time(NULL);
+        localtime_r(&tStart, &tmStart);
+    }
+
+    strftime(startString, sizeof(startString), "%H:%M:%S", &tmStart);
+    printf("functions| startExecution() | Execution Started\n");
+}

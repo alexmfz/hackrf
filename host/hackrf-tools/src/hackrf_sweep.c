@@ -99,7 +99,7 @@ extern struct itimerval timer; // Timer struct needed to create a timer
 extern struct timeval preTriggering; // Time measure before triggering (TODO: Change where it is measured)
 extern struct timeval postTriggering; // Time measure after triggering (TODO: Change where it is measured)
 struct timeval timeAtBeginning ,timeAtEnd;
-struct tm timeFirstSweeping;
+struct tm timeFirstSweeping; //Beginning of first sweeping
 time_t beginning, end; // Timing values of sweeping to determine beginning and end (use for fits headers)
 
 float durationIteration = 0; // Duration of each iteration (TODO: Change where it is measured)
@@ -1005,6 +1005,8 @@ int main(int argc, char** argv)
 
 	printf("hackrf_sweep | Memory allocated for power samples\n");
 
+	startExecution();
+	
 	if (sweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
 	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE){ return EXIT_FAILURE; }

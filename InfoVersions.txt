@@ -1,3 +1,2 @@
-v3.0.1: 
+v3.0.2: 
 - Generation of dynamic name with format hackRFOne_UAH_DDMMYYYY_hh_mm.fits
-- Header fits files resolved and corrected

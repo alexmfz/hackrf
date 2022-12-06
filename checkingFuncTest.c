@@ -598,9 +598,36 @@ void anotherTimingTest()
  
 }
 
+int startExecutionTest()
+{
+    time_t tStart;
+    struct tm tmStart;
+    char startString[50];
+    tStart = time(NULL);
+    localtime_r(&tStart, &tmStart);
+    
+    tmStart.tm_min = tmStart.tm_min + 15 - tmStart.tm_min%15;
+    tmStart.tm_sec = 0;
+    strftime(startString, sizeof(startString), "%H:%M:%S", &tmStart);
+    
+    tStart = time(NULL);
+    localtime_r(&tStart, &tmStart);
+    
+    printf("functions| startExecution() | Execution will start at %s\n", startString);
+
+    while(tmStart.tm_min %15 != 0 || tmStart.tm_sec != 0 )
+    {
+        tStart = time(NULL);
+        localtime_r(&tStart, &tmStart);
+    }
+
+    strftime(startString, sizeof(startString), "%H:%M:%S", &tmStart);
+    printf("functions| startExecution() | Execution Started\n");
+}
+
 int main(int argc, char** argv) 
 {
-    int testData = 1;
+    int testData = 5;
     int i = 0;
     int nChannels = 200;
     int stepValue = 5;
@@ -903,5 +930,10 @@ int main(int argc, char** argv)
     {
         generateDinamicNameTest();
     }
+    else if (testData == 5)
+    {
+        startExecutionTest();
+    }
+
     return 0;
 }

@@ -23,3 +23,4 @@ int parse_u32(char* s, uint32_t* const value);
 int parse_u32_range(char* s, uint32_t* const value_min, uint32_t* const value_max);
 void assignGenericParameters();
 void generateDynamicName(struct tm baseName);
+void startExecution();
