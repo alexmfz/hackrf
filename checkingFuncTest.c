@@ -625,9 +625,16 @@ int startExecutionTest()
     printf("functions| startExecution() | Execution Started\n");
 }
 
+void calculateTimes(time_t* t_timeStartConfig, struct tm* tm_timeStartConfig, struct timeval* timeValStartConfig)
+{
+        gettimeofday(timeValStartConfig, NULL);
+	    *t_timeStartConfig = time(NULL);
+	    localtime_r(t_timeStartConfig, tm_timeStartConfig);
+}
+
 int main(int argc, char** argv) 
 {
-    int testData = 5;
+    int testData = 6;
     int i = 0;
     int nChannels = 200;
     int stepValue = 5;
@@ -934,6 +941,23 @@ int main(int argc, char** argv)
     {
         startExecutionTest();
     }
+    else if (testData == 6)
+    {
+        time_t t_timeStartConfig, t_timeEndConfig;
+        struct tm tm_timeStartConfig, tm_timeEndConfig; // Struct of time values at beginning and end of the configuration
+	    struct timeval timeValStartConfig, timeValEndConfig; // Use to get duration of the configuration
+	    char timeStartConfig[70], timeEndConfig[70]; // Time as date and hours
 
+       /* gettimeofday(&timeValStartConfig, NULL);
+	    t_timeStartConfig = time(NULL);
+	    localtime_r(&t_timeStartConfig, &tm_timeStartConfig);
+	    strftime(timeStartConfig, sizeof timeStartConfig, "%Y-%m-%d %H:%M:%S", &tm_timeStartConfig);
+*/
+       // printf("Time in the function: %s\n", timeStartConfig);
+        calculateTimes(&t_timeStartConfig, &tm_timeStartConfig, &timeValStartConfig);
+        strftime(timeStartConfig, sizeof timeStartConfig, "%Y-%m-%d %H:%M:%S", &tm_timeStartConfig);
+        printf("Time out of the function: %s\t value time sec: %ld\n", timeStartConfig, timeValStartConfig.tv_sec);
+
+    }
     return 0;
 }

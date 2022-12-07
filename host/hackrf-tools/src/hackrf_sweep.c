@@ -83,7 +83,7 @@ int sampleRate = 0; // Custom sample rate
 
 char pathFits[50]; // File name of fits file
 extern long naxes[2]; // Number of axis of fits file
-extern float *frequencyDatas;
+extern float *frequencyDatas; // Frequency values saved at ranges 
 extern float* samples; // Array of float samples where dbs measures will be saved (but are disordered)
 float * samplesOrdered; // Array of float samples where dbs measures will be saved in a correct order
 int *flagsOrder; // Array which represents the flags to check if a range of frequency is ordered or not
@@ -93,16 +93,20 @@ float previousInsertedFrequency = 0;
 
 extern char timeDatas[TRIGGERING_TIMES][60]; // Time Datas of the sweeping | 3600 dates
 int id_sample = 0; // Id samples
+int nElements; // Number elements of the fits file
+int nRanges = 0; // Number of frequency ranges
 
 int timerFlag = 0; // Timer flag to check if was trigger or not (At handler is set to 1 which means that 0.25s had passed)
 extern struct itimerval timer; // Timer struct needed to create a timer
-extern struct timeval preTriggering; // Time measure before triggering (TODO: Change where it is measured)
-extern struct timeval postTriggering; // Time measure after triggering (TODO: Change where it is measured)
-struct timeval timeAtBeginning ,timeAtEnd;
-struct tm timeFirstSweeping; //Beginning of first sweeping
-time_t beginning, end; // Timing values of sweeping to determine beginning and end (use for fits headers)
 
-float durationIteration = 0; // Duration of each iteration (TODO: Change where it is measured)
+struct timeval timeValStartSweeping ,timeValEndSweeping; // When first and last sweeping are done
+struct tm tm_timeStartSweeping, tm_timeEndSweeping; // Beginning and end of sweeping
+
+time_t timeBeginningExecution, timeEndExecution; // When Program start and finish execution
+time_t t_timeStartConfig, t_timeEndConfig; // When Program start and finish configuration
+time_t t_timeStartSweeping, t_timeEndSweeping; // Timing values of sweeping to determine beginning and end (use for fits headers)
+time_t t_timeStartGeneration, t_timeEndGeneration; // When Program start and finish FITS generation
+
 float durationSweeps = 0; // Total duration of sweepings ( TODO: Change where it is measured)
 
 /********************/
@@ -142,8 +146,6 @@ double fft_bin_width; // Bandwidth fft
 fftwf_complex *fftwIn = NULL; // FFT data
 fftwf_complex *fftwOut = NULL; // FFT data
 fftwf_plan fftwPlan = NULL; // FFT data
-fftwf_complex *ifftwIn = NULL; // FFT data
-fftwf_complex *ifftwOut = NULL; // FFT data
 
 float* pwr; // Power measures
 float* window;
@@ -200,30 +202,25 @@ void timerHandler(int sig)
 /**
  * @brief  Starts a timer which will be thrown periodically
  * @note   
- * @retval TODO: Should be void
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-float hackRFTrigger()
+int hackRFTrigger()
 { 
-	printf("hackrf_sweep | hackRFTrigger()\n");
-	gettimeofday(&preTriggering,NULL);
-
+	printf("hackrf_sweep | hackRFTrigger() | Triggering Start\n");
     if(signal(SIGALRM, timerHandler) == SIG_ERR)
     {
         fprintf(stderr, "timer | hackRFTrigger | Unable to catch alarm signal");
-        return 0;
-    }
+		return EXIT_FAILURE;
+	}
    
     if(setitimer(ITIMER_REAL, &timer, 0) == -1)
     {
         fprintf(stderr, "timer | hackRFTrigger | Error calling timer");
-        return 0;
+        return EXIT_FAILURE;
     }
-    
-    
-    gettimeofday(&postTriggering,NULL);    
-    durationIteration = 0;
-    
-	return durationIteration;
+
+	printf("hackrf_sweep | hackRFTrigger() | Execution Success\n");
+	return EXIT_SUCCESS;
 }
 
 /**
@@ -304,13 +301,6 @@ int rx_callback(hackrf_transfer* transfer) {
 	char time_str[60];
 	struct timeval usb_transfer_time;
 
-
-	if (strstr(pathFits,"fits")==NULL) 
-	{
-		fprintf(stderr, "hackrf_sweep | rx_callback() | pathFits is null");
-		return EXIT_FAILURE;
-	}
-
 	if(do_exit) {
 		return 0;
 	}
@@ -339,7 +329,6 @@ int rx_callback(hackrf_transfer* transfer) {
 			continue;
 		}
 		
-
 		if (frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
 		{	
 			success = true;
@@ -351,7 +340,6 @@ int rx_callback(hackrf_transfer* transfer) {
 				//else if(finite_mode && sweep_count == num_sweeps) {	do_exit = true;	}
 
 				else if(counterSucess == TRIGGERING_TIMES) { do_exit = true; }
-
 			}
 
 			sweep_started = true;
@@ -392,9 +380,9 @@ int rx_callback(hackrf_transfer* transfer) {
 		*/
 		if (counterSucess == 0)
 		{
-			time_t now = time(NULL);
-			localtime_r(&now, &timeFirstSweeping);
-			gettimeofday(&timeAtBeginning, NULL);
+			t_timeStartSweeping = time(NULL);
+			localtime_r(&t_timeStartSweeping, &tm_timeStartSweeping);
+			gettimeofday(&timeValStartSweeping, NULL);
 		}
 			
 		if(strstr(pathFits, "fits")!= NULL && timerFlag == 1 && ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0]) || flag_initialFreqCaught == 1)) 
@@ -408,7 +396,7 @@ int rx_callback(hackrf_transfer* transfer) {
 				char decimalTime[8] = {"."};
 				char totalDecimalsTime[8];
 				flag_initialFreqCaught = 1; //First time will enter
-				fprintf(stderr, "First Frecuency caught. Setting flag to 1\n"); 
+				//fprintf(stderr, "First Frecuency caught. Setting flag to 1\n"); 
 
 				strcpy(sweepingTime, time_str);
 				sprintf(totalDecimalsTime, "%06ld", (long int)usb_transfer_time.tv_usec);
@@ -477,8 +465,9 @@ int rx_callback(hackrf_transfer* transfer) {
 				
 				if (counterSucess == TRIGGERING_TIMES)
 				{
-					gettimeofday(&timeAtEnd, NULL);
-					end = time(NULL);
+					t_timeEndSweeping = time(NULL);
+					localtime_r(&t_timeEndSweeping, &tm_timeEndSweeping);
+					gettimeofday(&timeValEndSweeping, NULL);
 				}
 			}
 		}
@@ -642,7 +631,7 @@ static int setSweeping()
  */
 static int sweeping()
 {
-	hackRFTrigger();
+	if (hackRFTrigger() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
 	printf("hackrf_sweep | sweeping() | ===SWEEPING STARTED===\n");
 	printf("hackrf_sweep | Start triggering %d times\n", TRIGGERING_TIMES);
@@ -680,8 +669,8 @@ static float sweepDuration()
 		if (durationSweep >= 1.0f) {
 			time_difference = TimevalDiff(&time_now, &t_start);
 			sweep_rate = (float)sweep_count / time_difference;
-			fprintf(stderr, "%" PRIu64 "hackrf_sweep | sweepDuration() | total sweeps completed, %.2f sweeps/second\n",
-					sweep_count, sweep_rate);
+			/*fprintf(stderr, "%" PRIu64 "hackrf_sweep | sweepDuration() | total sweeps completed, %.2f sweeps/second\n",
+					sweep_count, sweep_rate);*/
 
 			if (byte_count == 0) {
 				fprintf(stderr, "\n hackrf_sweep | sweepDuration() | Couldn't transfer any data for one second.\n");
@@ -864,8 +853,6 @@ static void freeFFTMemory()
 	fftwf_free(fftwOut);
 	fftwf_free(pwr);
 	fftwf_free(window);
-	fftwf_free(ifftwIn);
-	fftwf_free(ifftwOut);
 }
 
 /**
@@ -880,7 +867,6 @@ static void freeFitsMemory()
 	free(frequencyDatas);
 	free(flagsOrder);
 }
-
 
 /**
  * @brief Function just to check values
@@ -909,35 +895,50 @@ static void printValuesHackRFOne()
 	{
 		printf("Frequency[%d]: %f MHz", i, frequencyDatas[i]);
 	}*/
+
+		// Print real order frequencies
+	/*for(i = 0; i < nRanges; i++)
+    {
+        printf("frequency_order[%d]: %d - samples[%d...%d] - Frequency: %d\n",
+		i, real_order_frequencies[i],
+		(real_order_frequencies[i]-1)*(fftSize/4),
+		(real_order_frequencies[i]-1)*(fftSize/4)-1 + (fftSize/4),
+		freq_min +(real_order_frequencies[i]-1)*(fftSize/4)
+		);
+    }*/
+
 }
 
 /**
- * @brief  Main thread 
- * @note   Execution example: ./hackrf_sweep -f45:245 > test.out
- * @param  argc: 
- * @param  argv: 
- * @retval EXIT_SUCCESS
+ * @brief  Calculate times of the program when is called
+ * @note   
+ * @param  t_timeStartConfig: Time variable to get the instant
+ * @param  tm_timeStartConfig: Time structure to format (beginning and end)
+ * @param  timeValStartConfig: Time structure to get the timeof day in secs
+ * @retval None
  */
-int main(int argc, char** argv) 
+void calculateTimes(time_t* t_time, struct tm* tm_time, struct timeval* timeVal)
+{
+        gettimeofday(timeVal, NULL);
+	    *t_time = time(NULL);
+	    localtime_r(t_time, tm_time);
+}
+
+/**
+ * @brief  Runs all the configuration
+ * @note
+ * @param opt: option choose at executing
+ * @param argc: idem 
+ * @param argv: idem
+ * @param i: iteration variable  
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+static int runConfiguration(int argc, char** argv)
 {
 	int opt = 0, i;
-	int nElements;
-	int nRanges = 0;
-	
-	struct tm localTimeBeginning;
-	struct tm localTimeEnd;
-	char startDate[70];
-	char timeStart[70];
-	char endDate[70];
-	char timeEnd[70];
 
-	beginning = time(NULL);
-	localtime_r(&beginning, &localTimeBeginning);
-	generateDynamicName(localTimeBeginning);
-
-	strftime(startDate, sizeof startDate,"%Y-%m-%d", &localTimeBeginning);
-	strftime(timeStart, sizeof timeStart, "%Y-%m-%d %H:%M:%S", &localTimeBeginning);
-
+	printf("=============================================================\n");
+	printf("hackrf_sweep | runConfiguration() | Starting Configuration\n");
 	if (execApiBasicConfiguration(opt, argc, argv) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
 	if(checkParams() == EXIT_FAILURE){ return EXIT_FAILURE; } 
@@ -975,11 +976,11 @@ int main(int argc, char** argv)
 		step_count = 1 + (frequencies[2*i+1] - frequencies[2*i] - 1)
 				/ customTuneUp;
 		frequencies[2*i+1] = (uint16_t) (frequencies[2*i] + step_count * customTuneUp);
-		fprintf(stderr, "hackrf_sweep | Sweeping from %u MHz to %u MHz\n",
+		fprintf(stderr, "hackrf_sweep | runConfiguration() | Sweeping from %u MHz to %u MHz\n",
 				frequencies[2*i], frequencies[2*i+1]);
 	}
 
-	printf("hackrf_sweep | HackRF One configuration DONE.\n");
+	printf("hackrf_sweep | runConfiguration() | HackRF One configuration DONE.\n");
 
 	nElements = naxes[0]*naxes[1];
 	nRanges = naxes[1]/(fftSize/4);
@@ -999,55 +1000,67 @@ int main(int argc, char** argv)
 	
     if (samples == NULL || samplesOrdered == NULL)
     {
-        fprintf(stderr, "hackrf_sweep | Was not possible to allocate memory for power samples\n");
+        fprintf(stderr, "hackrf_sweep | runConfiguration() | Was not possible to allocate memory for power samples\n");
         return EXIT_FAILURE;
     }
 
-	printf("hackrf_sweep | Memory allocated for power samples\n");
+	printf("hackrf_sweep | runConfiguration() | Memory allocated for power samples\n");
+	printf("hackrf_sweep | runConfiguration() | Execution Success\n");
+	printf("=============================================================\n");
+	return EXIT_SUCCESS;
+}
 
-	startExecution();
-	
+/**
+ * @brief  Runs the functionality
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+static int runExecution()
+{
+	printf("=============================================================\n");
+	printf("hackrf_sweep | runExecution() | Execution starts\n");
+
 	if (sweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
 	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
 	durationSweeps += sweepDuration();
-	totalDuration = TimevalDiff(&timeAtEnd, &timeAtBeginning);
-
-	localtime_r(&end, &localTimeEnd);
-	strftime(endDate, sizeof endDate,"%Y-%m-%d", &localTimeEnd);
-	strftime(timeEnd, sizeof timeEnd, "%Y-%m-%d %H:%M:%S", &localTimeEnd);
+	totalDuration = TimevalDiff(&timeValEndSweeping, &timeValStartSweeping);
 
 	checkStreaming();   	
     printf("hackrf_sweep| Total sweep completed successfully: %d out of %d\n", counterSucess, TRIGGERING_TIMES);
 	
 	printf("hackrf_sweep | All triggering actions(%d) where completed\n", TRIGGERING_TIMES);
-	printf("hackrf_sweep | Total duration: %.2f s ||", totalDuration);
-	printf("hackrf_sweep | Total sweep time : %.2f s ||",durationSweeps);
-//	printf("hackrf_sweep | sweepingTime/totalDuration: %.2f%%\n", 100*durationSweeps/totalDuration);
+	printf("hackrf_sweep | Total duration of sweeping: %.2f s ||", totalDuration);
 	
 	if(checkSavedData(nElements) == EXIT_FAILURE){ return EXIT_FAILURE; }
 	
 	if(endConnection() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
-	// Print real order frequencies
-	/*for(i = 0; i < nRanges; i++)
-    {
-        printf("frequency_order[%d]: %d - samples[%d...%d] - Frequency: %d\n",
-		i, real_order_frequencies[i],
-		(real_order_frequencies[i]-1)*(fftSize/4),
-		(real_order_frequencies[i]-1)*(fftSize/4)-1 + (fftSize/4),
-		freq_min +(real_order_frequencies[i]-1)*(fftSize/4)
-		);
-    }*/
+	printf("=============================================================\n");
+	printf("hackrf_sweep | runExecution() | Execution Success\n");
 
+	return EXIT_SUCCESS;
+}
+
+/**
+ * @brief  Runs the generation of fits file
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+static int runGeneration(char* dateStartSweeping, char* timeStartSweeping, char* dateEndSweeping, char* timeEndSweeping)
+{
+	int i;
+
+	printf("=============================================================\n");
+	printf("hackrf_sweep | runGeneration() | Execution starts\n");
 	// Copy disordered samples into the ordered one to not check the ordered freqs
 	for (i = 0 ; i < nElements; i++)
 	{
 		samplesOrdered[i] = samples[i];
 	}
 	
-	printf("hackrf_sweep | reorganizeSamples() | Reorganizing Samples Started\n");
+	printf("hackrf_sweep | runGeneration() | reorganizeSamples() | Reorganizing Samples Started\n");
 	for (i = 0; i < nRanges; i++)
 	{
 		if ((i+1) != real_order_frequencies[i] && flagsOrder[i] == 0) //i+1 is the position that should have
@@ -1069,12 +1082,12 @@ int main(int argc, char** argv)
 	{
 		if (flagsOrder[i] ==0 )
 		{
-			fprintf(stderr, "hackrf_sweep | reorganizeSamples() | Flag[%d] is down. Reorganization of samples failed\n", i);
+			fprintf(stderr, "hackrf_sweep | runGeneration() | reorganizeSamples() | Flag[%d] is down. Reorganization of samples failed\n", i);
 			return EXIT_FAILURE;
 		}
 	}
 	
-	printf("hackrf_sweep | reorganizeSamples() | Execution Success;\n");
+	printf("hackrf_sweep | runGeneration() | reorganizeSamples() | Execution Success;\n");
 
 	//printValuesHackRFOne();
 
@@ -1082,15 +1095,103 @@ int main(int argc, char** argv)
 														  samplesOrdered,
 														  freq_min,freq_max,
 														  fftSize/4, 
-														  startDate, timeStart, 
-														  endDate, timeEnd, 
-														  timeFirstSweeping)) == EXIT_FAILURE){ return EXIT_FAILURE; }
+														  dateStartSweeping, timeStartSweeping, 
+														  dateEndSweeping, timeEndSweeping, 
+														  tm_timeStartSweeping)) == EXIT_FAILURE){ return EXIT_FAILURE; }
+	
+	printf("=============================================================\n");
+	printf("hackrf_sweep | runGeneration() | Execution Success\n");
+	return EXIT_SUCCESS;
+}
+
+/**
+ * @brief  Main thread 
+ * @note   Execution example: ./hackrf_sweep -f45:245 > test.out
+ * @param  argc: 
+ * @param  argv: 
+ * @retval EXIT_SUCCESS
+ */
+int main(int argc, char** argv) 
+{	
+	struct tm tm_timeBeginningExecution, tm_timeEndExecution; // Struct of time values at beginning and end of the program
+	struct timeval timeValStartExecution, timeValEndExecution; // Use to get duration of the exection
+	char timeStartProgram[70], timeEndProgram[70]; // Time as date and hours
+	
+	struct tm tm_timeStartConfig, tm_timeEndConfig; // Struct of time values at beginning and end of the configuration
+	struct timeval timeValStartConfig, timeValEndConfig; // Use to get duration of the configuration
+	char timeStartConfig[70], timeEndConfig[70]; // Time as date and hours
+
+	struct tm tm_timeStartGeneration, tm_timeEndGeneration; // Struct of time values at beginning and end of the fits generation
+	struct timeval timeValStartGeneration, timeValEndGeneration; // Use to get duration of the fits generation
+	char timeStartGeneration[70], timeEndGeneration[70]; // Time as date and hours
+
+	char timeStartSweeping[70], dateStartSweeping[70];
+	char timeEndSweeping[70], dateEndSweeping[70];
+
+	/* START PROGRAM */
+	calculateTimes(&timeBeginningExecution, &tm_timeBeginningExecution, &timeValStartExecution);
+	strftime(timeStartProgram, sizeof timeStartProgram, "%Y-%m-%d %H:%M:%S", &tm_timeBeginningExecution);
+
+	generateDynamicName(tm_timeBeginningExecution);
+
+	/* START CONFIGURATION */
+	calculateTimes(&t_timeStartConfig, &tm_timeStartConfig, &timeValStartConfig);
+	strftime(timeStartConfig, sizeof timeStartConfig, "%Y-%m-%d %H:%M:%S", &tm_timeStartConfig);
+
+	if (runConfiguration(argc, argv) == EXIT_FAILURE) { return EXIT_FAILURE; }
+
+	calculateTimes(&t_timeEndConfig, &tm_timeEndConfig, &timeValEndConfig);
+	strftime(timeEndConfig, sizeof timeEndConfig, "%Y-%m-%d %H:%M:%S", &tm_timeEndConfig);
+
+	/* END CONFIGURATION*/
+
+	//startExecution();
+
+    /* START EXECUTION */
+
+	if (runExecution() == EXIT_FAILURE) { return EXIT_FAILURE; }
+
+	strftime(timeStartSweeping, sizeof timeStartSweeping, "%Y-%m-%d %H:%M:%S", &tm_timeStartSweeping);
+	strftime(dateStartSweeping, sizeof dateStartSweeping, "%Y-%m-%d %H:%M:%S", &tm_timeEndSweeping);
+
+	strftime(dateEndSweeping, sizeof dateEndSweeping,"%Y-%m-%d", &tm_timeEndSweeping);
+	strftime(timeEndSweeping, sizeof timeEndSweeping, "%Y-%m-%d %H:%M:%S", &tm_timeEndSweeping);
+
+	/* END EXECUTION */
+
+
+	/*START GENERATION */
+	calculateTimes(&t_timeStartGeneration, &tm_timeStartGeneration, &timeValStartGeneration);
+	strftime(timeStartGeneration, sizeof timeStartGeneration, "%Y-%m-%d %H:%M:%S", &tm_timeStartGeneration);
+
+	if (runGeneration(dateStartSweeping, timeStartSweeping, dateEndSweeping, timeEndSweeping) == EXIT_FAILURE) { return EXIT_FAILURE; }
+
+	calculateTimes(&t_timeEndGeneration, &tm_timeEndGeneration, &timeValEndGeneration);
+	strftime(timeEndGeneration, sizeof timeEndGeneration, "%Y-%m-%d %H:%M:%S", &tm_timeEndGeneration);
+
+	/* END GENERATION */
 
 	freeFFTMemory();
 	freeFitsMemory();
-	
 	printf("hackrf_sweep | The dynamic memory used was successfully released.\nEND.\n");
 
+	/* END PROGRAM */
+	calculateTimes(&timeEndExecution, &tm_timeEndExecution, &timeValEndExecution);
+
+	timeEndExecution = time(NULL);
+	strftime(timeEndProgram, sizeof timeEndProgram, "%Y-%m-%d %H:%M:%S", &tm_timeEndExecution);
+
+	printf("=============================================================\n");
+	fprintf(stderr, "Time parameters hackrf_sweep\n"
+					"Program Execution Start: %s\t Program Execution Finish: %s\t Duration: %fs\n"
+					"Configuration Start: %s\t Configuration Finish: %s\t Duration: %fs\n"
+					"Sweeping Start: %s\t Sweeping Finish: %s\t Duration: %fs\n" 
+					"Generation FITS Part Start: %s\t Generation FITS Part Finish: %s\t Duration: %fs\n",
+					timeStartProgram, timeEndProgram, TimevalDiff(&timeValEndExecution, &timeValStartExecution),
+					timeStartConfig, timeEndConfig, TimevalDiff(&timeValEndConfig, &timeValStartConfig),
+					timeStartSweeping, timeEndSweeping, TimevalDiff(&timeValEndSweeping, &timeValStartSweeping),
+					timeStartGeneration, timeEndGeneration, TimevalDiff(&timeValEndGeneration, &timeValStartGeneration)
+			);
 	return EXIT_SUCCESS;
 	
 }
