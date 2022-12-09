@@ -37,8 +37,9 @@ typedef int bool;
 #define FREQ_ONE_MHZ (1000000ull)
 #define FREQ_MAX_MHZ (7250) /* 7250 MHz */
 #define FFTMAX 	(8180)
+#define FFT_DEFAULT_SIZE	(20)
 
-#define TRIGGERING_TIMES (3600) //3600
+#define TRIGGERING_TIMES (2) //3600
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)
@@ -68,7 +69,7 @@ extern uint32_t requested_fft_bin_width;
 extern int fftSize;
 extern bool one_shot;
 extern bool finite_mode;
-extern int sampleRate;
+extern float sampleRate;
 
 uint32_t nChannels = 200;
 
@@ -212,7 +213,7 @@ int assignFitsParameters()
 		printf("functions | assignFitsParameters() | Receiving measures and saving as a FITS file\n\n||===Parameters FITS file===||\n");
 		printf("functions | assignFitsParameters() | Freq min: %d\n", freq_min);
 		printf("functions | assignFitsParameters() | Freq max: %d\n", freq_max);
-		printf("functions | assignFitsParameters() | Step Value: %lf\n",step_value);
+		printf("functions | assignFitsParameters() | Step Value: %f\n",step_value);
 		printf("functions | assignFitsParameters() | Number of steps(X): %ld\n",naxes[0]);
 		printf("functions | assignFitsParameters() | Number of samples(Z) per frequency: %d\n", fftSize/4);
 		printf("functions | assignFitsParameters() | Number of total samples : %ld\n", naxes[0]*naxes[1]);
@@ -235,21 +236,32 @@ int assignFitsParameters()
  */
 void assignGenericParameters()
 {
+	float rest_stepValue = 0;
+	float restPermited = 0.9;
 	printf("functions | assignGenericParameters() | Assigning parameters of API\n ===GENERIC PARAMS===\n");
 	
 	numberOfSteps = nChannels;
+	fftSize = FFT_DEFAULT_SIZE;
 
-	step_value = (float)(freq_max - freq_min)/numberOfSteps;
+	//rest_stepValue = (float)(freq_max - freq_min)/numberOfSteps;
+	step_value = (float) (freq_max - freq_min)/numberOfSteps;
+	/*rest_stepValue -= step_value;
+
+	if (rest_stepValue > restPermited)
+	{	
+		fprintf(stderr, "Over %f\n", rest_stepValue);
+		step_value++;
+	}*/
 	requested_fft_bin_width = step_value*FREQ_ONE_MHZ;
 
-	sampleRate = CUSTOM_SAMPLE_RATE_HZ;
+	sampleRate = fftSize*requested_fft_bin_width;
 
-	fftSize = sampleRate/requested_fft_bin_width;
+	//fftSize = sampleRate/requested_fft_bin_width;
 
-	printf("functions | assignGenericParameters() | Step Value: %f MHz\n", step_value);
 	printf("functions | assignGenericParameters() | Number of Channels: %d\n", nChannels);
-	printf("functions | assignGenericParameters() | Sample Rate: %d MHz\n", sampleRate);
-	printf("functions | assignGenericParameters() | FFT size: %d\n", fftSize);
+	printf("functions | assignGenericParameters() | Step Value: %f MHz\n", step_value);
+	printf("functions | assignGenericParameters() | Sample Rate: %f MHz\n", sampleRate);
+	printf("functions | assignGenericParameters() | FFT size: %d\n", fftSize);	
 	printf("functions | assignGenericParameters() | Samples per channel: %d\n", fftSize/4);
 
 	printf("functions | assignGenericParameters() | Execution Success\n");

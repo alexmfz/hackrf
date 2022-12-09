@@ -16,7 +16,7 @@
 #include <inttypes.h>
 
 // -I/usr/local/src/cfitsio-4.1.0 -lcfitsio
-#define TRIGGERING_TIMES (3600) //3600
+#define TRIGGERING_TIMES (2) //3600
 
 /*** Global Variables***/
 fitsfile *fptr =NULL;
@@ -257,22 +257,20 @@ void closeFits()
  * @param  step_value_between_ranges: value between frequencies
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int saveFrequencies(uint32_t freq_min, uint32_t freq_max, float step_value_between_ranges)
+int saveFrequencies(uint32_t freq_min, uint32_t freq_max, int n_ranges, float step_value_between_ranges)
 {   
     int i = 0;
-    int numberRangeFrequencies = naxes[1]/step_value_between_ranges; // 200/5
     float actualFrequency = (float)freq_min;
-    
     printf("generationFits | saveFrequencies() | Start saving index data frequencies in ranges to generate fits file\n");
     
-    frequencyDatas = (float*)calloc(numberRangeFrequencies,sizeof(float));
-    for(i = 0; i< numberRangeFrequencies; i++)
+    frequencyDatas = (float*)calloc(n_ranges,sizeof(float));
+    for(i = 0; i< n_ranges; i++)
     {
         frequencyDatas[i] = actualFrequency;
         actualFrequency += step_value_between_ranges;
     }
     
-    if (frequencyDatas == NULL && frequencyDatas[numberRangeFrequencies] != freq_max) 
+    if (frequencyDatas == NULL && frequencyDatas[n_ranges] != freq_max) 
     {
         fprintf(stderr, "generationFits | saveFrequencies() | Was not possible to save frequencies.\n");
         return EXIT_FAILURE; 

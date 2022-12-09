@@ -52,7 +52,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFTMIN 	(4)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGGERING_TIMES (3600) //3600
+#define TRIGGERING_TIMES (2) //3600
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -62,7 +62,7 @@ typedef int bool;
 #define THROWAWAY_BLOCKS 2
 
 #if defined _WIN32
-	#define m_sleep(a) Sleep( (a) )
+	#define m_sleep(a) S0.000050sleep( (a) )
 #else
 	#define m_sleep(a) usleep((a*1000))
 #endif
@@ -75,11 +75,12 @@ float totalDuration = 0; // Total duration (should be aroung 15 minutes)
 bool success = false; // It determines if a iteration was successfull or not (frue => OK, false ==> Error)
 int counterSucess = 0; // It determines the number of iterations successfull
 int flag_initialFreqCaught = 0; // Flag to check if first frecuency (freq_min) was caught (0 => not capture, 1 => captured)
+int row_id = 0; //Max value it should be nRanges
 
 float step_value = 0; // (freqmax-freqmin)/nChannels (MHz) ==> Channel bandwidth
 int numberOfSteps = 0; // Number of channels
 
-int sampleRate = 0; // Custom sample rate 
+float sampleRate = 0; // Custom sample rate 
 
 char pathFits[50]; // File name of fits file
 extern long naxes[2]; // Number of axis of fits file
@@ -396,7 +397,7 @@ int rx_callback(hackrf_transfer* transfer) {
 				char decimalTime[8] = {"."};
 				char totalDecimalsTime[8];
 				flag_initialFreqCaught = 1; //First time will enter
-				//fprintf(stderr, "First Frecuency caught. Setting flag to 1\n"); 
+				fprintf(stderr, "First Frecuency caught. Setting flag to 1\n"); 
 
 				strcpy(sweepingTime, time_str);
 				sprintf(totalDecimalsTime, "%06ld", (long int)usb_transfer_time.tv_usec);
@@ -407,56 +408,64 @@ int rx_callback(hackrf_transfer* transfer) {
 				strcpy(timeDatas[counterSucess], sweepingTime);
 			}
 
-			/*printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
+		/*	printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
 				time_str,
 				(long int)usb_transfer_time.tv_usec,
 				(uint64_t)(frequency), //First time: 45MhZ
 				(uint64_t)(frequency+sampleRate/4), //45MHz + 5MHz
 				fft_bin_width,
-				fftSize);*/
-			
+				fftSize
+				);
+		*/	
 			for(i = 0; (fftSize / 4) > i; i++) 
 			{
-				//printf(", %.2f", pwr[i + 1 + (fftSize*5)/8]);
-				
+			//	printf(", %.2f", pwr[i + 1 + (fftSize*5)/8]);
+		
 				// Save power sample
 				samples[id_sample] = pwr[i + 1 + (fftSize*5)/8];
 				id_sample++;
 			}
 
-			/*printf("\n");
+			row_id ++;
+		/*	printf(", row_id =%d", row_id);
+			printf("\n");
 			printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
 					time_str,
 					(long int)usb_transfer_time.tv_usec,
 					(uint64_t)(frequency+(sampleRate/2)),
 					(uint64_t)(frequency+((sampleRate*3)/4)),
 					fft_bin_width,			
-					fftSize);*/
+					fftSize
+					);*/
 							
 			for(i = 0; (fftSize / 4) > i; i++) 
 			{
-			//	printf(", %.2f", pwr[i + 1 + (fftSize/8)]);
+				//printf(", %.2f", pwr[i + 1 + (fftSize/8)]);
 				
 				// Save power sample
 				samples[id_sample] = pwr[i + 1 + (fftSize/8)];
 				id_sample++;
 			}
 
-			//printf("\n");
-
+			row_id ++;
+		/*	printf(", row_id =%d", row_id);
+			printf("\n");
+*/
 			if (counterSucess == 0)
 			{
-				if(checkOrderFreqs(naxes[1]/(fftSize/4), (float)(frequency/FREQ_ONE_MHZ)) == EXIT_FAILURE) { return EXIT_FAILURE; }
-				if(checkOrderFreqs(naxes[1]/(fftSize/4), (float)((frequency + sampleRate/2)/FREQ_ONE_MHZ)) == EXIT_FAILURE) { return EXIT_FAILURE; }
+				
+				if(checkOrderFreqs(nRanges, (float)(frequency/FREQ_ONE_MHZ)) == EXIT_FAILURE) { return EXIT_FAILURE; }
+				if(checkOrderFreqs(nRanges, (float)((frequency + sampleRate/2)/FREQ_ONE_MHZ)) == EXIT_FAILURE) { return EXIT_FAILURE; }
 			}
 
-			if ((uint64_t)(frequency+((sampleRate*3)/4)) == freq_max*FREQ_ONE_MHZ) //Where the sweep finished
+			if ((uint64_t)(frequency+((sampleRate*3)/4)) >= freq_max*FREQ_ONE_MHZ || row_id == nRanges) //Where the sweep finished
 			{
 				if (counterSucess == 0)
 				{
 					if(checkOrderFreqs(naxes[1]/(fftSize/4), (float)((frequency + sampleRate*3/4)/FREQ_ONE_MHZ)) == EXIT_FAILURE) { return EXIT_FAILURE; }
 				}
 
+				row_id = 0 ;
 				counterSucess++;
 				printf("hackrf_sweep | rx_callback() | Data Caught. Iteration %d finished\n", counterSucess);			
 				success = false;
@@ -611,7 +620,7 @@ static int setHackRFParams(){
 static int setSweeping()
 {
 	printf("hackrf_sweep | setSweeping() | Configuring sweeping parameters\n");
-	int customTuneStep = sampleRate/FREQ_ONE_MHZ;
+	float customTuneStep = (float)sampleRate/FREQ_ONE_MHZ;
 	result = hackrf_init_sweep(device, frequencies, num_ranges, BYTES_PER_BLOCK,
 			customTuneStep * FREQ_ONE_MHZ, OFFSET, INTERLEAVED);
 	if( result != HACKRF_SUCCESS ) {
@@ -862,10 +871,18 @@ static void freeFFTMemory()
  */
 static void freeFitsMemory()
 {
-	free(samples);
-	free(samplesOrdered);
 	free(frequencyDatas);
-	free(flagsOrder);
+
+	free(real_order_frequencies);
+
+	//free(samples);
+
+	//free(flagsOrder);
+	/*fprintf(stderr, "Releasing frequencyDatas\n");
+	free(frequencyDatas);
+	fprintf(stderr, "Releasing samples\n");
+	fprintf(stderr, "Releasing samplesOrdered\n");
+	free(samplesOrdered);*/
 }
 
 /**
@@ -897,7 +914,7 @@ static void printValuesHackRFOne()
 	}*/
 
 		// Print real order frequencies
-	/*for(i = 0; i < nRanges; i++)
+	for(i = 0; i < nRanges; i++)
     {
         printf("frequency_order[%d]: %d - samples[%d...%d] - Frequency: %d\n",
 		i, real_order_frequencies[i],
@@ -905,6 +922,11 @@ static void printValuesHackRFOne()
 		(real_order_frequencies[i]-1)*(fftSize/4)-1 + (fftSize/4),
 		freq_min +(real_order_frequencies[i]-1)*(fftSize/4)
 		);
+    }
+
+	/*for(i = 0; i < nRanges; i++)
+    {
+        printf("flag_order[%d]: %d\n", i, flagsOrder[i]);
     }*/
 
 }
@@ -936,6 +958,7 @@ void calculateTimes(time_t* t_time, struct tm* tm_time, struct timeval* timeVal)
 static int runConfiguration(int argc, char** argv)
 {
 	int opt = 0, i;
+	float step_range = 0;
 
 	printf("=============================================================\n");
 	printf("hackrf_sweep | runConfiguration() | Starting Configuration\n");
@@ -969,7 +992,7 @@ static int runConfiguration(int argc, char** argv)
 	signal(SIGABRT, &sigint_callback_handler);
 #endif
 
-	int customTuneUp = sampleRate/FREQ_ONE_MHZ;
+	float customTuneUp = (float)sampleRate/FREQ_ONE_MHZ;
 	if(setHackRFParams() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
 	for(i = 0; i < num_ranges; i++) {
@@ -983,12 +1006,19 @@ static int runConfiguration(int argc, char** argv)
 	printf("hackrf_sweep | runConfiguration() | HackRF One configuration DONE.\n");
 
 	nElements = naxes[0]*naxes[1];
-	nRanges = naxes[1]/(fftSize/4);
+	step_range = (float)(fft_bin_width/FREQ_ONE_MHZ)*(fftSize/4);
+	nRanges = (freq_max - freq_min)/step_range;
+
+	fprintf(stderr, "\nhackrf_sweep | runConfiguration() | nElements = %d\n nRanges = %d\n sampeRate = %.2f\n customTuneUp = %f\n stepValue = %f\n naxes[0] = %ld\n naxes[1] = %ld\n requested_fft_bin_width = %d\n fft_bin_width = %lf\n fftSize/4 = %d\n step_range = %f\n\n",
+	 																	nElements, nRanges, sampleRate, customTuneUp, step_value,
+																		naxes[0], naxes[1],
+																		requested_fft_bin_width, fft_bin_width, fftSize/4, step_range);
+	
 	flagsOrder = (int*)calloc(nRanges, sizeof(int));
     real_order_frequencies = (int*) calloc(nRanges, sizeof(int)); // positions of frecuencies
 
 	//save frequency data 
-    if (saveFrequencies(freq_min, freq_max, fftSize/4) == EXIT_FAILURE) { return EXIT_FAILURE; } 
+    if (saveFrequencies(freq_min, freq_max, nRanges, step_range) == EXIT_FAILURE) { return EXIT_FAILURE; } 
 	
 	setTimerParams();
 
@@ -1089,15 +1119,13 @@ static int runGeneration(char* dateStartSweeping, char* timeStartSweeping, char*
 	
 	printf("hackrf_sweep | runGeneration() | reorganizeSamples() | Execution Success;\n");
 
-	//printValuesHackRFOne();
-
-	if(strstr(pathFits,"fits")==NULL || (generateFitsFile(pathFits,
+	/*if(strstr(pathFits,"fits")==NULL || (generateFitsFile(pathFits,
 														  samplesOrdered,
 														  freq_min,freq_max,
 														  fftSize/4, 
 														  dateStartSweeping, timeStartSweeping, 
 														  dateEndSweeping, timeEndSweeping, 
-														  tm_timeStartSweeping)) == EXIT_FAILURE){ return EXIT_FAILURE; }
+														  tm_timeStartSweeping)) == EXIT_FAILURE){ return EXIT_FAILURE; }*/
 	
 	printf("=============================================================\n");
 	printf("hackrf_sweep | runGeneration() | Execution Success\n");
@@ -1168,6 +1196,7 @@ int main(int argc, char** argv)
 
 	calculateTimes(&t_timeEndGeneration, &tm_timeEndGeneration, &timeValEndGeneration);
 	strftime(timeEndGeneration, sizeof timeEndGeneration, "%Y-%m-%d %H:%M:%S", &tm_timeEndGeneration);
+	printValuesHackRFOne();
 
 	/* END GENERATION */
 
@@ -1182,11 +1211,12 @@ int main(int argc, char** argv)
 	strftime(timeEndProgram, sizeof timeEndProgram, "%Y-%m-%d %H:%M:%S", &tm_timeEndExecution);
 
 	printf("=============================================================\n");
-	fprintf(stderr, "Time parameters hackrf_sweep\n"
+	fprintf(stderr, "Time parameters hackrf_sweep f%d:%d-%d Iterations\n"
 					"Program Execution Start: %s\t Program Execution Finish: %s\t Duration: %fs\n"
 					"Configuration Start: %s\t Configuration Finish: %s\t Duration: %fs\n"
 					"Sweeping Start: %s\t Sweeping Finish: %s\t Duration: %fs\n" 
 					"Generation FITS Part Start: %s\t Generation FITS Part Finish: %s\t Duration: %fs\n",
+					freq_min, freq_max, TRIGGERING_TIMES,
 					timeStartProgram, timeEndProgram, TimevalDiff(&timeValEndExecution, &timeValStartExecution),
 					timeStartConfig, timeEndConfig, TimevalDiff(&timeValEndConfig, &timeValStartConfig),
 					timeStartSweeping, timeEndSweeping, TimevalDiff(&timeValEndSweeping, &timeValStartSweeping),

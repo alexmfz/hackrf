@@ -1,3 +1,13 @@
-v3.1.0: 
-- Measuring times added
-- Reorganization hackrf_sweep code
+v3.2.0: 
+
+- [Test Scenario id][freq_min:freq_max][iterations]: timeSweeping
+    - [1][45:245][3600]: 905 s
+    - [2][45:245][3600]: 900.52 samples
+
+---- Timing scenarios ----
+    - [3][45:245][1]: 0.000050 s
+    - [4][45:245][2]: 0.255163 s
+    - [5][45:245][3]: 0.510911 s ==> 0.25 s more or less
+    - [6][45:300][2]: 
+
+Generalize algorithm for all range of frequencies

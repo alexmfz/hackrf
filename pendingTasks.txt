@@ -12,3 +12,4 @@ Status:  OK | PENDING
 10. Resolve header step x (0.25) and header times (start/end) --> OK
 11. Test with another ranges --> PENDING
 12. Execute program when time is multiple of 15 minutes and 0 seconds (XX:XX/15:00.0000) --> OK
+13. TODO: check why the order is wrong for 45-840  --> PENDING
