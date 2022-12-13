@@ -39,7 +39,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFT_DEFAULT_SIZE	(20)
 
-#define TRIGGERING_TIMES (2) //3600
+#define TRIGGERING_TIMES (3600) //3600
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)
@@ -236,27 +236,18 @@ int assignFitsParameters()
  */
 void assignGenericParameters()
 {
-	float rest_stepValue = 0;
-	float restPermited = 0.9;
 	printf("functions | assignGenericParameters() | Assigning parameters of API\n ===GENERIC PARAMS===\n");
 	
 	numberOfSteps = nChannels;
 	fftSize = FFT_DEFAULT_SIZE;
 
-	//rest_stepValue = (float)(freq_max - freq_min)/numberOfSteps;
 	step_value = (float) (freq_max - freq_min)/numberOfSteps;
-	/*rest_stepValue -= step_value;
-
-	if (rest_stepValue > restPermited)
-	{	
-		fprintf(stderr, "Over %f\n", rest_stepValue);
-		step_value++;
-	}*/
 	requested_fft_bin_width = step_value*FREQ_ONE_MHZ;
 
 	sampleRate = fftSize*requested_fft_bin_width;
+	//sampleRate = CUSTOM_SAMPLE_RATE_HZ;
 
-	//fftSize = sampleRate/requested_fft_bin_width;
+//	fftSize = sampleRate/requested_fft_bin_width;
 
 	printf("functions | assignGenericParameters() | Number of Channels: %d\n", nChannels);
 	printf("functions | assignGenericParameters() | Step Value: %f MHz\n", step_value);

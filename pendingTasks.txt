@@ -6,10 +6,11 @@ Status:  OK | PENDING
 4. Resolve output bug detected in hackrf_sweep --> OK
 5. Update firmware --> OK
 6. Optimize code to run faster and comment code--> OK
-7. TODO: Resolve pending bugs and TODO --> PENDING
+7. Resolve pending bugs and TODO --> OK
 8. Save in dinamic memory frequencies, times(between 0.25 s) and power samples --> OK
 9. Resolve ordered samples-frequencies --> OK
 10. Resolve header step x (0.25) and header times (start/end) --> OK
 11. Test with another ranges --> PENDING
 12. Execute program when time is multiple of 15 minutes and 0 seconds (XX:XX/15:00.0000) --> OK
-13. TODO: check why the order is wrong for 45-840  --> PENDING
+13. Check why the order is wrong for 45-840  --> OK
+14. TODO: Send test to Manuel --> PENDING
