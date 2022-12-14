@@ -46,30 +46,31 @@ int create(char fileFitsName[])
     fits_file_exists(fileFitsName, &exist, &status);
     if(exist == 1)
     {
-        printf("generationFits | create() | File already exists. Overwritting fits file.\n");
+        printf("generationFits | create() | File already exists. Overwritting fits file\n");
         if(fits_open_file(&fptr, fileFitsName, READWRITE, &status))
         {
-            fprintf(stderr, "generationFits | create() | Was not possible to open the file");
+            fprintf(stderr, "generationFits | create() | Was not possible to open the file\n");
             return EXIT_FAILURE;
         }
         
         if(fits_delete_file(fptr,&status))
         {
-            fprintf(stderr,"generationFits | create() | Was not possible to delete the file");
+            fprintf(stderr,"generationFits | create() | Was not possible to delete the file\n");
             return EXIT_FAILURE;
         }
         if(fits_create_file(&fptr, fileFitsName, &status))
         {
-            fprintf(stderr, "generationFits | create() | Was not possible to create the file");
+            fprintf(stderr, "generationFits | create() | Was not possible to create the file\n");
             return EXIT_FAILURE;
         }
         
        /*create the primary array image (16-bit short integer pixels*/
         if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
         {
-            fprintf(stderr, "generationFits | create() | Was not possible to create the image");
+            fprintf(stderr, "generationFits | create() | Was not possible to create the image\n");
             return EXIT_FAILURE;
         }
+
         printf("generationFits | create() | Execution Sucess. File overwrriten: %s\n", fileFitsName);
         return EXIT_SUCCESS;
     }
@@ -77,14 +78,14 @@ int create(char fileFitsName[])
     {
         if(fits_create_file(&fptr, fileFitsName, &status))
         {
-            fprintf(stderr, "generationFits | create() | Was not possible to create the file");
+            fprintf(stderr, "generationFits | create() | Was not possible to create the file\n");
             return EXIT_FAILURE;
         }
 
         /*create the primary array image (16-bit short integer pixels*/
         if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
         {
-            fprintf(stderr, "generationFits | create() | Was not possible to create the image");
+            fprintf(stderr, "generationFits | create() | Was not possible to create the image\n");
             return EXIT_FAILURE;
         }
 

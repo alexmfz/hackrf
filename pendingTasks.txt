@@ -13,4 +13,7 @@ Status:  OK | PENDING
 11. Test with another ranges --> PENDING
 12. Execute program when time is multiple of 15 minutes and 0 seconds (XX:XX/15:00.0000) --> OK
 13. Check why the order is wrong for 45-840  --> OK
-14. TODO: Send test to Manuel --> PENDING
+14. Send test to Manuel --> OK
+15. TODO: Create binary table and integrate it with code --> PENDING
+16. TODO: Open images with RAPPViewer --> PENDING
+17. TODO: Resolve problem of sweeping rate (fftsize must not be cte)
