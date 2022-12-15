@@ -84,7 +84,11 @@ float sampleRate = 0; // Custom sample rate
 
 char pathFits[50]; // File name of fits file
 extern long naxes[2]; // Number of axis of fits file
-extern float *frequencyDatas; // Frequency values saved at ranges 
+
+extern float *frequencyDataRanges; // Frecuency Datas of the sweeping in ranges
+extern float *frequencyDatas; // Frecuency Datas of the sweeping in steps
+extern float *timeSteps; // Time data in steps
+
 extern float* samples; // Array of float samples where dbs measures will be saved (but are disordered)
 float * samplesOrdered; // Array of float samples where dbs measures will be saved in a correct order
 int *flagsOrder; // Array which represents the flags to check if a range of frequency is ordered or not
@@ -242,7 +246,7 @@ static int checkOrderFreqs(int nRanges, double insertedFrequency) // WIll be inv
     	printf("\nhackrf_sweep | checkOrderFreqs() | Ordering insertion of frequencies\n");
 	}
 
-    if (frequencyDatas == NULL || real_order_frequencies == NULL)
+    if (frequencyDataRanges == NULL || real_order_frequencies == NULL)
     {
         fprintf(stderr, "hackrf_sweep | checkOrderFreqs() | Not reserved memory correctly\n");
         return EXIT_FAILURE;
@@ -257,7 +261,7 @@ static int checkOrderFreqs(int nRanges, double insertedFrequency) // WIll be inv
 	previousInsertedFrequency = insertedFrequency;
     for (i = 0; i < nRanges; i++)
     {
-        if (frequencyDatas[i] == (float)insertedFrequency)
+        if (frequencyDataRanges[i] == (float)insertedFrequency)
         {
             real_order_frequencies[i] = orderValue;
             orderValue++;
@@ -872,18 +876,15 @@ static void freeFFTMemory()
  */
 static void freeFitsMemory()
 {
+	free(frequencyDataRanges);
 	free(frequencyDatas);
-
+	free(timeSteps);
 	free(real_order_frequencies);
 
-	//free(samples);
+	free(samples);
 
-	//free(flagsOrder);
-	/*fprintf(stderr, "Releasing frequencyDatas\n");
-	free(frequencyDatas);
-	fprintf(stderr, "Releasing samples\n");
-	fprintf(stderr, "Releasing samplesOrdered\n");
-	free(samplesOrdered);*/
+	free(flagsOrder);
+	free(samplesOrdered);
 }
 
 /**
@@ -904,7 +905,7 @@ static void printValuesHackRFOne()
 		printf("Time[%d]: %s\n", i, timeDatas[i]);	
 	}*/
 	
-	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Power samples\n");
+/*	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Power samples\n");
 	for (i = 0; i < nElements; i++)
 	{
 		if (i%5 == 0)
@@ -913,14 +914,15 @@ static void printValuesHackRFOne()
 		}
 		printf("Power sample disordered[%d]: %f\t Power sample ordered[%d]: %f\n", i, samples[i], i, samplesOrdered[i]);
 		
-	}
+	}*/
 		
 /*	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Frequencies\n");
 	for (i = 0; i< nRanges; i++)
 	{
-		printf("Frequency[%d]: %f MHz\n", i, frequencyDatas[i]);
+		printf("Frequency Ranges[%d]: %f MHz\n", i, frequencyDataRanges[i]);
 	}
-
+	*/
+/*
 		// Print real order frequencies
 	for(i = 0; i < nRanges; i++)
     {
@@ -937,6 +939,10 @@ static void printValuesHackRFOne()
         printf("flag_order[%d]: %d\n", i, flagsOrder[i]);
     }*/
 
+	/*for (i = 0; i < naxes[1]; i++)
+	{
+		printf("Frequency[%d]: %.2f\n",i , frequencyDatas[i]);
+	}*/
 }
 
 /**
@@ -1027,7 +1033,8 @@ static int runConfiguration(int argc, char** argv)
 
 	//save frequency data 
     if (saveFrequencies(freq_min, freq_max, nRanges, step_range) == EXIT_FAILURE) { return EXIT_FAILURE; } 
-	
+	if (saveTimeSteps() == EXIT_FAILURE) { return EXIT_FAILURE; }
+
 	setTimerParams();
 
 	if (setSweeping() == EXIT_FAILURE) { return EXIT_FAILURE; }
@@ -1086,7 +1093,7 @@ static int runExecution()
  * @note   
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-static int runGeneration(char* dateStartSweeping, char* timeStartSweeping, char* dateEndSweeping, char* timeEndSweeping)
+static int runGeneration(struct tm localTimeFirst, struct tm localTimeLast)
 {
 	int i;
 
@@ -1126,14 +1133,10 @@ static int runGeneration(char* dateStartSweeping, char* timeStartSweeping, char*
 	}
 	
 	printf("hackrf_sweep | runGeneration() | reorganizeSamples() | Execution Success;\n");
-
 	if(strstr(pathFits,"fits")==NULL || (generateFitsFile(pathFits,
 														  samplesOrdered,
-														  freq_min,freq_max,
-														  fftSize/4, 
-														  dateStartSweeping, timeStartSweeping, 
-														  dateEndSweeping, timeEndSweeping, 
-														  tm_timeStartSweeping)) == EXIT_FAILURE){ return EXIT_FAILURE; }
+														  localTimeFirst, localTimeLast,
+														  freq_min)) == EXIT_FAILURE){ return EXIT_FAILURE; }
 	
 	printf("=============================================================\n");
 	printf("hackrf_sweep | runGeneration() | Execution Success\n");
@@ -1200,11 +1203,11 @@ int main(int argc, char** argv)
 	calculateTimes(&t_timeStartGeneration, &tm_timeStartGeneration, &timeValStartGeneration);
 	strftime(timeStartGeneration, sizeof timeStartGeneration, "%Y-%m-%d %H:%M:%S", &tm_timeStartGeneration);
 
-	if (runGeneration(dateStartSweeping, timeStartSweeping, dateEndSweeping, timeEndSweeping) == EXIT_FAILURE) { return EXIT_FAILURE; }
+	if (runGeneration(tm_timeStartSweeping, tm_timeEndSweeping) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
 	calculateTimes(&t_timeEndGeneration, &tm_timeEndGeneration, &timeValEndGeneration);
 	strftime(timeEndGeneration, sizeof timeEndGeneration, "%Y-%m-%d %H:%M:%S", &tm_timeEndGeneration);
-	//printValuesHackRFOne();
+	printValuesHackRFOne();
 
 	/* END GENERATION */
 

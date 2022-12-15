@@ -26,7 +26,9 @@ float *example;
 int *flagsOrder;
 
 /**TEST FITS**/
-fitsfile *fptr =NULL;
+fitsfile *fptr = NULL; // pointer to table with X and Y cols
+fitsfile *histptr = NULL; // pointer to output FITS Image
+
 int exist = 0;
 int status = 0, ii, jj;
 int fpixel = 1;
@@ -247,32 +249,32 @@ void format_headerFitsTest()
     printf("%s", time_str);
 }
 
-long minData(float * samples)
+float minData(float * samples)
 {
     int  i = 0;
-    long minimum = (long)samples[0];
+    float minimum = samples[0];
 
     for (i = 0; i< nElements; i++)
     {
-        if (minimum > (long)samples[i])
+        if (minimum > samples[i])
         {
-            minimum = (long)samples[i];
+            minimum = samples[i];
         }
     }
 
     return minimum;
 }
 
-long maxData(float * samples)
+float maxData(float * samples)
 {
     int  i = 0;
-    long maximum = (long)samples[0];
+    long maximum = samples[0];
 
     for (i = 0; i< nElements; i++)
     {
-        if (maximum < (long)samples[i])
+        if (maximum < samples[i])
         {
-            maximum = (long)samples[i];
+            maximum = samples[i];
         }
     }
 
@@ -285,38 +287,31 @@ double getSecondsOfDayOfFirstSweeping(struct tm timeFirstSweeping)
     return sec_of_day;
 }
 
-int createImage(char fileFitsName[])
+int createFile(char fileFitsName[])
 {   
     /*Checks if the new file exist*/
     fits_file_exists(fileFitsName, &exist, &status);
     if(exist == 1)
     {
-        printf("generationFits | createImage() | File already exists. Overwritting fits file.\n");
+        printf("generationFits | createFile() | File already exists. Overwritting fits file.\n");
         if(fits_open_file(&fptr, fileFitsName, READWRITE, &status))
         {
-            fprintf(stderr, "generationFits | createImage() | Was not possible to open the file");
+            fprintf(stderr, "generationFits | createFile() | Was not possible to open the file");
             return EXIT_FAILURE;
         }
         
         if(fits_delete_file(fptr,&status))
         {
-            fprintf(stderr,"generationFits | createImage() | Was not possible to delete the file\n");
+            fprintf(stderr,"generationFits | createFile() | Was not possible to delete the file\n");
             return EXIT_FAILURE;
         }
         if(fits_create_file(&fptr, fileFitsName, &status))
         {
-            fprintf(stderr, "generationFits | createImage() | Was not possible to create the file\n");
+            fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
             return EXIT_FAILURE;
         }
 
-        /*create the primary array image (float) pixels*/
-        if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
-        {
-            fprintf(stderr, "generationFits | createImage() | Was not possible to create the image\n");
-            return EXIT_FAILURE;
-        }
-      
-        printf("generationFits | createImage() | Execution Sucess. File overwrriten: %s\n", fileFitsName);
+        printf("generationFits | createFile() | Execution Sucess. File overwrriten: %s\n", fileFitsName);
         return EXIT_SUCCESS;
     }
 
@@ -324,21 +319,28 @@ int createImage(char fileFitsName[])
     {
         if(fits_create_file(&fptr, fileFitsName, &status))
         {
-            fprintf(stderr, "generationFits | createImage() | Was not possible to create the file\n");
+            fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
             return EXIT_FAILURE;
         }
 
-  
-        /*create the primary array image (float) pixels*/
-        if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
-        {
-            fprintf(stderr, "generationFits | createImage() | Was not possible to create the image");
-            return EXIT_FAILURE;
-        }
-       
-        printf("generationFits | createImage() | Execution Sucess. Image created: %s with dimensions [%ld]x[%ld]\n", fileFitsName, naxes[0], naxes[1]);
         return EXIT_SUCCESS;
     }
+}
+
+int createImage()
+{
+    fprintf(stderr, "Here\n");
+
+    /*create the primary array image (float) pixels*/
+    if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
+    {
+        fprintf(stderr, "generationFits | createImage() | Was not possible to create the image");
+        return EXIT_FAILURE;
+    }
+        
+    printf("generationFits | createImage() | Execution Sucess. Image created with dimensions [%ld]x[%ld]\n", naxes[0], naxes[1]);
+    return EXIT_SUCCESS;
+       
 }
 
 void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min)
@@ -371,7 +373,7 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
     printf("generationFits | updateHeadersFitsFile | Updating fits headers to format\n");
 
     double bzero = 0., bscale = 1.;
-    long dataMax = maxData(samples), dataMin= minData(samples);
+    float dataMax = maxData(samples), dataMin= minData(samples);
     double exposure = 1500. ;
     double crVal1 = getSecondsOfDayOfFirstSweeping(localTimeFirst);
     long crPix1 = 0;
@@ -406,8 +408,8 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
     
     fits_update_key(fptr, TSTRING, "BUNIT", "digits", "Z - axis title", &status); // z- axis title
 
-    fits_update_key(fptr, TLONG, "DATAMAX", &dataMax, "Max pixel data", &status);
-    fits_update_key(fptr, TLONG, "DATAMIN", &dataMin, "Min pixel data", &status);
+    fits_update_key(fptr, TFLOAT, "DATAMAX", &dataMax, "Max pixel data", &status);
+    fits_update_key(fptr, TFLOAT, "DATAMIN", &dataMin, "Min pixel data", &status);
 
     fits_update_key(fptr, TDOUBLE, "CRVAL1", &crVal1, "Value on axis 1 at the reference pixel [sec of a day]", &status);  // Value on axis 1 at reference pixel [sec of a day]
     fits_update_key(fptr, TLONG, "CRPIX1", &crPix1, "Reference pixel of axis 1", &status); // Reference pixel of axis 1
@@ -471,8 +473,9 @@ int createBinTable()
     char *extname = {"BINARY TABLE"}; // Name of the table
 
     printf("generationFits | createBinTable() | Creating Binary table\n");
+
     /*create the binary table*/
-    if(fits_create_tbl(fptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, extname, &status))
+    if(fits_create_tbl(fptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, NULL, &status))
     {
         fprintf(stderr, "generationFits | createBinTable() | Was not possible to create the binary table\n");
         return EXIT_FAILURE;
@@ -522,28 +525,67 @@ int insertDataBinTable(float* times, float* frequencies)
     return EXIT_SUCCESS;
 }
 
-void closeFits()
+void closeFits(fitsfile* f)
 {
     /*Close and report any error*/
-    fits_close_file(fptr, &status);
+    fits_close_file(f, &status);
     fits_report_error(stderr, status);
     
     printf("generationFits | closeFits() | Execution Sucess\n");
+}
+
+int openFile(char fileFitsName[])
+{
+    if(fits_open_file(&histptr, fileFitsName, READWRITE, &status))
+        {
+            fprintf(stderr, "generationFits | openFile() | Was not possible to open the file\n");
+            return EXIT_FAILURE;
+        }
+    
+    return EXIT_SUCCESS;
+}
+
+int associateImageBinTable()
+{
+    double amin = (double)minData(samples);
+    double amax = (double)maxData(samples);
+    double binSize = (double)nElements;
+    char colname[4][71] = {"Frequency", "Time"};
+    printf("generationFits | associateImageBinTable() | Associating image to bin table to create histogram\n");
+
+    /*if (fits_make_histd(histptr, fptr,
+                        FLOAT_IMG,
+                        naxis, naxes, &naxis,
+                        &amin,  &amax, 
+                        &binSize, FLOATNULLVALUE, 0, 0, NULL, &status
+                        ))*/
+   /* if (fits_calc_binningd(fptr, naxis, colname, &amin, &amax, &binSize, NULL, NULL, NULL, &naxis, naxes, &amin, &amax, &binSize, &status))
+    {
+        fprintf(stderr, "generationFits | associateImageBinTable() | Association failed\n");
+        return EXIT_FAILURE;
+    }*/
+
+    printf("generationFits | associateImageBinTable() | Execution Success\n");
+    return EXIT_SUCCESS;
 }
 
 int generateFitsFile_test(char fileFitsName[], float*samples, struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min)
 {   
     printf("generationFits | generateFitsFile() | Start generating fits file\n");
 
+    // Creation of file
+    if (createFile(fileFitsName) == EXIT_FAILURE) { return EXIT_FAILURE; }
+
     // Creation of image
-    if (createImage(fileFitsName) == EXIT_FAILURE) { return EXIT_FAILURE; }
+    if (createImage() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
     // Update headers of image
     updateHeadersFitsFileImage(localTimeFirst, localTimeLast, 45);
 
     // Insert data of image
-    if(insertDataImage(samples) == EXIT_FAILURE)  { return EXIT_FAILURE;  }
-
+    if(insertDataImage(samples) == EXIT_FAILURE) { return EXIT_FAILURE; }
+    
+    if (openFile(fileFitsName) == EXIT_FAILURE) { return EXIT_FAILURE; }
     // Creation of binary table
     if(createBinTable() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
@@ -551,10 +593,14 @@ int generateFitsFile_test(char fileFitsName[], float*samples, struct tm localTim
     updateHeadersFitsFileBinTable();
 
     // Insert data of binary table
-    if(insertDataBinTable(times, frequencies) == EXIT_FAILURE)  { return EXIT_FAILURE;  }
+    if(insertDataBinTable(times, frequencies) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
-    //CloseFile
-    closeFits();
+    // Associate image to the bin table to create histograms
+    if (associateImageBinTable() == EXIT_FAILURE) { return EXIT_FAILURE; }
+
+    // CloseFile (with the pointer of image)
+    closeFits(fptr);
+    closeFits(histptr);
 
     printf("generationFits | generateFitsFile() | Execution Sucess\n");
     return EXIT_SUCCESS;
@@ -752,7 +798,7 @@ int generateFitsFile_withBinTable_test()
     float previousValue = 0;
 
     fprintf(stderr, "testGenenerationFitsFile\n");
-    char pathFits[] = "testGenenerationFitsFile.fit"; // File name of fits file
+    char pathFits[] = "testGenenerationFitsFile.fits"; // File name of fits file
     
     time_t now = time(NULL);
     struct tm localTimeFirst;

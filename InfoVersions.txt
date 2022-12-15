@@ -1,4 +1,4 @@
-v3.2.3: 
+v3.3: 
 -----------------------------------------------------------------
 -----------------------test to Manuel-----------------------
 -----------------------------------------------------------------
@@ -18,4 +18,4 @@ v3.2.3:
 
 - Problem: Cant have a sample rate higher than 20 Mbps
 
-- BinaryTable correctly created in checkingFuncTest.c => It leaves integration
+- BinaryTable correctly created integrated

@@ -20,7 +20,9 @@
 
 /*** Global Variables***/
 fitsfile *fptr =NULL;
-float *frequencyDatas; // Frecuency Datas of the sweeping
+float *frequencyDataRanges; // Frecuency Datas of the sweeping in ranges
+float *frequencyDatas; // Frecuency Datas of the sweeping in steps
+float *timeSteps; // Time data in steps
 char timeDatas[TRIGGERING_TIMES][60] = {""}; // Time Datas of the sweeping | 3600 dates
 float* samples; // Array of float samples where dbs measures will be saved
 
@@ -31,68 +33,11 @@ int naxis = 2, nElements, exposure;
 long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
 float array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
 
+extern struct timeval timeValStartSweeping;
 extern struct tm timeFirstSweeping;
+extern float step_value;
+
 /********************/
-
-/**
- * @brief  Creates fits file
- * @note   
- * @param  fileFitsName[]: Name of the fits file
- * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
- */
-int create(char fileFitsName[])
-{   
-    /*Checks if the new file exist*/
-    fits_file_exists(fileFitsName, &exist, &status);
-    if(exist == 1)
-    {
-        printf("generationFits | create() | File already exists. Overwritting fits file\n");
-        if(fits_open_file(&fptr, fileFitsName, READWRITE, &status))
-        {
-            fprintf(stderr, "generationFits | create() | Was not possible to open the file\n");
-            return EXIT_FAILURE;
-        }
-        
-        if(fits_delete_file(fptr,&status))
-        {
-            fprintf(stderr,"generationFits | create() | Was not possible to delete the file\n");
-            return EXIT_FAILURE;
-        }
-        if(fits_create_file(&fptr, fileFitsName, &status))
-        {
-            fprintf(stderr, "generationFits | create() | Was not possible to create the file\n");
-            return EXIT_FAILURE;
-        }
-        
-       /*create the primary array image (16-bit short integer pixels*/
-        if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
-        {
-            fprintf(stderr, "generationFits | create() | Was not possible to create the image\n");
-            return EXIT_FAILURE;
-        }
-
-        printf("generationFits | create() | Execution Sucess. File overwrriten: %s\n", fileFitsName);
-        return EXIT_SUCCESS;
-    }
-    else //if not exist
-    {
-        if(fits_create_file(&fptr, fileFitsName, &status))
-        {
-            fprintf(stderr, "generationFits | create() | Was not possible to create the file\n");
-            return EXIT_FAILURE;
-        }
-
-        /*create the primary array image (16-bit short integer pixels*/
-        if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
-        {
-            fprintf(stderr, "generationFits | create() | Was not possible to create the image\n");
-            return EXIT_FAILURE;
-        }
-
-        printf("generationFits | create() | Execution Sucess. File created: %s with dimensions [%ld]x[%ld]\n", fileFitsName, naxes[0], naxes[1]);
-        return EXIT_SUCCESS;
-    }
-}
 
 /**
  * @brief  Get the min value of the array of powers
@@ -151,23 +96,118 @@ long getSecondsOfDayOfFirstSweeping(struct tm timeFirstSweeping)
 }
 
 /**
+ * @brief  Creates fits file
+ * @note   
+ * @param  fileFitsName[]: Name of the fits file
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+int createFile(char fileFitsName[])
+{   
+    /*Checks if the new file exist*/
+    fits_file_exists(fileFitsName, &exist, &status);
+    if(exist == 1)
+    {
+        printf("generationFits | createFile() | File already exists. Overwritting fits file\n");
+        if(fits_open_file(&fptr, fileFitsName, READWRITE, &status))
+        {
+            fprintf(stderr, "generationFits | createFile() | Was not possible to open the file\n");
+            return EXIT_FAILURE;
+        }
+        
+        if(fits_delete_file(fptr,&status))
+        {
+            fprintf(stderr,"generationFits | createFile() | Was not possible to delete the file\n");
+            return EXIT_FAILURE;
+        }
+        if(fits_create_file(&fptr, fileFitsName, &status))
+        {
+            fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
+            return EXIT_FAILURE;
+        }
+        
+        printf("generationFits | createFile() | Execution Sucess. File overwrriten: %s\n", fileFitsName);
+        return EXIT_SUCCESS;
+    }
+    else //if not exist
+    {
+        if(fits_create_file(&fptr, fileFitsName, &status))
+        {
+            fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
+            return EXIT_FAILURE;
+        }
+
+        printf("generationFits | createFile() | Execution Sucess\n");
+        return EXIT_SUCCESS;
+    }
+}
+
+/**
+ * @brief  Create the fits image
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+int createImage()
+{
+    /*create the primary array image*/
+    if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
+    {
+        fprintf(stderr, "generationFits | createImage() | Was not possible to create the image\n");
+        return EXIT_FAILURE;
+    }
+
+    printf("generationFits | createImage() | Execution Success\n");
+    return EXIT_SUCCESS;
+}
+
+/**
  * @brief  Update header values of the fits file
  * @note   
  * @retval None
  */
-void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char *timeEnd, uint32_t freq_min, struct tm timeFirstSweeping)
+void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min)
 {
-    printf("generationFits | updateHeadersFitsFile | Updating fits headers to format\n");
+    char user_buf[70]; //msconds
+    char date[70]; // Time of observation
+   	strftime(date, sizeof date,"%Y-%m-%d", &localTimeFirst);
+
+	char date_obs[70]; //Date observation starts
+    strftime(date_obs, sizeof date_obs, "%Y/%m/%d", &localTimeFirst);
+
+    char time_obs[70]; // Time observation starts
+    strftime(time_obs, sizeof time_obs, "%H:%M:%S", &localTimeFirst); 
+    strcat(time_obs, ".");
+    sprintf(user_buf, "%03d", (int)timeValStartSweeping.tv_usec);
+    strncat(time_obs, user_buf, 3);
+
+	char date_end[70]; // Date observation ends
+    strftime(date_end, sizeof date_end, "%Y/%m/%d", &localTimeLast); 
+
+	char time_end[70]; // time observation ends
+	strftime(time_end, sizeof time_end, "%H:%M:%S", &localTimeLast); 
+
+    char content[70];
+    strftime(content, sizeof content, "%Y/%m/%d", &localTimeFirst);
+    strcat(content, " Radio Flux density, HackRF-One (Spain)");
+
+    printf("generationFits | updateHeadersFitsFileImage() | Updating fits headers to format\n");
+
+    double bzero = 0., bscale = 1.;
+    float dataMax = maxData(samples), dataMin= minData(samples);
+    double exposure = 1500. ;
+    double crVal1 = getSecondsOfDayOfFirstSweeping(localTimeFirst);
+    long crPix1 = 0;
+    double stepX = 0.25; // crVal1 Start axis x value 0 [sec of a day]
     
-    long bzero = 0., bscale = 1.;
-    long dataMax = maxData(samples), dataMin= minData(samples);
-    long crVal1 = getSecondsOfDayOfFirstSweeping(timeFirstSweeping), crPix1 = 0; //0.25   // Time axis value must be sec of a day (where it starts the sweeping)
-    float stepX = 0.25;
-    long crVal2 = (long)freq_min, crPix2 = 0, stepY = 1; // Frequencies axis value must start at freq_min 
+    double crVal2 = 45.;
+    long crPix2 = 0;
+    double stepY = -1.; // crVal2 Start axis y value 0
+    
+    double obs_lat = 40.5131623, obs_lon = -3.3527243, obs_alt = 594.; // Coordinates
+    long pwm_val = -10;
 
-    fits_update_key(fptr, TSTRING,"DATE", startDate, "Time of observation" ,&status); // Date observation
+    fits_update_key(fptr, TSTRING,"DATE", date, "Time of observation" ,&status); // Date observation
 
-    fits_update_key(fptr, TSTRING, "CONTENT", "Sweeping hackRF Operation", "Title", &status);
+    fits_update_key(fptr, TSTRING, "CONTENT", content, "Title", &status);
 
     fits_update_key(fptr, TSTRING, "ORIGIN", "University of Alcala de Henares", "Organization name", &status); // Organization name
 
@@ -176,30 +216,38 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
 
     fits_update_key(fptr, TSTRING, "OBJECT", "Space", "Object name", &status); // Object Description
 
-    fits_update_key(fptr, TSTRING, "DATE-OBS", startDate, "Date observation starts", &status); // Date observation starts
-    fits_update_key(fptr, TSTRING, "TIME-OBS", timeStart, "Time observation starts", &status); // Time observation starts
-    fits_update_key(fptr, TSTRING, "DATE-END", endDate, "Date observation ends", &status); // Date observation ends
-    fits_update_key(fptr, TSTRING, "TIME-END", timeEnd, "Time observation starts", &status); // Time observation ends
+    fits_update_key(fptr, TSTRING, "DATE-OBS", date_obs, "Date observation starts", &status); // Date observation starts
+    fits_update_key(fptr, TSTRING, "TIME-OBS", time_obs, "Time observation starts", &status); // Time observation starts
+    fits_update_key(fptr, TSTRING, "DATE-END", date_end, "Time observation starts", &status); // Date observation ends
+    fits_update_key(fptr, TSTRING, "TIME-END", time_end, "Time observation starts", &status); // Time observation ends
 
-    fits_update_key(fptr, TLONG, "BZERO", &bzero, "Scaling offset", &status); // Scaling offset
-    fits_update_key(fptr, TLONG, "BSCALE", &bscale, "Scaling factor", &status);  // Scaling factor
+    fits_update_key(fptr, TDOUBLE, "BZERO", &bzero, "Scaling offset", &status); // Scaling offset
+    fits_update_key(fptr, TDOUBLE, "BSCALE", &bscale, "Scaling factor", &status);  // Scaling factor
     
     fits_update_key(fptr, TSTRING, "BUNIT", "digits", "Z - axis title", &status); // z- axis title
 
-    fits_update_key(fptr, TLONG, "DATAMAX", &dataMax, "Max pixel data", &status);
-    fits_update_key(fptr, TLONG, "DATAMIN", &dataMin, "Min pixel data", &status);
+    fits_update_key(fptr, TFLOAT, "DATAMAX", &dataMax, "Max pixel data", &status);
+    fits_update_key(fptr, TFLOAT, "DATAMIN", &dataMin, "Min pixel data", &status);
 
-    fits_update_key(fptr, TLONG, "CRVAL1", &crVal1, "Value on axis 1 at the reference pixel [sec of a day]", &status);  // Value on axis 1 at reference pixel [sec of a day]
+    fits_update_key(fptr, TDOUBLE, "CRVAL1", &crVal1, "Value on axis 1 at the reference pixel [sec of a day]", &status);  // Value on axis 1 at reference pixel [sec of a day]
     fits_update_key(fptr, TLONG, "CRPIX1", &crPix1, "Reference pixel of axis 1", &status); // Reference pixel of axis 1
     fits_update_key(fptr, TSTRING, "CTYPE1", "Time [UT]", "Title of axis 1", &status ); // Title of axis 1
-    fits_update_key(fptr, TFLOAT, "CDELT1", &stepX, "Step between first and second element in x-axis", &status); // Step between first and second element in x-axis (0.25 s)
+    fits_update_key(fptr, TDOUBLE, "CDELT1", &stepX, "Step between first and second element in x-axis", &status); // Step between first and second element in x-axis (0.25 s)
 
-    fits_update_key(fptr, TLONG, "CRVAL2", &crVal2, "Value on axis 2 at the reference pixel", &status);  // Value on axis 2 at the reference pixel
+    fits_update_key(fptr, TDOUBLE, "CRVAL2", &crVal2, "Value on axis 2 at the reference pixel", &status);  // Value on axis 2 at the reference pixel
     fits_update_key(fptr, TLONG, "CRPIX2", &crPix2, "reference Pixel 2 ", &status); 
     fits_update_key(fptr, TSTRING, "CTYPE2", "Frequency [MHz]", "Title of axis 2", &status ); // Title of axis 2
-    fits_update_key(fptr, TLONG, "CDELT2", &stepY, "Steps samples", &status); // Steps axis Y
+    fits_update_key(fptr, TDOUBLE, "CDELT2", &stepY, "Steps samples", &status); // Steps axis Y
 
-    printf("generationFits | updateHeadersFitsFile | Execution Sucess\n");
+    fits_update_key(fptr, TDOUBLE, "OBS_LAT", &obs_lat, "Observatory latitude in degree", &status);
+    fits_update_key(fptr, TSTRING, "OBS_LAC", "N", "Observatory latitude code {N, S}", &status);
+    fits_update_key(fptr, TDOUBLE, "OBS_LON", &obs_lon, "Observatory longitude in degree", &status);
+    fits_update_key(fptr, TSTRING, "OBS_LOC", "W", "Observatory longitude code {E, W}", &status);
+    fits_update_key(fptr, TDOUBLE, "OBS_ALT", &obs_alt, "Observatory altitude in meter", &status);
+
+    fits_update_key(fptr, TLONG, "PWM_VAL", &pwm_val, "PWM value to control tuner gain", &status);
+
+    printf("generationFits | updateHeadersFitsFile() | Execution Sucess\n");
 }
 
 /**
@@ -208,7 +256,7 @@ void updateHeadersFitsFile(char* startDate, char *timeStart, char *endDate, char
  * @param  samples: Data to be inserted into fits file from callback function
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int insertData(float* samples)
+int insertDataImage(float* samples)
 {
     /*Initialize the values in the image with a linear ramp function*/
     printf("generationFits | insertDta() | Inserting data...\n");
@@ -223,16 +271,98 @@ int insertData(float* samples)
         
     }
     
-    printf("generationFits | insertData() | Inserting data finished. Creating fits image...\n");
+    printf("generationFits | insertDataImage() | Inserting data finished. Creating fits image...\n");
 
     /*Write the array of integers of the image*/
     if(fits_write_img(fptr, TFLOAT, fpixel, nElements, array_img[0], &status))
     {
-        fprintf(stderr, "generationFits | insertData() | Was not possible to write data into the image");
+        fprintf(stderr, "generationFits | insertDataImage() | Was not possible to write data into the image");
         return EXIT_FAILURE;
     }
 
-    printf("generationFits | insertData() | Execution Sucess\n");
+    printf("generationFits | insertDataImage() | Execution Sucess\n");
+    return EXIT_SUCCESS;
+}
+
+/**
+ * @brief  Creates a bin table
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+int createBinTable()
+{
+    long nRows = 1, nCols = 2;
+   
+    char *ttype[] = {"TIME", "FREQUENCY"}; // Name of columns
+
+    char *tform[] = {"3600D8.3", "200D8.3"}; // Data type of each column
+
+    char *tunit[] = {"SECONDS", "MHz"}; // Physical unit of each column
+
+    char *extname = {"BINARY TABLE"}; // Name of the table
+
+    printf("generationFits | createBinTable() | Creating Binary table\n");
+
+    /*create the binary table*/
+    if(fits_create_tbl(fptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, NULL, &status))
+    {
+        fprintf(stderr, "generationFits | createBinTable() | Was not possible to create the binary table\n");
+        return EXIT_FAILURE;
+    }
+
+    printf("generationFits | createBinTable() | Execution Sucess\n");
+    return EXIT_SUCCESS;
+}
+
+/**
+ * @brief  Update headers of bin table
+ * @note   
+ * @retval None
+ */
+void updateHeadersFitsFileBinTable()
+{
+    double tzero = 0., tscale = 1.;
+
+    fits_update_key(fptr, TDOUBLE, "TSCALE1", &tscale, "Scaling factor", &status);  // Scaling factor
+    fits_update_key(fptr, TDOUBLE, "TZERO1", &tzero, "Scaling offset", &status); // Scaling offset
+
+    fits_update_key(fptr, TDOUBLE, "TSCALE2", &tscale, "Scaling factor", &status);  // Scaling factor
+    fits_update_key(fptr, TDOUBLE, "TZERO2", &tzero, "Scaling offset", &status); // Scaling offset
+
+    printf("generationFits | updateHeadersFitsFileBinTable() | Execution Sucess\n");
+}
+
+/**
+ * @brief  Insert data into bin table (axis X and axis Y)
+ * @note   
+ * @param  times: Times saved
+ * @param  frequencies: Frequencies saved
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+int insertDataBinTable(float* times, float* frequencies)
+{
+    printf("generationFits | insertDataBinTable() | Inserting data into the binary table\n");
+    
+    if (times == NULL || frequencies == NULL)
+    {
+        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting data into the binary table failed\n");
+        return EXIT_FAILURE;
+    }   
+
+
+    if (fits_write_col(fptr, TFLOAT, 1, 1, 1, naxes[0], times, &status)) 
+    {
+        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting time datas into col failed\n");
+        return EXIT_FAILURE;
+    }
+
+    if (fits_write_col(fptr, TFLOAT, 2, 1, 1, naxes[1], frequencies, &status)) 
+    {
+        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting frequency datas into col failed\n");
+        return EXIT_FAILURE;
+    }
+
+    printf("generationFits | insertDataBinTable() | Execution Success\n");
     return EXIT_SUCCESS;
 }
 
@@ -262,21 +392,38 @@ int saveFrequencies(uint32_t freq_min, uint32_t freq_max, int n_ranges, float st
 {   
     int i = 0;
     float actualFrequency = (float)freq_min;
+    float actualFrequencyAux = (float)freq_min;
     printf("generationFits | saveFrequencies() | Start saving index data frequencies in ranges to generate fits file\n");
     
-    frequencyDatas = (float*)calloc(n_ranges,sizeof(float));
+    frequencyDataRanges = (float*)calloc(n_ranges,sizeof(float));
+    frequencyDatas = (float*)calloc(naxes[1], sizeof(float));
+
     for(i = 0; i< n_ranges; i++)
     {
-        frequencyDatas[i] = actualFrequency;
+        frequencyDataRanges[i] = actualFrequency;
         actualFrequency += step_value_between_ranges;
     }
     
-    if (frequencyDatas == NULL && frequencyDatas[n_ranges] != freq_max) 
+    if (frequencyDataRanges == NULL && frequencyDataRanges[n_ranges] != freq_max) 
     {
-        fprintf(stderr, "generationFits | saveFrequencies() | Was not possible to save frequencies.\n");
+        fprintf(stderr, "generationFits | saveFrequencies() | Was not possible to save frequencies by ranges.\n");
         return EXIT_FAILURE; 
     }
     
+    printf("generationFits | saveFrequencies() | Start saving index data frequencies by steps to generate fits file\n");
+    
+    for (i = 0; i< naxes[1]; i++)
+    {
+        frequencyDatas[i] = actualFrequencyAux;
+        actualFrequencyAux += step_value;
+    }
+
+     if (frequencyDatas == NULL && frequencyDatas[naxes[1]] != freq_max) 
+    {
+        fprintf(stderr, "generationFits | saveFrequencies() | Was not possible to save frequencies by steps.\n");
+        return EXIT_FAILURE; 
+    }
+
     printf("generationFits | saveFrequencies() | Execution Sucess.\n");
     return EXIT_SUCCESS; 
     
@@ -312,6 +459,35 @@ int saveTimes(int i, int triggeringTimes, char* sweepingTime)
         printf("generationFits | saveTimes() | Execution Sucess\n");
     }
 
+    return EXIT_SUCCESS;
+}
+
+/**
+ * @brief  Save times as float
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+int saveTimeSteps()
+{
+    int i = 0;
+    float previousTime = 0;
+
+    printf("generationFits | saveTimeSteps() | Start Saving time by steps\n");
+    timeSteps = (float*)calloc(TRIGGERING_TIMES, sizeof(float));
+    
+    if(timeSteps == NULL)
+    {
+        fprintf(stderr, "generationFits | saveTimeSteps() | Was not possible to allocate mmeory.\n");
+        return EXIT_FAILURE;
+    }
+    
+    for (i = 0; i < TRIGGERING_TIMES; i++)
+    {
+        timeSteps[i] = previousTime;
+        previousTime += 0.25;
+    }
+
+    printf("generationFits | saveTimeSteps() | Execution Success\n");
     return EXIT_SUCCESS;
 }
 
@@ -396,21 +572,32 @@ int checkSavedData(int nElements)
  * @param  step_value: step value between frequencies
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int generateFitsFile(char fileFitsName[], float*samples, uint32_t freq_min, uint32_t freq_max, float step_value, char startDate[], char timeStart[], char endDate[], char timeEnd[], struct tm timeFirstSweeping)
+int generateFitsFile(char fileFitsName[], float*samples, struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min)
 {   
     nElements = naxes[0]*naxes[1];
 
     printf("generationFits | generateFitsFile() | Start generating fits file\n");
     
-    //Creation
-    if (create(fileFitsName) == EXIT_FAILURE) { return EXIT_FAILURE; }
+    // Creation of file
+    if (createFile(fileFitsName) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
-    //Update
-    updateHeadersFitsFile(startDate, timeStart, endDate, timeEnd, freq_min, timeFirstSweeping);
+    // Creation of image
+    if (createImage() == EXIT_FAILURE) { return EXIT_FAILURE; }
+
+    // Update headers of image
+    updateHeadersFitsFileImage(localTimeFirst, localTimeLast, freq_min);
    
-    //Insert info
-    if(insertData(samples) == EXIT_FAILURE)  { return EXIT_FAILURE;  }
+    // Insert data of image
+    if(insertDataImage(samples) == EXIT_FAILURE)  { return EXIT_FAILURE;  }
     
+    // Creation of binary table
+    if(createBinTable() == EXIT_FAILURE) { return EXIT_FAILURE; }
+
+    // Update headers of binary table
+    updateHeadersFitsFileBinTable();
+
+    // Insert data of binary table
+    if(insertDataBinTable(timeSteps, frequencyDatas) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
     //CloseFile
     closeFits();
