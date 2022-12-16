@@ -28,13 +28,14 @@ int *flagsOrder;
 /**TEST FITS**/
 fitsfile *fptr = NULL; // pointer to table with X and Y cols
 fitsfile *histptr = NULL; // pointer to output FITS Image
+fitsfile *histptr2 = NULL;
 
 int exist = 0;
 int status = 0, ii, jj;
 int fpixel = 1;
 int naxis = 2, nElements, exposure;
 long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x
-float array_img[200][3600];//float array_img[200][200]; //naxes[0]naxes[y] (axis x ,axis y)
+uint8_t array_img[200][3600];//float array_img[200][200]; //naxes[0]naxes[y] (axis x ,axis y)
 float *frequencies;
 float *times;
 
@@ -287,7 +288,7 @@ double getSecondsOfDayOfFirstSweeping(struct tm timeFirstSweeping)
     return sec_of_day;
 }
 
-int createFile(char fileFitsName[])
+int createFile(char fileFitsName[], char histogram[])
 {   
     /*Checks if the new file exist*/
     fits_file_exists(fileFitsName, &exist, &status);
@@ -299,13 +300,34 @@ int createFile(char fileFitsName[])
             fprintf(stderr, "generationFits | createFile() | Was not possible to open the file");
             return EXIT_FAILURE;
         }
+
+        if(fits_open_file(&histptr, histogram, READWRITE, &status))
+        {
+            fprintf(stderr, "generationFits | createFile() | Was not possible to open the file");
+            return EXIT_FAILURE;
+        }
         
-        if(fits_delete_file(fptr,&status))
+        
+        if(fits_delete_file(fptr, &status))
         {
             fprintf(stderr,"generationFits | createFile() | Was not possible to delete the file\n");
             return EXIT_FAILURE;
         }
+
+        if(fits_delete_file(histptr, &status))
+        {
+            fprintf(stderr,"generationFits | createFile() | Was not possible to delete the file\n");
+            return EXIT_FAILURE;
+        }
+
+
         if(fits_create_file(&fptr, fileFitsName, &status))
+        {
+            fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
+            return EXIT_FAILURE;
+        }
+
+         if(fits_create_file(&histptr, histogram, &status))
         {
             fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
             return EXIT_FAILURE;
@@ -322,17 +344,20 @@ int createFile(char fileFitsName[])
             fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
             return EXIT_FAILURE;
         }
-
+        
+        if(fits_create_file(&histptr, histogram, &status))
+        {
+            fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
+            return EXIT_FAILURE;
+        }
         return EXIT_SUCCESS;
     }
 }
 
 int createImage()
 {
-    fprintf(stderr, "Here\n");
-
     /*create the primary array image (float) pixels*/
-    if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
+    if(fits_create_img(fptr, BYTE_IMG, naxis, naxes, &status))
     {
         fprintf(stderr, "generationFits | createImage() | Was not possible to create the image");
         return EXIT_FAILURE;
@@ -443,14 +468,14 @@ int insertDataImage(float* samples)
     {        
         for (jj=0; jj< naxes[1]; jj++)
         {
-            array_img[jj][ii] = samples[id];
+            array_img[jj][ii] = (uint8_t)samples[id];
             id++;
         }
         
     }
         
       /*Write the array of integers of the image*/
-    if(fits_write_img(fptr, TFLOAT, fpixel, nElements, array_img[0], &status))
+    if(fits_write_img(fptr, TBYTE, fpixel, nElements, array_img[0], &status))
     {
         fprintf(stderr, "generationFits | insertData() | Was not possible to write data into the image");
         return EXIT_FAILURE;
@@ -462,7 +487,7 @@ int insertDataImage(float* samples)
 
 int createBinTable()
 {
-    long nRows = 1, nCols = 2;
+    long nRows = 0, nCols = 2;
    
     char *ttype[] = {"TIME", "FREQUENCY"}; // Name of columns
 
@@ -475,7 +500,13 @@ int createBinTable()
     printf("generationFits | createBinTable() | Creating Binary table\n");
 
     /*create the binary table*/
-    if(fits_create_tbl(fptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, NULL, &status))
+  /*  if(fits_create_tbl(fptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, NULL, &status))
+    {
+        fprintf(stderr, "generationFits | createBinTable() | Was not possible to create the binary table\n");
+        return EXIT_FAILURE;
+    }
+*/
+    if(fits_create_tbl(histptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, NULL, &status))
     {
         fprintf(stderr, "generationFits | createBinTable() | Was not possible to create the binary table\n");
         return EXIT_FAILURE;
@@ -495,13 +526,52 @@ void updateHeadersFitsFileBinTable()
     fits_update_key(fptr, TDOUBLE, "TSCALE2", &tscale, "Scaling factor", &status);  // Scaling factor
     fits_update_key(fptr, TDOUBLE, "TZERO2", &tzero, "Scaling offset", &status); // Scaling offset
 
+
+    fits_update_key(histptr, TDOUBLE, "TSCALE1", &tscale, "Scaling factor", &status);  // Scaling factor
+    fits_update_key(histptr, TDOUBLE, "TZERO1", &tzero, "Scaling offset", &status); // Scaling offset
+
+    fits_update_key(histptr, TDOUBLE, "TSCALE2", &tscale, "Scaling factor", &status);  // Scaling factor
+    fits_update_key(histptr, TDOUBLE, "TZERO2", &tzero, "Scaling offset", &status); // Scaling offset
+
     printf("generationFits | updateHeadersFitsFileBinTable() | Execution Sucess\n");
 }
 
-int insertDataBinTable(float* times, float* frequencies)
+int insertDataBinTable_aux(float *times, float* frequencies)
 {
-    printf("generationFits | insertDataBinTable() | Inserting data into the binary table\n");
-    
+    long tlmin = 0.25, tlmax = 900;
+    long freqmin = 45, freqmax = 245;
+    long nRows = 1, nCols = 2;
+    double tzero = 0., tscale = 1.;
+   
+    char *ttype[] = {"TIME", "FREQUENCY"}; // Name of columns
+
+    char *tform[] = {"3600D8.3", "200D8.3"}; // Data type of each column
+
+    char *tunit[] = {"SECONDS", "MHz"}; // Physical unit of each column
+
+    char *extname = {"BINARY TABLE"}; // Name of the table
+
+    printf("generationFits | createBinTable() | Creating Binary table\n");
+
+    /*create the binary table*/
+    if(fits_create_tbl(fptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, NULL, &status))
+    {
+        fprintf(stderr, "generationFits | createBinTable() | Was not possible to create the binary table\n");
+        return EXIT_FAILURE;
+    }
+
+    fits_update_key(fptr, TDOUBLE, "TSCALE1", &tscale, "Scaling factor", &status);  // Scaling factor
+    fits_update_key(fptr, TDOUBLE, "TZERO1", &tzero, "Scaling offset", &status); // Scaling offset
+
+    fits_update_key(fptr, TDOUBLE, "TSCALE2", &tscale, "Scaling factor", &status);  // Scaling factor
+    fits_update_key(fptr, TDOUBLE, "TZERO2", &tzero, "Scaling offset", &status); // Scaling offset
+    fits_update_key(fptr, TLONG, "TLMIN1", &tlmin, "Value", &status);
+    fits_update_key(fptr, TLONG, "TLMAX1", &tlmax, "Value", &status);
+    fits_update_key(fptr, TLONG, "TLMIN1", &tlmin, "Value", &status);
+    fits_update_key(fptr, TLONG, "TLMAX1", &tlmax, "Value", &status);
+    fits_update_key(fptr, TLONG, "TLMIN2", &freqmin, "Value", &status);
+    fits_update_key(fptr, TLONG, "TLMAX2", &freqmax, "Value", &status);
+
     if (times == NULL || frequencies == NULL)
     {
         fprintf(stderr, "generationFits | insertDataBinTable() | Inserting data into the binary table failed\n");
@@ -520,61 +590,140 @@ int insertDataBinTable(float* times, float* frequencies)
         fprintf(stderr, "generationFits | insertDataBinTable() | Inserting frequency datas into col failed\n");
         return EXIT_FAILURE;
     }
+}
+
+int insertDataBinTable(float* times, float* frequencies)
+{
+    printf("generationFits | insertDataBinTable() | Inserting data into the binary table\n");
+    
+    if (times == NULL || frequencies == NULL)
+    {
+        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting data into the binary table failed\n");
+        return EXIT_FAILURE;
+    }   
+
+/*
+    if (fits_write_col(fptr, TFLOAT, 1, 1, 1, naxes[0], times, &status)) 
+    {
+        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting time datas into col failed\n");
+        return EXIT_FAILURE;
+    }
+
+    if (fits_write_col(fptr, TFLOAT, 2, 1, 1, naxes[1], frequencies, &status)) 
+    {
+        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting frequency datas into col failed\n");
+        return EXIT_FAILURE;
+    }*/
+
+      if (fits_write_col(histptr, TFLOAT, 1, 1, 1, naxes[0], times, &status)) 
+    {
+        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting time datas into col failed\n");
+        return EXIT_FAILURE;
+    }
+
+    if (fits_write_col(histptr, TFLOAT, 2, 1, 1, naxes[1], frequencies, &status)) 
+    {
+        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting frequency datas into col failed\n");
+        return EXIT_FAILURE;
+    }
 
     printf("generationFits | insertDataBinTable() | Execution Success\n");
     return EXIT_SUCCESS;
 }
 
-void closeFits(fitsfile* f)
+void closeFits(fitsfile* fits)
 {
     /*Close and report any error*/
-    fits_close_file(f, &status);
+    fits_close_file(fits, &status);
     fits_report_error(stderr, status);
-    
     printf("generationFits | closeFits() | Execution Sucess\n");
-}
-
-int openFile(char fileFitsName[])
-{
-    if(fits_open_file(&histptr, fileFitsName, READWRITE, &status))
-        {
-            fprintf(stderr, "generationFits | openFile() | Was not possible to open the file\n");
-            return EXIT_FAILURE;
-        }
-    
-    return EXIT_SUCCESS;
 }
 
 int associateImageBinTable()
 {
-    double amin = (double)minData(samples);
-    double amax = (double)maxData(samples);
-    double binSize = (double)nElements;
-    char colname[4][71] = {"Frequency", "Time"};
+    float amin[2];
+    amin[0] = 0.25; // Min value for time axis
+    amin[1] = 45; // Min value for freq axis
+
+    float amax[2];
+    amax[0] = 900; // Max value for time axis
+    amax[1] = 244; // Max value for freq axis
+
+    int colnum[2];
+    colnum[0] = 400;
+    colnum[1] = 200;
+
+    float binSize[2];
+    binSize[0] = 400;
+    binSize[1] = 400;
+
+    char outfile[] = "example.fit";
+    char colname[4][71] = {"TIME", "FREQUENCY"};
+    char colname_aux[4][71] = {"TSCALE1", "TZERO1", "TSCALE2", "TZERO2"};
+
     printf("generationFits | associateImageBinTable() | Associating image to bin table to create histogram\n");
-
-    /*if (fits_make_histd(histptr, fptr,
-                        FLOAT_IMG,
-                        naxis, naxes, &naxis,
-                        &amin,  &amax, 
-                        &binSize, FLOATNULLVALUE, 0, 0, NULL, &status
-                        ))*/
-   /* if (fits_calc_binningd(fptr, naxis, colname, &amin, &amax, &binSize, NULL, NULL, NULL, &naxis, naxes, &amin, &amax, &binSize, &status))
+    if( fptr == NULL)
     {
-        fprintf(stderr, "generationFits | associateImageBinTable() | Association failed\n");
-        return EXIT_FAILURE;
-    }*/
+        printf("generationFits | associateImageBinTable() | NULL\n");
+    }
+ 
+    
+    /*if (ffhist2(&histptr, outfile, TFLOAT, naxis, colname, 
+                (double*)amin, (double*)amax,
+                (double*)binSize, 
+                colname_aux, 
+                colname_aux, 
+                colname_aux, 
+                0, 
+                colname_aux[0], 
+                0, 
+                NULL, 
+                &status
+              ))*/
+  //  if (fits_calc_binning(histptr, naxis, colname, (double*)amin, (double*)amax, (double*)binSize, colname_aux, colname_aux, colname_aux, &naxis, naxes, amin, amax, binSize, &status))
+    if (fits_make_hist(histptr,
+                    fptr,
+                    FLOAT_IMG,
+                    naxis, 
+                    naxes, 
+                    &naxis,
+                    amin,  
+                    amax, 
+                    binSize,
+                    FLOATNULLVALUE,
+                    0, 
+                    0, 
+                    NULL,
+                    &status
+                    ))
+    /*if (fits_calc_binning(histptr,
+                        naxis, 
+                        colname, 
+                        NULL, NULL, binSize,
+                        NULL, NULL, NULL,
+                        &naxis, naxes,
+                        amin, amax,
+                        binSize,
+                        &status
+                        ))*/
+    {
+        fits_report_error(stderr, status);
 
+        fprintf(stderr, "generationFits | associateImageBinTable() | Association failed. Status: %d\n", status);
+        return EXIT_FAILURE;
+    }
     printf("generationFits | associateImageBinTable() | Execution Success\n");
     return EXIT_SUCCESS;
 }
 
-int generateFitsFile_test(char fileFitsName[], float*samples, struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min)
+int generateFitsFile_test(char histogram[], char fileFitsName[], float*samples, struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min)
 {   
+    int typeCode = 0, hdutype = 0;
+    long repeat = 0, width = 0;
     printf("generationFits | generateFitsFile() | Start generating fits file\n");
 
-    // Creation of file
-    if (createFile(fileFitsName) == EXIT_FAILURE) { return EXIT_FAILURE; }
+    // Creation of file for image
+    if (createFile(fileFitsName, histogram) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
     // Creation of image
     if (createImage() == EXIT_FAILURE) { return EXIT_FAILURE; }
@@ -584,8 +733,7 @@ int generateFitsFile_test(char fileFitsName[], float*samples, struct tm localTim
 
     // Insert data of image
     if(insertDataImage(samples) == EXIT_FAILURE) { return EXIT_FAILURE; }
-    
-    if (openFile(fileFitsName) == EXIT_FAILURE) { return EXIT_FAILURE; }
+
     // Creation of binary table
     if(createBinTable() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
@@ -594,13 +742,24 @@ int generateFitsFile_test(char fileFitsName[], float*samples, struct tm localTim
 
     // Insert data of binary table
     if(insertDataBinTable(times, frequencies) == EXIT_FAILURE) { return EXIT_FAILURE; }
+    //if(insertDataBinTable_aux(times, frequencies) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
     // Associate image to the bin table to create histograms
-    if (associateImageBinTable() == EXIT_FAILURE) { return EXIT_FAILURE; }
+  //  if (associateImageBinTable() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
+    if(insertDataBinTable_aux(times, frequencies) == EXIT_FAILURE) { return EXIT_FAILURE; }
     // CloseFile (with the pointer of image)
+
+    /*f (fits_read_tdim(fptr, 2, 2, &naxis, naxes, &status))
+    {
+                fits_report_error(stderr, status);
+
+    }*/
+
+    
     closeFits(fptr);
     closeFits(histptr);
+
 
     printf("generationFits | generateFitsFile() | Execution Sucess\n");
     return EXIT_SUCCESS;
@@ -798,7 +957,8 @@ int generateFitsFile_withBinTable_test()
     float previousValue = 0;
 
     fprintf(stderr, "testGenenerationFitsFile\n");
-    char pathFits[] = "testGenenerationFitsFile.fits"; // File name of fits file
+    char pathFits[] = "testGenenerationFitsFile.fit"; // File name of fits file
+    char histogram[] = "histogram.fit";
     
     time_t now = time(NULL);
     struct tm localTimeFirst;
@@ -841,7 +1001,7 @@ int generateFitsFile_withBinTable_test()
 
         else
         {
-            previousFreq += 5;
+            previousFreq += 1;
             frequencies[i] = previousFreq;
         }
     }
@@ -851,7 +1011,7 @@ int generateFitsFile_withBinTable_test()
     
     localtime_r(&after, &localTimeLast);
 
-    generateFitsFile_test(pathFits, samples, localTimeFirst, localTimeLast, freq_min);
+    generateFitsFile_test(histogram, pathFits, samples, localTimeFirst, localTimeLast, freq_min);
 }
 
 
@@ -909,6 +1069,7 @@ int main(int argc, char** argv)
     {
         fprintf(stderr, "testGenenerationFitsFile\n");
         char pathFits[] = "testGenenerationFitsFile.fits"; // File name of fits file
+        char histogram[] = "histogram.fits";
         
         time_t now = time(NULL);
         struct tm localTimeFirst;
@@ -924,7 +1085,7 @@ int main(int argc, char** argv)
         struct tm localTimeLast;
         localtime_r(&after, &localTimeLast);
       
-        generateFitsFile_test(pathFits, samples, localTimeFirst, localTimeLast, freq_min);
+        generateFitsFile_test(histogram, pathFits, samples, localTimeFirst, localTimeLast, freq_min);
     }  
     
     else if (testData == 2)// For ordered samples
