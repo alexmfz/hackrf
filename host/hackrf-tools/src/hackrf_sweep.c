@@ -112,8 +112,6 @@ time_t t_timeStartConfig, t_timeEndConfig; // When Program start and finish conf
 time_t t_timeStartSweeping, t_timeEndSweeping; // Timing values of sweeping to determine beginning and end (use for fits headers)
 time_t t_timeStartGeneration, t_timeEndGeneration; // When Program start and finish FITS generation
 
-float durationSweeps = 0; // Total duration of sweepings ( TODO: Change where it is measured)
-
 /********************/
 
 /*** Predefined variables ***/
@@ -384,7 +382,7 @@ int rx_callback(hackrf_transfer* transfer) {
 			- timerFlag set to 1 which means that 0.25s passed +
 			- frequency should be first frequency or this frecuency was caught
 		*/
-		if (counterSucess == 0)
+		if (counterSucess == 0) // TODO: Here we can reduce time a little bit before calling callback
 		{
 			t_timeStartSweeping = time(NULL);
 			localtime_r(&t_timeStartSweeping, &tm_timeStartSweeping);
@@ -396,7 +394,7 @@ int rx_callback(hackrf_transfer* transfer) {
 			time_t time_stamp_seconds = usb_transfer_time.tv_sec;
 			fft_time = localtime(&time_stamp_seconds);
 			strftime(time_str, 60, "%Y-%m-%d, %H:%M:%S", fft_time);
-			if ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) 
+			if ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) // TODO: Maybe this part can be also deleted (time part)
 			{ 
 				char sweepingTime[60];
 				char decimalTime[8] = {"."};
@@ -452,7 +450,7 @@ int rx_callback(hackrf_transfer* transfer) {
 				id_sample++;
 			}
 
-			row_id ++;
+			row_id ++; // TODO: Row id can be deleted
 		/*	printf(", row_id =%d", row_id);
 			printf("\n");
 			*/
@@ -477,7 +475,7 @@ int rx_callback(hackrf_transfer* transfer) {
 				timerFlag = 0; // Flag down which means that data was caught
 				flag_initialFreqCaught = 0; // Set variable to finish iteration
 				
-				if (counterSucess == TRIGGERING_TIMES)
+				if (counterSucess == TRIGGERING_TIMES) //TODO: Maybe this part can be change after calling callback
 				{
 					t_timeEndSweeping = time(NULL);
 					localtime_r(&t_timeEndSweeping, &tm_timeEndSweeping);
@@ -1069,7 +1067,7 @@ static int runExecution()
 
 	if (checkAvailabilityAmpOption() == EXIT_FAILURE || checkAvailabilityAntennaOption() == EXIT_FAILURE){ return EXIT_FAILURE; }
 
-	durationSweeps += sweepDuration();
+	sweepDuration();
 	totalDuration = TimevalDiff(&timeValEndSweeping, &timeValStartSweeping);
 
 	checkStreaming();   	
