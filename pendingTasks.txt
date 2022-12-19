@@ -2,7 +2,7 @@ Status:  OK | PENDING
 
 1. Adapt timer handler into main --> OK
 2. Update logs to detect bugs better --> OK
-3. TODO: Generate fits file with correct format --> PENDING
+3. Generate fits file with correct format --> OK
 4. Resolve output bug detected in hackrf_sweep --> OK
 5. Update firmware --> OK
 6. Optimize code to run faster and comment code--> OK
@@ -15,5 +15,5 @@ Status:  OK | PENDING
 13. Check why the order is wrong for 45-840  --> OK
 14. Send test to Manuel --> OK
 15. Create binary table and integrate it with code --> POK
-16. TODO: Open images with RAPPViewer --> PENDING
+16. Open images with RAPPViewer --> OK
 17. TODO: Resolve problem of sweeping rate (fftsize must not be cte)

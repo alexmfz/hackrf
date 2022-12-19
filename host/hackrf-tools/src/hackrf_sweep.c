@@ -391,7 +391,7 @@ int rx_callback(hackrf_transfer* transfer) {
 			gettimeofday(&timeValStartSweeping, NULL);
 		}
 			
-		if(strstr(pathFits, "fits")!= NULL && timerFlag == 1 && ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0]) || flag_initialFreqCaught == 1)) 
+		if(strstr(pathFits, "fit")!= NULL && timerFlag == 1 && ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0]) || flag_initialFreqCaught == 1)) 
 		{	
 			time_t time_stamp_seconds = usb_transfer_time.tv_sec;
 			fft_time = localtime(&time_stamp_seconds);
@@ -1133,7 +1133,7 @@ static int runGeneration(struct tm localTimeFirst, struct tm localTimeLast)
 	}
 	
 	printf("hackrf_sweep | runGeneration() | reorganizeSamples() | Execution Success;\n");
-	if(strstr(pathFits,"fits")==NULL || (generateFitsFile(pathFits,
+	if(strstr(pathFits,"fit")==NULL || (generateFitsFile(pathFits,
 														  samplesOrdered,
 														  localTimeFirst, localTimeLast,
 														  freq_min)) == EXIT_FAILURE){ return EXIT_FAILURE; }

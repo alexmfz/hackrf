@@ -27,8 +27,6 @@ int *flagsOrder;
 
 /**TEST FITS**/
 fitsfile *fptr = NULL; // pointer to table with X and Y cols
-fitsfile *histptr = NULL; // pointer to output FITS Image
-fitsfile *histptr2 = NULL;
 
 int exist = 0;
 int status = 0, ii, jj;
@@ -300,13 +298,6 @@ int createFile(char fileFitsName[], char histogram[])
             fprintf(stderr, "generationFits | createFile() | Was not possible to open the file");
             return EXIT_FAILURE;
         }
-
-        if(fits_open_file(&histptr, histogram, READWRITE, &status))
-        {
-            fprintf(stderr, "generationFits | createFile() | Was not possible to open the file");
-            return EXIT_FAILURE;
-        }
-        
         
         if(fits_delete_file(fptr, &status))
         {
@@ -314,20 +305,7 @@ int createFile(char fileFitsName[], char histogram[])
             return EXIT_FAILURE;
         }
 
-        if(fits_delete_file(histptr, &status))
-        {
-            fprintf(stderr,"generationFits | createFile() | Was not possible to delete the file\n");
-            return EXIT_FAILURE;
-        }
-
-
         if(fits_create_file(&fptr, fileFitsName, &status))
-        {
-            fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
-            return EXIT_FAILURE;
-        }
-
-         if(fits_create_file(&histptr, histogram, &status))
         {
             fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
             return EXIT_FAILURE;
@@ -345,11 +323,6 @@ int createFile(char fileFitsName[], char histogram[])
             return EXIT_FAILURE;
         }
         
-        if(fits_create_file(&histptr, histogram, &status))
-        {
-            fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
-            return EXIT_FAILURE;
-        }
         return EXIT_SUCCESS;
     }
 }
@@ -500,13 +473,7 @@ int createBinTable()
     printf("generationFits | createBinTable() | Creating Binary table\n");
 
     /*create the binary table*/
-  /*  if(fits_create_tbl(fptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, NULL, &status))
-    {
-        fprintf(stderr, "generationFits | createBinTable() | Was not possible to create the binary table\n");
-        return EXIT_FAILURE;
-    }
-*/
-    if(fits_create_tbl(histptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, NULL, &status))
+    if(fits_create_tbl(fptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, NULL, &status))
     {
         fprintf(stderr, "generationFits | createBinTable() | Was not possible to create the binary table\n");
         return EXIT_FAILURE;
@@ -526,70 +493,7 @@ void updateHeadersFitsFileBinTable()
     fits_update_key(fptr, TDOUBLE, "TSCALE2", &tscale, "Scaling factor", &status);  // Scaling factor
     fits_update_key(fptr, TDOUBLE, "TZERO2", &tzero, "Scaling offset", &status); // Scaling offset
 
-
-    fits_update_key(histptr, TDOUBLE, "TSCALE1", &tscale, "Scaling factor", &status);  // Scaling factor
-    fits_update_key(histptr, TDOUBLE, "TZERO1", &tzero, "Scaling offset", &status); // Scaling offset
-
-    fits_update_key(histptr, TDOUBLE, "TSCALE2", &tscale, "Scaling factor", &status);  // Scaling factor
-    fits_update_key(histptr, TDOUBLE, "TZERO2", &tzero, "Scaling offset", &status); // Scaling offset
-
     printf("generationFits | updateHeadersFitsFileBinTable() | Execution Sucess\n");
-}
-
-int insertDataBinTable_aux(float *times, float* frequencies)
-{
-    long tlmin = 0.25, tlmax = 900;
-    long freqmin = 45, freqmax = 245;
-    long nRows = 1, nCols = 2;
-    double tzero = 0., tscale = 1.;
-   
-    char *ttype[] = {"TIME", "FREQUENCY"}; // Name of columns
-
-    char *tform[] = {"3600D8.3", "200D8.3"}; // Data type of each column
-
-    char *tunit[] = {"SECONDS", "MHz"}; // Physical unit of each column
-
-    char *extname = {"BINARY TABLE"}; // Name of the table
-
-    printf("generationFits | createBinTable() | Creating Binary table\n");
-
-    /*create the binary table*/
-    if(fits_create_tbl(fptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, NULL, &status))
-    {
-        fprintf(stderr, "generationFits | createBinTable() | Was not possible to create the binary table\n");
-        return EXIT_FAILURE;
-    }
-
-    fits_update_key(fptr, TDOUBLE, "TSCALE1", &tscale, "Scaling factor", &status);  // Scaling factor
-    fits_update_key(fptr, TDOUBLE, "TZERO1", &tzero, "Scaling offset", &status); // Scaling offset
-
-    fits_update_key(fptr, TDOUBLE, "TSCALE2", &tscale, "Scaling factor", &status);  // Scaling factor
-    fits_update_key(fptr, TDOUBLE, "TZERO2", &tzero, "Scaling offset", &status); // Scaling offset
-    fits_update_key(fptr, TLONG, "TLMIN1", &tlmin, "Value", &status);
-    fits_update_key(fptr, TLONG, "TLMAX1", &tlmax, "Value", &status);
-    fits_update_key(fptr, TLONG, "TLMIN1", &tlmin, "Value", &status);
-    fits_update_key(fptr, TLONG, "TLMAX1", &tlmax, "Value", &status);
-    fits_update_key(fptr, TLONG, "TLMIN2", &freqmin, "Value", &status);
-    fits_update_key(fptr, TLONG, "TLMAX2", &freqmax, "Value", &status);
-
-    if (times == NULL || frequencies == NULL)
-    {
-        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting data into the binary table failed\n");
-        return EXIT_FAILURE;
-    }   
-
-
-    if (fits_write_col(fptr, TFLOAT, 1, 1, 1, naxes[0], times, &status)) 
-    {
-        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting time datas into col failed\n");
-        return EXIT_FAILURE;
-    }
-
-    if (fits_write_col(fptr, TFLOAT, 2, 1, 1, naxes[1], frequencies, &status)) 
-    {
-        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting frequency datas into col failed\n");
-        return EXIT_FAILURE;
-    }
 }
 
 int insertDataBinTable(float* times, float* frequencies)
@@ -602,7 +506,6 @@ int insertDataBinTable(float* times, float* frequencies)
         return EXIT_FAILURE;
     }   
 
-/*
     if (fits_write_col(fptr, TFLOAT, 1, 1, 1, naxes[0], times, &status)) 
     {
         fprintf(stderr, "generationFits | insertDataBinTable() | Inserting time datas into col failed\n");
@@ -610,18 +513,6 @@ int insertDataBinTable(float* times, float* frequencies)
     }
 
     if (fits_write_col(fptr, TFLOAT, 2, 1, 1, naxes[1], frequencies, &status)) 
-    {
-        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting frequency datas into col failed\n");
-        return EXIT_FAILURE;
-    }*/
-
-      if (fits_write_col(histptr, TFLOAT, 1, 1, 1, naxes[0], times, &status)) 
-    {
-        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting time datas into col failed\n");
-        return EXIT_FAILURE;
-    }
-
-    if (fits_write_col(histptr, TFLOAT, 2, 1, 1, naxes[1], frequencies, &status)) 
     {
         fprintf(stderr, "generationFits | insertDataBinTable() | Inserting frequency datas into col failed\n");
         return EXIT_FAILURE;
@@ -637,83 +528,6 @@ void closeFits(fitsfile* fits)
     fits_close_file(fits, &status);
     fits_report_error(stderr, status);
     printf("generationFits | closeFits() | Execution Sucess\n");
-}
-
-int associateImageBinTable()
-{
-    float amin[2];
-    amin[0] = 0.25; // Min value for time axis
-    amin[1] = 45; // Min value for freq axis
-
-    float amax[2];
-    amax[0] = 900; // Max value for time axis
-    amax[1] = 244; // Max value for freq axis
-
-    int colnum[2];
-    colnum[0] = 400;
-    colnum[1] = 200;
-
-    float binSize[2];
-    binSize[0] = 400;
-    binSize[1] = 400;
-
-    char outfile[] = "example.fit";
-    char colname[4][71] = {"TIME", "FREQUENCY"};
-    char colname_aux[4][71] = {"TSCALE1", "TZERO1", "TSCALE2", "TZERO2"};
-
-    printf("generationFits | associateImageBinTable() | Associating image to bin table to create histogram\n");
-    if( fptr == NULL)
-    {
-        printf("generationFits | associateImageBinTable() | NULL\n");
-    }
- 
-    
-    /*if (ffhist2(&histptr, outfile, TFLOAT, naxis, colname, 
-                (double*)amin, (double*)amax,
-                (double*)binSize, 
-                colname_aux, 
-                colname_aux, 
-                colname_aux, 
-                0, 
-                colname_aux[0], 
-                0, 
-                NULL, 
-                &status
-              ))*/
-  //  if (fits_calc_binning(histptr, naxis, colname, (double*)amin, (double*)amax, (double*)binSize, colname_aux, colname_aux, colname_aux, &naxis, naxes, amin, amax, binSize, &status))
-    if (fits_make_hist(histptr,
-                    fptr,
-                    FLOAT_IMG,
-                    naxis, 
-                    naxes, 
-                    &naxis,
-                    amin,  
-                    amax, 
-                    binSize,
-                    FLOATNULLVALUE,
-                    0, 
-                    0, 
-                    NULL,
-                    &status
-                    ))
-    /*if (fits_calc_binning(histptr,
-                        naxis, 
-                        colname, 
-                        NULL, NULL, binSize,
-                        NULL, NULL, NULL,
-                        &naxis, naxes,
-                        amin, amax,
-                        binSize,
-                        &status
-                        ))*/
-    {
-        fits_report_error(stderr, status);
-
-        fprintf(stderr, "generationFits | associateImageBinTable() | Association failed. Status: %d\n", status);
-        return EXIT_FAILURE;
-    }
-    printf("generationFits | associateImageBinTable() | Execution Success\n");
-    return EXIT_SUCCESS;
 }
 
 int generateFitsFile_test(char histogram[], char fileFitsName[], float*samples, struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min)
@@ -742,23 +556,9 @@ int generateFitsFile_test(char histogram[], char fileFitsName[], float*samples, 
 
     // Insert data of binary table
     if(insertDataBinTable(times, frequencies) == EXIT_FAILURE) { return EXIT_FAILURE; }
-    //if(insertDataBinTable_aux(times, frequencies) == EXIT_FAILURE) { return EXIT_FAILURE; }
 
-    // Associate image to the bin table to create histograms
-  //  if (associateImageBinTable() == EXIT_FAILURE) { return EXIT_FAILURE; }
 
-    if(insertDataBinTable_aux(times, frequencies) == EXIT_FAILURE) { return EXIT_FAILURE; }
-    // CloseFile (with the pointer of image)
-
-    /*f (fits_read_tdim(fptr, 2, 2, &naxis, naxes, &status))
-    {
-                fits_report_error(stderr, status);
-
-    }*/
-
-    
     closeFits(fptr);
-    closeFits(histptr);
 
 
     printf("generationFits | generateFitsFile() | Execution Sucess\n");

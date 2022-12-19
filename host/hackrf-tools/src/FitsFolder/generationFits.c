@@ -31,7 +31,7 @@ int status = 0, ii, jj;
 int fpixel = 1;
 int naxis = 2, nElements, exposure;
 long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
-float array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
+uint8_t array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
 
 extern struct timeval timeValStartSweeping;
 extern struct tm timeFirstSweeping;
@@ -149,7 +149,7 @@ int createFile(char fileFitsName[])
 int createImage()
 {
     /*create the primary array image*/
-    if(fits_create_img(fptr, FLOAT_IMG, naxis, naxes, &status))
+    if(fits_create_img(fptr, BYTE_IMG, naxis, naxes, &status))
     {
         fprintf(stderr, "generationFits | createImage() | Was not possible to create the image\n");
         return EXIT_FAILURE;
@@ -265,7 +265,7 @@ int insertDataImage(float* samples)
     {        
         for (jj=0; jj< naxes[1]; jj++) 
         {
-            array_img[jj][ii] = samples[id];
+            array_img[jj][ii] = (uint8_t)samples[id];
             id++;
         }
         
@@ -274,7 +274,7 @@ int insertDataImage(float* samples)
     printf("generationFits | insertDataImage() | Inserting data finished. Creating fits image...\n");
 
     /*Write the array of integers of the image*/
-    if(fits_write_img(fptr, TFLOAT, fpixel, nElements, array_img[0], &status))
+    if(fits_write_img(fptr, TBYTE, fpixel, nElements, array_img[0], &status))
     {
         fprintf(stderr, "generationFits | insertDataImage() | Was not possible to write data into the image");
         return EXIT_FAILURE;

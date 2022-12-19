@@ -1,27 +1,6 @@
-v3.3: 
+v3.4: 
 
-- Test to open create a histogram and open it with javaviwer:
-    - Create 2 fits files (image and binary table). After that create histogram over binary table
-    fits_make_hist(histptr, fptr, // Binary table and image pointers
-                        FLOAT_IMG,
-                        naxis, naxes, colnum,
-                        amin,  amax, 
-                        binSize,
-                        FLOATNULLVALUE,
-                        0, 0, NULL,
-                        &status
-                        )
-                        ==> Failed
-    - change order of pointers ==> Failed
+- Bug resolved at trying to opening fits image with JavaViewer. The problem was the type of data.
+  Change float data to byte data
 
-    - No falla ==> fits_make_hist(histptr, fptr,
-                        FLOAT_IMG,
-                        naxis, naxes, &naxis,
-                        &amin_aux,  &amax_aux, 
-                        &binSize_aux,
-                        FLOATNULLVALUE,
-                        0, 0, NULL,
-                        &status
-                        )
-
-    - histpr doesnt have anything
+- Added runProgram.sh which execute compiler and pogram receiving as input the frequency range
