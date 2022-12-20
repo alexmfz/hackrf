@@ -814,10 +814,44 @@ int generateFitsFile_withBinTable_test()
     generateFitsFile_test(histogram, pathFits, samples, localTimeFirst, localTimeLast, freq_min);
 }
 
+void anotherTimingTest_2()
+{
+    int i = 0, j = 0, z = 3600, w = 120000;
+    float timeCounter = 0, timeChecking = 0;
+    time_t t_timeStartCounter, t_timeEndCounter, t_timeEndChecking;
+    struct tm tm_timeStartCounter, tm_timeEndCounter, tm_timeEndChecking; // Struct of time values at beginning and end of the configuration
+    struct timeval timeValStartCounter, timeValEndCounter, timeValEndChecking; // Use to get duration of the configuration
+
+    calculateTimes(&t_timeStartCounter, &tm_timeStartCounter, &timeValStartCounter);
+    for (i = 0; i < z; i++)
+    {
+        fprintf(stderr, "Hello\n");
+    }
+    
+    calculateTimes(&t_timeEndCounter, &tm_timeEndCounter, &timeValEndCounter);
+    timeCounter =  TimevalDiff(&timeValEndCounter, &timeValStartCounter);
+    printf("Time consumer for counter of %d times: %f\n", z, timeCounter);
+
+    for ( i = 0; i < w; i++)
+    {
+        if (timeChecking != 0)
+        {
+            printf("Hello\n");
+        }
+    }
+
+    calculateTimes(&t_timeEndChecking, &tm_timeEndChecking, &timeValEndChecking);
+    timeChecking  = TimevalDiff(&timeValEndChecking, &timeValEndCounter);
+    printf("Time consumer for counter of %d times: %f\n", w, timeChecking);
+
+    printf("Total consumed time: %f\n", timeChecking + timeCounter);
+
+
+}
 
 int main(int argc, char** argv) 
 {
-    int testData = 7;
+    int testData = 8;
     int i = 0;
     int nChannels = 200;
     int stepValue = 5;
@@ -1144,6 +1178,11 @@ int main(int argc, char** argv)
         naxes[1] = 200;
         nElements = naxes[0]*naxes[1];
         generateFitsFile_withBinTable_test();
+    }
+    
+    else if (testData == 8)
+    {
+        anotherTimingTest_2();
     }
     return 0;
 }

@@ -75,7 +75,6 @@ float totalDuration = 0; // Total duration (should be aroung 15 minutes)
 bool success = false; // It determines if a iteration was successfull or not (frue => OK, false ==> Error)
 int counterSucess = 0; // It determines the number of iterations successfull
 int flag_initialFreqCaught = 0; // Flag to check if first frecuency (freq_min) was caught (0 => not capture, 1 => captured)
-int row_id = 0; //Max value it should be nRanges
 
 float step_value = 0; // (freqmax-freqmin)/nChannels (MHz) ==> Channel bandwidth
 int numberOfSteps = 0; // Number of channels
@@ -97,6 +96,7 @@ int orderValue = 1;  // 1 => Ordered ; 0 => disordered
 double previousInsertedFrequency = 0;
 
 extern char timeDatas[TRIGGERING_TIMES][60]; // Time Datas of the sweeping | 3600 dates
+
 int id_sample = 0; // Id samples
 int nElements; // Number elements of the fits file
 int nRanges = 0; // Number of frequency ranges
@@ -239,22 +239,7 @@ static int checkOrderFreqs(int nRanges, double insertedFrequency) // WIll be inv
 {
     int i = 0;
 	//printf("Inserted frequency: %f\n", insertedFrequency);
-	if (previousInsertedFrequency == 0)
-	{
-    	printf("\nhackrf_sweep | checkOrderFreqs() | Ordering insertion of frequencies\n");
-	}
-
-    if (frequencyDataRanges == NULL || real_order_frequencies == NULL)
-    {
-        fprintf(stderr, "hackrf_sweep | checkOrderFreqs() | Not reserved memory correctly\n");
-        return EXIT_FAILURE;
-    }
-
-	if (previousInsertedFrequency == insertedFrequency)
-	{
-		fprintf(stderr, "hackrf_sweep | checkOrderFreqs() | Frequency checked previously\n");
-		return EXIT_SUCCESS;
-	}
+	if (previousInsertedFrequency == insertedFrequency){ return EXIT_SUCCESS; }
 
 	previousInsertedFrequency = insertedFrequency;
     for (i = 0; i < nRanges; i++)
@@ -266,11 +251,6 @@ static int checkOrderFreqs(int nRanges, double insertedFrequency) // WIll be inv
             break;
         }
     }
-    
-	if ((uint32_t)insertedFrequency == freq_max)
-	{
-    	printf("hackrf_sweep | checkOrderFreqs() | Execution Success\n");
-	}
 
     return EXIT_SUCCESS;
 }
@@ -341,8 +321,6 @@ int rx_callback(hackrf_transfer* transfer) {
 				sweep_count++;
 				if(one_shot) {	do_exit = true;	}
 
-				//else if(finite_mode && sweep_count == num_sweeps) {	do_exit = true;	}
-
 				else if(counterSucess == TRIGGERING_TIMES) { do_exit = true; }
 			}
 
@@ -382,26 +360,24 @@ int rx_callback(hackrf_transfer* transfer) {
 			- timerFlag set to 1 which means that 0.25s passed +
 			- frequency should be first frequency or this frecuency was caught
 		*/
-		if (counterSucess == 0) // TODO: Here we can reduce time a little bit before calling callback
+		if (counterSucess == 0) 
 		{
 			t_timeStartSweeping = time(NULL);
 			localtime_r(&t_timeStartSweeping, &tm_timeStartSweeping);
 			gettimeofday(&timeValStartSweeping, NULL);
-		}
+		}	
 			
 		if(strstr(pathFits, "fit")!= NULL && timerFlag == 1 && ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0]) || flag_initialFreqCaught == 1)) 
-		{	
+		{
 			time_t time_stamp_seconds = usb_transfer_time.tv_sec;
 			fft_time = localtime(&time_stamp_seconds);
 			strftime(time_str, 60, "%Y-%m-%d, %H:%M:%S", fft_time);
-			if ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0])) // TODO: Maybe this part can be also deleted (time part)
+			if ( frequency == (uint64_t)(FREQ_ONE_MHZ*frequencies[0]))
 			{ 
 				char sweepingTime[60];
 				char decimalTime[8] = {"."};
 				char totalDecimalsTime[8];
 				flag_initialFreqCaught = 1; //First time will enter
-				fprintf(stderr, "First Frecuency caught. Setting flag to 1\n"); 
-
 				strcpy(sweepingTime, time_str);
 				sprintf(totalDecimalsTime, "%06ld", (long int)usb_transfer_time.tv_usec);
 				strncat(decimalTime, totalDecimalsTime, 3);
@@ -410,72 +386,42 @@ int rx_callback(hackrf_transfer* transfer) {
 				//Save times
 				strcpy(timeDatas[counterSucess], sweepingTime);
 			}
-
-			/*printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
-				time_str,
-				(long int)usb_transfer_time.tv_usec,
-				(uint64_t)(frequency), //First time: 45MhZ
-				(uint64_t)(frequency+sampleRate/4), //45MHz + 5MHz
-				fft_bin_width,
-				fftSize
-				);
-		*/
+			
 			for(i = 0; (fftSize / 4) > i; i++) 
 			{
-			//	printf(", %.2f", pwr[i + 1 + (fftSize*5)/8]);
 		
 				// Save power sample
 				samples[id_sample] = pwr[i + 1 + (fftSize*5)/8];
 				id_sample++;
 			}
-
-			row_id ++;
-			/*printf(", row_id =%d", row_id);
-			printf("\n");
-			printf("%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
-					time_str,
-					(long int)usb_transfer_time.tv_usec,
-					(uint64_t)(frequency+(sampleRate/2)),
-					(uint64_t)(frequency+((sampleRate*3)/4)),
-					fft_bin_width,			
-					fftSize
-					);
-			*/			
 			for(i = 0; (fftSize / 4) > i; i++) 
 			{
-			//	printf(", %.2f", pwr[i + 1 + (fftSize/8)]);
 				
 				// Save power sample
 				samples[id_sample] = pwr[i + 1 + (fftSize/8)];
 				id_sample++;
 			}
 
-			row_id ++; // TODO: Row id can be deleted
-		/*	printf(", row_id =%d", row_id);
-			printf("\n");
-			*/
 			if (counterSucess == 0)
 			{
-	
 				if(checkOrderFreqs(nRanges, ((double)(frequency)/FREQ_ONE_MHZ)) == EXIT_FAILURE) { return EXIT_FAILURE; }
 				if(checkOrderFreqs(nRanges, ((double)(frequency) + sampleRate/2)/FREQ_ONE_MHZ) == EXIT_FAILURE) { return EXIT_FAILURE; }
 			}
 
-			if ((uint64_t)(frequency+((sampleRate*3)/4)) >= freq_max*FREQ_ONE_MHZ || row_id == nRanges) //Where the sweep finished
+			if ((uint64_t)(frequency+((sampleRate*3)/4)) >= freq_max*FREQ_ONE_MHZ) //Where the sweep finished
 			{
 				if (counterSucess == 0)
 				{
 					if(checkOrderFreqs(naxes[1]/(fftSize/4), ((double)(frequency) + sampleRate*3/4)/FREQ_ONE_MHZ) == EXIT_FAILURE) { return EXIT_FAILURE; }
 				}
 
-				row_id = 0 ;
 				counterSucess++;
 				printf("hackrf_sweep | rx_callback() | Data Caught. Iteration %d finished\n", counterSucess);			
 				success = false;
 				timerFlag = 0; // Flag down which means that data was caught
 				flag_initialFreqCaught = 0; // Set variable to finish iteration
 				
-				if (counterSucess == TRIGGERING_TIMES) //TODO: Maybe this part can be change after calling callback
+				if (counterSucess == TRIGGERING_TIMES)
 				{
 					t_timeEndSweeping = time(NULL);
 					localtime_r(&t_timeEndSweeping, &tm_timeEndSweeping);
