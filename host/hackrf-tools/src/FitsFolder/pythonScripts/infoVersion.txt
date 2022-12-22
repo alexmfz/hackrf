@@ -1,2 +1,3 @@
-v0.1.0:
+v0.1.1:
     - Functions to read .txt and generate properly fits file done
+    - TODO: Resolver bscale and bzero headers
