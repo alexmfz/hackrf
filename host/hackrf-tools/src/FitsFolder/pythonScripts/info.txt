@@ -1,3 +1,0 @@
-v0.0.1:
-    - Skeleton of generation of fits through python
-    - Adding functions to read samples/frequencies/times from .txt

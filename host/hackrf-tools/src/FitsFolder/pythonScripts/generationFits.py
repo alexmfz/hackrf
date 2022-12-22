@@ -17,7 +17,14 @@ def create_image():
     # input data (samples ordered) of SDR as byte
     logger.info("generationFits | createImage() | Creation of fits image")
     logger.info("generationFits | createImage() | Reading power samples from SDR")
+
+    power_sample = read_power_samples()
+    if power_sample == error_code:
+        logger.error("generationFits | create_image() | Error at reading power samples")
+
     image_data = np.ones((n_channels, triggering_times), dtype='i1')
+
+   # image_data = insert_data_image(image_data, power_sample)
 
     if image_data is None:
         logger.error("generationFits | createImage() | Was not possible to read data")
@@ -90,10 +97,16 @@ def update_headers_image():
 def create_binary_table():
     global hdul
 
+    frequencies = np.arange(n_channels)
+    frequencies = read_frequencies()
+
+    times = np.arange(triggering_times)
+    times = read_times()
+
     # Create binary table
     logger.info("generationFits | createBinaryTable() | Creating binary table of dimensions 1x2")
-    c1 = fits.Column(name="Frequency", array=np.array([np.arange(triggering_times)]), format='3600D8.3')
-    c2 = fits.Column(name="Times", array=np.array([np.arange(n_channels)]), format='200D8.3')
+    c1 = fits.Column(name="Time", array=np.array([times]), format='3600D8.3')
+    c2 = fits.Column(name="Frequency", array=np.array([frequencies]), format='200D8.3')
     binary_table = fits.BinTableHDU.from_columns([c1, c2])
 
     hdul.append(binary_table)
@@ -121,9 +134,69 @@ def generate_dynamic_name():
 
 
 def read_power_samples():
+    logger.info("generationFits | read_power_samples() | Reading samples as output of SDR")
+
+    sample_formated = []
     fichero = open("data_test.txt", "r")
-    print(fichero.readlines())
+    if fichero is None:
+        return error_code
+
+    samples_not_formated = fichero.readlines()
+    for sample in samples_not_formated:
+        sample_formated.append(int(sample.replace("\n", "")))
+
     fichero.close()
+
+    logger.info("generationFits | read_power_samples() | Execution Success")
+    return sample_formated
+
+
+def insert_data_image(image_data, power_sample):
+    logger.info("generationFits | insert_data_image() | Inserting data into image")
+
+    i = 0
+    for times in range(triggering_times):
+        for frequencies in range(n_channels):
+            image_data[times][frequencies] = power_sample[i]
+            i += 1
+
+    logger.info("generationFits | insert_data_image() | Execution Success")
+    return image_data
+
+
+def read_frequencies():
+    logger.info("generationFits | read_frequencies() | Reading frequencies as output of SDR")
+    frequency_formated = []
+
+    fichero = open("freq_test.txt", "r")
+    if fichero is None:
+        return error_code
+
+    frequency_not_formated = fichero.readlines()
+    for freq in frequency_not_formated:
+        frequency_formated.append(int(freq.replace("\n", "")))
+
+    fichero.close()
+
+    logger.info("generationFits | read_frequencies() | Execution Success")
+    return frequency_formated
+
+
+def read_times():
+    logger.info("generationFits | read_times() | Reading frequencies as output of SDR")
+    times_formated = []
+
+    fichero = open("times_test.txt", "r")
+    if fichero is None:
+        return error_code
+
+    times_not_formated = fichero.readlines()
+    for times in times_not_formated:
+        times_formated.append(float(times.replace("\n", "")))
+
+    fichero.close()
+    logger.info("generationFits | read_times() | Execution Success")
+    return times_formated
 
 
 def print_fits_info():
@@ -174,7 +247,7 @@ if __name__ == "__main__":
     n_channels = 200
 
     logger.basicConfig(filename='fits.log', filemode='w', level=logger.INFO)
-    """
+
     if generate_fits(n_channels, triggering_times) != success_code:
         logger.info("generationFits | " + error_code)
 
@@ -182,6 +255,3 @@ if __name__ == "__main__":
 
     # print fits data to debug
     print_fits_info()
-    """
-    read_power_samples()
-
