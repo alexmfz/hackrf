@@ -1,3 +1,3 @@
 v0.1.1:
-    - Functions to read .txt and generate properly fits file done
-    - TODO: Resolver bscale and bzero headers
+    - TODO: Add functionality to change header values (reading from .txt)
+    - TODO: Resolve bscale and bzero headers
