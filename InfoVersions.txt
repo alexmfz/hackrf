@@ -1,6 +1,3 @@
-v3.4: 
+v3.5:
 
-- Bug resolved at trying to opening fits image with JavaViewer. The problem was the type of data.
-  Change float data to byte data
-
-- Added runProgram.sh which execute compiler and pogram receiving as input the frequency range
+- Changed runProgram.sh to connect python - C scripts
