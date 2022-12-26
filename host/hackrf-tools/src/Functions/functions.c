@@ -39,7 +39,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFT_DEFAULT_SIZE	(20)
 
-#define TRIGGERING_TIMES (3600) //3600
+#define TRIGGERING_TIMES (5) //3600
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)
@@ -170,7 +170,7 @@ int parse_u32_range(char* s, uint32_t* const value_min, uint32_t* const value_ma
 void generateDynamicName(struct tm baseName)
 {
     char date[50]="";
-    char suffix[50] = ".fits";
+    char suffix[50] = ".fit";
     char preffix[50] = "hackRFOne_UAH_";
 
     strftime(date, sizeof date, "%d%m%Y_%Hh_%Mm", &baseName);
@@ -191,7 +191,7 @@ int assignFitsParameters()
 	printf("functions | assignFitsParameters() | Assigning parameters of fits file\n");
 	printf("functions | assignFitsParameters() | Filaname: %s\n",pathFits);
 
-	if(strstr(pathFits, "fits") != NULL)
+	if(strstr(pathFits, "fit") != NULL)
 	{
 		naxes[0] = TRIGGERING_TIMES;//TOTAL_SAMPLEST_PER_FREQUENCY; //3600
 		naxes[1] = numberOfSteps; //200

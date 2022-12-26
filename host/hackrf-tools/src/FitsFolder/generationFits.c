@@ -16,8 +16,8 @@
 #include <inttypes.h>
 
 // -I/usr/local/src/cfitsio-4.1.0 -lcfitsio
-#define TRIGGERING_TIMES (3600) //3600
-
+#define TRIGGERING_TIMES (5) //3600
+#define FD_BUFFER_SIZE  (8*1024)
 /*** Global Variables***/
 fitsfile *fptr =NULL;
 float *frequencyDataRanges; // Frecuency Datas of the sweeping in ranges
@@ -603,5 +603,104 @@ int generateFitsFile(char fileFitsName[], float*samples, struct tm localTimeFirs
     closeFits();
 
     printf("generationFits | generateFitsFile() | Execution Sucess\n");
+    return EXIT_SUCCESS;
+}
+
+/**
+ * @brief  Used to write hackRF into txt files to generate fits file throught python
+ * @note   
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+ */
+int writeHackrfDataIntoTxtFiles()
+{
+    int i = 0;
+    int nElements = naxes[1] * TRIGGERING_TIMES;
+    FILE* samplesFile = NULL;
+    FILE* frequenciesFile = NULL;
+    FILE* timingFile = NULL;
+    
+    char samplePath[] = "samples.txt";
+    char frequencyPath[] = "frequencies.txt";
+    char timingPath[] = "times.txt";
+
+    printf("generationFits | writeHackrfDataIntoTxtFiles() | Data will be stored into files %s , %s, %s\n", samplePath, frequencyPath, timingPath);
+
+    if (samplePath == NULL || strstr(samplePath, ".txt")== NULL || 
+        frequencyPath == NULL || strstr(frequencyPath, ".txt") == NULL||
+        timingPath == NULL || strstr(timingPath, ".txt") == NULL)
+        {
+            samplesFile = stdout;
+            frequenciesFile = stdout;
+            timingFile = stdout;
+            
+            fprintf(stderr, "generationFits | writeHackrfDataIntoTxtFiles() | Error extension incorrect. Should be .txt\n");
+            return EXIT_FAILURE;
+        }
+
+    else
+    {
+        samplesFile = fopen(samplePath, "wb");        
+        frequenciesFile = fopen(frequencyPath, "wb");        
+        timingFile = fopen(timingPath, "wb");        
+    }
+
+    if (samplesFile == NULL || frequenciesFile == NULL || timingFile == NULL)
+    {
+        fprintf(stderr, "generationFits | writeHackrfDataIntoTxtFiles() | Failed to open files\n");
+        return EXIT_FAILURE; 
+    }
+
+    // Set buffers to the files
+    if(setvbuf(samplesFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS || 
+       setvbuf(frequenciesFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS ||
+       setvbuf(timingFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS)
+       {
+            fprintf(stderr, "generationFits | writeHackrfDataIntoTxtFiles() | setvbuf failed\n");
+            return EXIT_FAILURE;
+       }
+
+    // Write data
+    for (i = 0; i < nElements; i++)
+    {
+        fprintf(samplesFile, "%d", i);
+        if (i < nElements -1 )
+        {
+            fprintf(samplesFile, "\n");
+        }
+    }
+    for (i = 0; i < naxes[1]; i++)
+    {
+        fprintf(frequenciesFile, "%d", i);
+        if (i < naxes[1] -1 )
+        {
+            fprintf(frequenciesFile, "\n");
+        }
+    }
+
+    for (i = 0; i < TRIGGERING_TIMES; i++)
+    {
+        fprintf(timingFile, "%d", i);
+         if (i < TRIGGERING_TIMES -1 )
+        {
+            fprintf(timingFile, "\n");
+        }
+        
+    }
+
+    fflush(samplesFile);
+    fflush(frequenciesFile);
+    fflush(timingFile);
+
+    if ((samplesFile != NULL && samplesFile != stdout) &&
+        (frequenciesFile != NULL && frequenciesFile != stdout) &&
+        (timingFile != NULL && timingFile != stdout))
+        {
+            fclose(samplesFile);
+            fclose(frequenciesFile);
+            fclose(timingFile);
+            printf("generationFits | writeHackrfDataIntoTxtFiles() | Files closed\n");
+        }
+
+    printf("generationFits | writeHackrfDataIntoTxtFiles() | Execution Success\n");
     return EXIT_SUCCESS;
 }

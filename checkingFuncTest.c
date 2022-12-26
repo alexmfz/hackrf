@@ -12,6 +12,7 @@
 // -I/usr/local/src/cfitsio-4.1.0 -lcfitsio to compile CFITSIO
 
 #define INTERVAL 25e4 //us => 25e4 us = 250 ms
+#define FD_BUFFER_SIZE  (8*1024)
 
 struct itimerval timer;    
 struct timeval preTriggering;
@@ -849,9 +850,104 @@ void anotherTimingTest_2()
 
 }
 
+static int writingFilesTest()
+{
+    int i = 0;
+    FILE* samplesFile = NULL;
+    FILE* frequenciesFile = NULL;
+    FILE* timingFile = NULL;
+    
+    char samplePath[] = "samples.txt";
+    char frequencyPath[] = "frequencies.txt";
+    char timingPath[] = "times.txt";
+
+    printf("checkingFuncTest | writingFilesTest() | Data will be stored into files %s , %s, %s\n", samplePath, frequencyPath, timingPath);
+
+    if (samplePath == NULL || strstr(samplePath, ".txt")== NULL || 
+        frequencyPath == NULL || strstr(frequencyPath, ".txt") == NULL||
+        timingPath == NULL || strstr(timingPath, ".txt") == NULL)
+        {
+            samplesFile = stdout;
+            frequenciesFile = stdout;
+            timingFile = stdout;
+            
+            fprintf(stderr, "checkingFuncTest | writingFilesTest() | Error extension incorrect. Should be .txt\n");
+            return EXIT_FAILURE;
+        }
+
+    else
+    {
+        samplesFile = fopen(samplePath, "wb");        
+        frequenciesFile = fopen(frequencyPath, "wb");        
+        timingFile = fopen(timingPath, "wb");        
+    }
+
+    if (samplesFile == NULL || frequenciesFile == NULL || timingFile == NULL)
+    {
+        fprintf(stderr, "checkingFuncTest | writingFilesTest() | Failed to open files\n");
+        return EXIT_FAILURE; 
+    }
+
+    // Set buffers to the files
+    if(setvbuf(samplesFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS || 
+       setvbuf(frequenciesFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS ||
+       setvbuf(timingFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS)
+       {
+            fprintf(stderr, "checkingFuncTest | writingFilesTest() | setvbuf failed\n");
+            return EXIT_FAILURE;
+       }
+
+    printf("checkingFuncTest | writingFilesTest() | Start writing data\n");
+
+    // Write data
+    for (i = 0; i < 720000; i++)
+    {
+        fprintf(samplesFile, "%d", i);
+        if (i < 720000 -1 )
+        {
+            fprintf(samplesFile, "\n");
+        }
+    }
+    for (i = 0; i < 200; i++)
+    {
+        fprintf(frequenciesFile, "%d", i);
+        if (i < 200 -1 )
+        {
+            fprintf(frequenciesFile, "\n");
+        }
+    }
+
+    for (i = 0; i < 3600; i++)
+    {
+        fprintf(timingFile, "%d", i);
+         if (i < 3600 -1 )
+        {
+            fprintf(timingFile, "\n");
+        }
+        
+    }
+
+    fflush(samplesFile);
+    fflush(frequenciesFile);
+    fflush(timingFile);
+
+    if ((samplesFile != NULL && samplesFile != stdout) &&
+        (frequenciesFile != NULL && frequenciesFile != stdout) &&
+        (timingFile != NULL && timingFile != stdout))
+        {
+            fclose(samplesFile);
+            fclose(frequenciesFile);
+            fclose(timingFile);
+            printf("checkingFuncTest | writingFilesTest() | Files closed\n");
+        }
+
+    printf("checkingFuncTest | writingFilesTest() | Execution Success\n");
+    return EXIT_SUCCESS;
+}
+
 int main(int argc, char** argv) 
 {
-    int testData = 8;
+    int testData = 9;
     int i = 0;
     int nChannels = 200;
     int stepValue = 5;
@@ -1183,6 +1279,11 @@ int main(int argc, char** argv)
     else if (testData == 8)
     {
         anotherTimingTest_2();
+    }
+    
+    else if (testData == 9)
+    {
+        writingFilesTest();
     }
     return 0;
 }

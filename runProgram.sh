@@ -1,6 +1,7 @@
 
 #!/bin/bash
-if  [[ -z "$1" || -z "$2"]]
+
+if  [[ -z "$1" || -z "$2" || -z "$3" ]]
 then
     echo "Was not possible to execute."
     echo "Frequency range values not selected"
@@ -37,7 +38,7 @@ else
 
     echo "...Program Finished..."
     echo "...Opening JavaViewer..."
-    cd Result
+    cd /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder/Result
     java -jar RAPPViewer.jar
 fi
 

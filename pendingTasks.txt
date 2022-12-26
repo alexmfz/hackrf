@@ -18,5 +18,6 @@ Status:  OK | PENDING
 16. Open images with RAPPViewer --> OK
 17. TODO: Resolve problem of sweeping rate (fftsize must not be cte)
 18: TODO: Finish generationFits.py
-19: TODO: Generate .txt of power samples/times/frequencies as input of generationFits.py
+19: Generate .txt of power samples/times/frequencies as input of generationFits.py --> OK
 20: TODO: Make tests for integration python and C scripts
+21. TODO: Add input argument

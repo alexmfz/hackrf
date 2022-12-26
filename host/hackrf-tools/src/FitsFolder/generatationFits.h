@@ -32,4 +32,4 @@ int saveTimes(int i, int triggeringTimes, char* sweepingTime); // TODO: Wont be 
 int saveTimeSteps();
 int saveSamples(int i, float powerSample, int nElements); // TODO: Wont be used by the moment
 int checkSavedData(int nElements);
-void associateFreqsToSample(); // TODO: Still not develop
+int writeHackrfDataIntoTxtFiles();

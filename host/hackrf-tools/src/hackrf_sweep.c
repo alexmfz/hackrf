@@ -52,7 +52,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFTMIN 	(4)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGGERING_TIMES (3600) //3600
+#define TRIGGERING_TIMES (5) //3600
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -419,7 +419,7 @@ int rx_callback(hackrf_transfer* transfer) {
 				printf("hackrf_sweep | rx_callback() | Data Caught. Iteration %d finished\n", counterSucess);			
 				success = false;
 				timerFlag = 0; // Flag down which means that data was caught
-				flag_initialFreqCaught = 0; // Set variable to finish iteration
+				flag_initialFreqCaught = 0; // Set variable to finish iteration			
 				
 				if (counterSucess == TRIGGERING_TIMES)
 				{
@@ -843,11 +843,11 @@ static void printValuesHackRFOne()
 	float step_range = (float)((fft_bin_width)/FREQ_ONE_MHZ)*(fftSize/4);
 
 
-	/*printf("hackrf_sweep | printValuesHackRFOne() | Data results: Timing\n");
+	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Timing\n");
 	for (i = 0; i< TRIGGERING_TIMES; i++)
 	{
 		printf("Time[%d]: %s\n", i, timeDatas[i]);	
-	}*/
+	}
 	
 /*	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Power samples\n");
 	for (i = 0; i < nElements; i++)
@@ -1077,10 +1077,15 @@ static int runGeneration(struct tm localTimeFirst, struct tm localTimeLast)
 	}
 	
 	printf("hackrf_sweep | runGeneration() | reorganizeSamples() | Execution Success;\n");
-	if(strstr(pathFits,"fit")==NULL || (generateFitsFile(pathFits,
-														  samplesOrdered,
-														  localTimeFirst, localTimeLast,
-														  freq_min)) == EXIT_FAILURE){ return EXIT_FAILURE; }
+	// add input argument to generate throught C or python
+
+	/*if((generateFitsFile(pathFits,
+						samplesOrdered,
+						localTimeFirst, localTimeLast,
+						freq_min)) == EXIT_FAILURE) { return EXIT_FAILURE; }*/
+
+	if (writeHackrfDataIntoTxtFiles() == EXIT_FAILURE) { return EXIT_FAILURE; }
+
 	
 	printf("=============================================================\n");
 	printf("hackrf_sweep | runGeneration() | Execution Success\n");
@@ -1151,7 +1156,7 @@ int main(int argc, char** argv)
 
 	calculateTimes(&t_timeEndGeneration, &tm_timeEndGeneration, &timeValEndGeneration);
 	strftime(timeEndGeneration, sizeof timeEndGeneration, "%Y-%m-%d %H:%M:%S", &tm_timeEndGeneration);
-	printValuesHackRFOne();
+	//printValuesHackRFOne();
 
 	/* END GENERATION */
 
@@ -1164,7 +1169,7 @@ int main(int argc, char** argv)
 
 	timeEndExecution = time(NULL);
 	strftime(timeEndProgram, sizeof timeEndProgram, "%Y-%m-%d %H:%M:%S", &tm_timeEndExecution);
-
+	
 	printf("=============================================================\n");
 	fprintf(stderr, "Time parameters hackrf_sweep f%d:%d-%d Iterations\n"
 					"Program Execution Start: %s\t Program Execution Finish: %s\t Duration: %fs\n"
