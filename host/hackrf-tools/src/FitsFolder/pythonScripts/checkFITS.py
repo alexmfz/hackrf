@@ -6,16 +6,20 @@ Lecture 3.1/9 How to plot single spectrum
 """
 
 from astropy.io import fits
-import matplotlib.pyplot as plt
 
 # -----------------------------------------------------------------------------
 
-files = 'hackRFOne_UAH_15122022_14h_47m.fits'
+files = 'hackRFOne_UAH_20221215_14h_47m.fit'
 
 hdu = fits.open(files)
 print(hdu.info())  # FIT-file structure
 print(hdu[0].header)
 print(hdu[1].header)
+print("Datamax", hdu[0].header["DATAMAX"])
+print("Datamin", hdu[0].header["DATAMIN"])
+print("BSCALE", hdu[0].header["BSCALE"])
+print("BZERO", hdu[0].header["BZERO"])
+hdu.close()
 
 """
 data = hdu[0].data

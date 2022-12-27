@@ -30,8 +30,15 @@ else
       mv samples.txt /pythonScripts
       mv times.txt /pythonScripts
       mv frequencies.txt /pythonScripts
+      mv header_times.txt /pythonScripts
+
       cd pythonScripts
       python3 generationFits.py
+      rm samples.txt
+      rm times.txt
+      rm frequencies.txt
+      rm header_times.txt
+
       echo "...Moving fits into Result folder"
       mv *.fit /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder/Result
     fi

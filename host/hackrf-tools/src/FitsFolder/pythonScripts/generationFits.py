@@ -9,10 +9,14 @@ import pickle
 error_code = "ERROR"
 success_code = "OK"
 hdul = None
+min_value = None
+max_value = None
 
 
 def create_image():
     global hdul
+    global max_value
+    global min_value
 
     # input data (samples ordered) of SDR as byte
     logger.info("generationFits | createImage() | Creation of fits image")
@@ -21,10 +25,14 @@ def create_image():
     power_sample = read_power_samples()
     if power_sample == error_code:
         logger.error("generationFits | create_image() | Error at reading power samples")
+        return error_code
+    # Before inserting data into img save max and min values of power samples
+    max_value = max(power_sample)
+    min_value = min(power_sample)
 
-    image_data = np.ones((n_channels, triggering_times), dtype='i1')
+    image_data = np.ones((n_channels, triggering_times)) #dtype='i1') # TODO: Discomment after getting good .txt
 
-   # image_data = insert_data_image(image_data, power_sample)
+    image_data = insert_data_image(image_data, power_sample)
 
     if image_data is None:
         logger.error("generationFits | createImage() | Was not possible to read data")
@@ -37,7 +45,6 @@ def create_image():
         return error_code
 
     # Create an HDUList to contain the newly created PrimaryHDU and write to a new file
-
     hdul = fits.HDUList([image])
     if hdul is None:
         logger.error("generationFits | createImage() | Was not possible to create the Primary HDU")
@@ -46,37 +53,64 @@ def create_image():
     return success_code
 
 
+def read_header_data():
+    header_data = []
+
+    logger.info("generationFits | read_header_data() | Reading headers extra data")
+
+    header_file = open("header_times.txt", "r")
+    if header_file is None:
+        logger.error("generationFits | read_header_data() | Error at reading header file")
+        return error_code
+
+    header_not_formated = header_file.readlines()
+    for header in header_not_formated:
+        header_data.append(header.replace("\n", ""))
+
+    header_file.close()
+
+    logger.info("generationFits | read_header_data() | Execution Success")
+    return header_data
+
+
 def update_headers_image():
     global hdul
+    global max_value
+    global min_value
+
+    header_data = read_header_data()
+    if header_data == "ERROR":
+        logger.error("generationFits | update_headers_image() | Error at reading header file")
+        return error_code
 
     logger.info("generationFits 1 UpdateHeadersImage() | Updating headers of fits image")
     len_headers = len(hdul[0].header)
 
     # Update headers
-    hdul[0].header.append(("DATE", "2022-12-15", "Time of observation"))
-    hdul[0].header.append(("CONTENT", "2022/12/15 Radio Flux density, HackRF-One (Spain)", "Title"))
+    hdul[0].header.append(("DATE", header_data[0].replace("/", "-"), "Time of observation"))    # TODO
+    hdul[0].header.append(("CONTENT", header_data[0] + "Radio Flux density, HackRF-One (Spain)", "Title"))
 
     hdul[0].header.append(("INSTRUME", "HACKRF One", "Name of the instrument"))
     hdul[0].header.append(("OBJECT", "Space", "Object name"))
 
-    hdul[0].header.append(("DATE-OBS", "2022/12/15", "Date observation starts"))
-    hdul[0].header.append(("TIME-OBS", "14:47:32.897", "Time observation starts"))
-    hdul[0].header.append(("DATE-END", "2022/12/15", "Date Observation ends"))
-    hdul[0].header.append(("TIME-END", "15:02:43", "Time observation ends"))
+    hdul[0].header.append(("DATE-OBS", header_data[0], "Date observation starts"))    # TODO
+    hdul[0].header.append(("TIME-OBS", header_data[1], "Time observation starts"))  # TODO
+    hdul[0].header.append(("DATE-END", header_data[2], "Date Observation ends"))  # TODO
+    hdul[0].header.append(("TIME-END", header_data[3], "Time observation ends"))    # TODO
 
-    # hdul[0].header."BZERO", 0, "Scaling offset"))
-    # hdul[0].header["BSCALE"] = 1.
+    hdul[0].header.append(("BZERO", 0, "Scaling offset"))
+    hdul[0].header.append(("BSCALE", 1., "Scaling factor"))
     hdul[0].header.append(("BUNIT", "digits", "Z - axis title"))
 
-    hdul[0].header.append(("DATAMAX", -5, "Max pixel data"))
-    hdul[0].header.append(("DATAMIN", -255, "Min pixel data"))
+    hdul[0].header.append(("DATAMAX", max_value, "Max pixel data"))
+    hdul[0].header.append(("DATAMIN", min_value, "Min pixel data"))
 
-    hdul[0].header.append(("CRVAL1", 53252, "Value on axis 1 [sec of day]"))
+    hdul[0].header.append(("CRVAL1", header_data[4], "Value on axis 1 [sec of day]")) # TODO
     hdul[0].header.append(("CRPIX1", 0, "Reference pixel of axis 1"))
     hdul[0].header.append(("CTYPE1", "TIME [UT]", "Title of axis 1"))
     hdul[0].header.append(("CDELT1", 0.25, "Step between first and second element in x-axis"))
 
-    hdul[0].header.append(("CRVAL2", 45, "Value on axis 2 "))
+    hdul[0].header.append(("CRVAL2", min(read_frequencies()), "Value on axis 2 "))
     hdul[0].header.append(("CRPIX2", 0, "Reference pixel of axis 2"))
     hdul[0].header.append(("CTYPE2", "Frequency [MHz]", "Title of axis 2"))
     hdul[0].header.append(("CDELT2", -1, "Step samples"))
@@ -99,9 +133,15 @@ def create_binary_table():
 
     frequencies = np.arange(n_channels)
     frequencies = read_frequencies()
+    if frequencies == "ERROR":
+        logger.error("generationFits | create_binary_table() | Error at reding frequency file")
+        return error_code
 
     times = np.arange(triggering_times)
     times = read_times()
+    if times == "ERROR":
+        logger.error("generationFits | create_binary_table() | Error at reding times file")
+        return error_code
 
     # Create binary table
     logger.info("generationFits | createBinaryTable() | Creating binary table of dimensions 1x2")
@@ -128,7 +168,6 @@ def generate_dynamic_name():
     format_date = start_date[:3].replace(":", "h_") + start_date[3:6].replace(":", "m")
 
     fits_name = "hackRFOne_UAH_" + date_obs + format_date + extension
-
     logger.info("generationFits | generate_dynamic_name() | File generated with name: " + fits_name)
     return fits_name
 
@@ -137,15 +176,15 @@ def read_power_samples():
     logger.info("generationFits | read_power_samples() | Reading samples as output of SDR")
 
     sample_formated = []
-    fichero = open("data_test.txt", "r")
-    if fichero is None:
-        return error_code
+    sample_file = open("samples.txt", "r")
+    if sample_file is None:
+        return sample_file
 
-    samples_not_formated = fichero.readlines()
+    samples_not_formated = sample_file.readlines()
     for sample in samples_not_formated:
         sample_formated.append(int(sample.replace("\n", "")))
 
-    fichero.close()
+    sample_file.close()
 
     logger.info("generationFits | read_power_samples() | Execution Success")
     return sample_formated
@@ -157,7 +196,7 @@ def insert_data_image(image_data, power_sample):
     i = 0
     for times in range(triggering_times):
         for frequencies in range(n_channels):
-            image_data[times][frequencies] = power_sample[i]
+            image_data[frequencies][times] = power_sample[i]
             i += 1
 
     logger.info("generationFits | insert_data_image() | Execution Success")
@@ -168,15 +207,15 @@ def read_frequencies():
     logger.info("generationFits | read_frequencies() | Reading frequencies as output of SDR")
     frequency_formated = []
 
-    fichero = open("freq_test.txt", "r")
-    if fichero is None:
+    freq_file = open("frequencies.txt", "r")
+    if freq_file is None:
         return error_code
 
-    frequency_not_formated = fichero.readlines()
+    frequency_not_formated = freq_file.readlines()
     for freq in frequency_not_formated:
         frequency_formated.append(int(freq.replace("\n", "")))
 
-    fichero.close()
+    freq_file.close()
 
     logger.info("generationFits | read_frequencies() | Execution Success")
     return frequency_formated
@@ -186,15 +225,15 @@ def read_times():
     logger.info("generationFits | read_times() | Reading frequencies as output of SDR")
     times_formated = []
 
-    fichero = open("times_test.txt", "r")
-    if fichero is None:
+    time_file = open("times.txt", "r")
+    if time_file is None:
         return error_code
 
-    times_not_formated = fichero.readlines()
+    times_not_formated = time_file.readlines()
     for times in times_not_formated:
         times_formated.append(float(times.replace("\n", "")))
 
-    fichero.close()
+    time_file.close()
     logger.info("generationFits | read_times() | Execution Success")
     return times_formated
 
@@ -243,7 +282,7 @@ def generate_fits(n_channels, triggering_times):
 
 
 if __name__ == "__main__":
-    triggering_times = 3600
+    triggering_times = 5
     n_channels = 200
 
     logger.basicConfig(filename='fits.log', filemode='w', level=logger.INFO)
@@ -255,3 +294,4 @@ if __name__ == "__main__":
 
     # print fits data to debug
     print_fits_info()
+
