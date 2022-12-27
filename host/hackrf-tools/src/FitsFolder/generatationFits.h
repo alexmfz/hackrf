@@ -16,8 +16,8 @@
 #include <sys/time.h>
 #endif
 
-long minData(float * samples);
-long maxData(float * samples);
+float minData(float * samples);
+float maxData(float * samples);
 long getSecondsOfDayOfFirstSweeping(struct tm timeFirstSweeping);
 int createFile(char filename[]);
 int createImage();
@@ -32,4 +32,4 @@ int saveTimes(int i, int triggeringTimes, char* sweepingTime); // TODO: Wont be 
 int saveTimeSteps();
 int saveSamples(int i, float powerSample, int nElements); // TODO: Wont be used by the moment
 int checkSavedData(int nElements);
-int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLast);
+int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLast, float* samplesOrdered, float* frequencies, float* times);

@@ -31,7 +31,7 @@ int status = 0, ii, jj;
 int fpixel = 1;
 int naxis = 2, nElements, exposure;
 long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
-uint8_t array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
+int8_t array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
 
 extern struct timeval timeValStartSweeping;
 extern struct tm timeFirstSweeping;
@@ -45,16 +45,16 @@ extern float step_value;
  * @param  samples: power sample 
  * @retval Min value of the power samples
  */
-long minData(float * samples)
+float minData(float * samples)
 {
     int  i = 0;
-    long minimum = (long)samples[i];
+    float minimum = samples[i];
 
     for (i = 0; i< nElements; i++)
     {
-        if (minimum > (long)samples[i])
+        if (minimum > samples[i])
         {
-            minimum = (long)samples[i];
+            minimum = samples[i];
         }
     }
 
@@ -67,15 +67,15 @@ long minData(float * samples)
  * @param  samples: power sample
  * @retval Max value of power samples
  */
-long maxData(float * samples)
+float maxData(float * samples)
 {
     int  i = 0;
-    long maximum = (long)samples[i];
+    float maximum = samples[i];
     for (i = 0; i< nElements; i++)
     {
-        if (maximum < (long)samples[i])
+        if (maximum < samples[i])
         {
-            maximum = (long)samples[i];
+            maximum = samples[i];
         }
     }
 
@@ -265,7 +265,7 @@ int insertDataImage(float* samples)
     {        
         for (jj=0; jj< naxes[1]; jj++) 
         {
-            array_img[jj][ii] = (uint8_t)samples[id];
+            array_img[jj][ii] = (int8_t)samples[id];
             id++;
         }
         
@@ -611,7 +611,7 @@ int generateFitsFile(char fileFitsName[], float*samples, struct tm localTimeFirs
  * @note   
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLast)
+int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLast, float* samplesOrdered, float* frequencies, float* times)
 {
     int i = 0;
     int nElements = naxes[1] * TRIGGERING_TIMES;
@@ -686,7 +686,7 @@ int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLas
     // Write data samples
     for (i = 0; i < nElements; i++)
     {
-        fprintf(samplesFile, "%d", i);
+        fprintf(samplesFile, "%d", (int8_t)samplesOrdered[i]);
         if (i < nElements -1 )
         {
             fprintf(samplesFile, "\n");
@@ -696,7 +696,7 @@ int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLas
     // Write data frequencies
     for (i = 0; i < naxes[1]; i++)
     {
-        fprintf(frequenciesFile, "%d", i);
+        fprintf(frequenciesFile, "%f", frequencies[i]);
         if (i < naxes[1] -1 )
         {
             fprintf(frequenciesFile, "\n");
@@ -706,7 +706,7 @@ int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLas
     // Write data times
     for (i = 0; i < TRIGGERING_TIMES; i++)
     {
-        fprintf(timingFile, "%d", i);
+        fprintf(timingFile, "%f", times[i]);
          if (i < TRIGGERING_TIMES -1 )
         {
             fprintf(timingFile, "\n");

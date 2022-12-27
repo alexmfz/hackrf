@@ -843,13 +843,13 @@ static void printValuesHackRFOne()
 	int nElements = naxes[0]*naxes[1];
 	float step_range = (float)((fft_bin_width)/FREQ_ONE_MHZ)*(fftSize/4);
 
-
+/*
 	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Timing\n");
 	for (i = 0; i< TRIGGERING_TIMES; i++)
 	{
 		printf("Time[%d]: %s\n", i, timeDatas[i]);	
 	}
-	
+*/	
 /*	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Power samples\n");
 	for (i = 0; i < nElements; i++)
 	{
@@ -860,7 +860,14 @@ static void printValuesHackRFOne()
 		printf("Power sample disordered[%d]: %f\t Power sample ordered[%d]: %f\n", i, samples[i], i, samplesOrdered[i]);
 		
 	}*/
+
+/*	for (i = 0; i < nElements; i++)
+	{
 		
+		printf("Power sample[%d]: %f\t Power samples uint8_t[%d]: %d", i, samplesOrdered[i], i, (int8_t)samplesOrdered[i]);
+		
+	}
+*/		
 /*	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Frequencies\n");
 	for (i = 0; i< nRanges; i++)
 	{
@@ -1089,7 +1096,7 @@ static int runGeneration(struct tm localTimeFirst, struct tm localTimeLast)
 	
 	else
 	{
-		if (writeHackrfDataIntoTxtFiles(localTimeFirst, localTimeLast) == EXIT_FAILURE) { return EXIT_FAILURE; }
+		if (writeHackrfDataIntoTxtFiles(localTimeFirst, localTimeLast, samplesOrdered, frequencyDatas, timeSteps) == EXIT_FAILURE) { return EXIT_FAILURE; }
 	}	
 	
 	printf("=============================================================\n");
@@ -1161,7 +1168,7 @@ int main(int argc, char** argv)
 
 	calculateTimes(&t_timeEndGeneration, &tm_timeEndGeneration, &timeValEndGeneration);
 	strftime(timeEndGeneration, sizeof timeEndGeneration, "%Y-%m-%d %H:%M:%S", &tm_timeEndGeneration);
-	//printValuesHackRFOne();
+	printValuesHackRFOne();
 
 	/* END GENERATION */
 
