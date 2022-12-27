@@ -611,27 +611,49 @@ int generateFitsFile(char fileFitsName[], float*samples, struct tm localTimeFirs
  * @note   
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int writeHackrfDataIntoTxtFiles()
+int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLast)
 {
     int i = 0;
     int nElements = naxes[1] * TRIGGERING_TIMES;
     FILE* samplesFile = NULL;
     FILE* frequenciesFile = NULL;
     FILE* timingFile = NULL;
+    FILE* headerFile = NULL;
     
     char samplePath[] = "samples.txt";
     char frequencyPath[] = "frequencies.txt";
     char timingPath[] = "times.txt";
+    char headerPath[] = "header_times.txt";
 
-    printf("generationFits | writeHackrfDataIntoTxtFiles() | Data will be stored into files %s , %s, %s\n", samplePath, frequencyPath, timingPath);
+    char dateStart[70]; // Time of observation
+   	strftime(dateStart, sizeof dateStart,"%Y/%m/%d", &localTimeFirst);
+
+    char time_obs[70]; // Time observation starts
+    char user_buf[70]; //msconds
+
+    strftime(time_obs, sizeof time_obs, "%H:%M:%S", &localTimeFirst); 
+    strcat(time_obs, ".");
+    sprintf(user_buf, "%03d", (int)timeValStartSweeping.tv_usec);
+    strncat(time_obs, user_buf, 3);
+
+    char date_end[70]; // Date observation ends
+    strftime(date_end, sizeof date_end, "%Y/%m/%d", &localTimeLast); 
+
+	char time_end[70]; // time observation ends
+	strftime(time_end, sizeof time_end, "%H:%M:%S", &localTimeLast); 
+
+
+    printf("generationFits | writeHackrfDataIntoTxtFiles() | Data will be stored into files %s , %s, %s, %s\n", samplePath, frequencyPath, timingPath, headerPath);
 
     if (samplePath == NULL || strstr(samplePath, ".txt")== NULL || 
-        frequencyPath == NULL || strstr(frequencyPath, ".txt") == NULL||
-        timingPath == NULL || strstr(timingPath, ".txt") == NULL)
+        frequencyPath == NULL || strstr(frequencyPath, ".txt") == NULL ||
+        timingPath == NULL || strstr(timingPath, ".txt") == NULL ||
+        headerPath == NULL || strstr(headerPath, ".txt") == NULL)
         {
             samplesFile = stdout;
             frequenciesFile = stdout;
             timingFile = stdout;
+            headerFile = stdout;
             
             fprintf(stderr, "generationFits | writeHackrfDataIntoTxtFiles() | Error extension incorrect. Should be .txt\n");
             return EXIT_FAILURE;
@@ -641,10 +663,11 @@ int writeHackrfDataIntoTxtFiles()
     {
         samplesFile = fopen(samplePath, "wb");        
         frequenciesFile = fopen(frequencyPath, "wb");        
-        timingFile = fopen(timingPath, "wb");        
+        timingFile = fopen(timingPath, "wb");   
+        headerFile = fopen(headerPath, "wb");     
     }
 
-    if (samplesFile == NULL || frequenciesFile == NULL || timingFile == NULL)
+    if (samplesFile == NULL || frequenciesFile == NULL || timingFile == NULL || headerFile == NULL)
     {
         fprintf(stderr, "generationFits | writeHackrfDataIntoTxtFiles() | Failed to open files\n");
         return EXIT_FAILURE; 
@@ -653,13 +676,14 @@ int writeHackrfDataIntoTxtFiles()
     // Set buffers to the files
     if(setvbuf(samplesFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS || 
        setvbuf(frequenciesFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS ||
-       setvbuf(timingFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS)
+       setvbuf(timingFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS ||
+       setvbuf(headerFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS)
        {
             fprintf(stderr, "generationFits | writeHackrfDataIntoTxtFiles() | setvbuf failed\n");
             return EXIT_FAILURE;
        }
 
-    // Write data
+    // Write data samples
     for (i = 0; i < nElements; i++)
     {
         fprintf(samplesFile, "%d", i);
@@ -668,6 +692,8 @@ int writeHackrfDataIntoTxtFiles()
             fprintf(samplesFile, "\n");
         }
     }
+
+    // Write data frequencies
     for (i = 0; i < naxes[1]; i++)
     {
         fprintf(frequenciesFile, "%d", i);
@@ -677,6 +703,7 @@ int writeHackrfDataIntoTxtFiles()
         }
     }
 
+    // Write data times
     for (i = 0; i < TRIGGERING_TIMES; i++)
     {
         fprintf(timingFile, "%d", i);
@@ -684,20 +711,30 @@ int writeHackrfDataIntoTxtFiles()
         {
             fprintf(timingFile, "\n");
         }
-        
     }
+
+    fprintf(headerFile, "%s\n", dateStart);
+    fprintf(headerFile, "%s\n",time_obs);
+    fprintf(headerFile, "%s\n", date_end);
+    fprintf(headerFile, "%s\n",time_end);
+    fprintf(headerFile, "%ld", getSecondsOfDayOfFirstSweeping(localTimeFirst));
+
+
 
     fflush(samplesFile);
     fflush(frequenciesFile);
     fflush(timingFile);
+    fflush(headerFile);
 
     if ((samplesFile != NULL && samplesFile != stdout) &&
         (frequenciesFile != NULL && frequenciesFile != stdout) &&
-        (timingFile != NULL && timingFile != stdout))
+        (timingFile != NULL && timingFile != stdout) &&
+        (headerFile != NULL && headerFile != stdout))
         {
             fclose(samplesFile);
             fclose(frequenciesFile);
             fclose(timingFile);
+            fclose(headerFile);
             printf("generationFits | writeHackrfDataIntoTxtFiles() | Files closed\n");
         }
 

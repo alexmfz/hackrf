@@ -18,7 +18,7 @@ else
 
     cd /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder
 
-    if [ "$3" -eq 0 ]
+    if [ "$3" -eq 1 ]
     then
       echo "...Fits file will be generate with C script..."
       ./hackrf_sweep -f$1:$2 -p$3

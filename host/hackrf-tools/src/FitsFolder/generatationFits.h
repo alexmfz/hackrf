@@ -32,4 +32,4 @@ int saveTimes(int i, int triggeringTimes, char* sweepingTime); // TODO: Wont be 
 int saveTimeSteps();
 int saveSamples(int i, float powerSample, int nElements); // TODO: Wont be used by the moment
 int checkSavedData(int nElements);
-int writeHackrfDataIntoTxtFiles();
+int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLast);

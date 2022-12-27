@@ -62,7 +62,7 @@ extern uint16_t frequencies[MAX_SWEEP_RANGES*2];
 extern uint32_t num_sweeps;
 extern int num_ranges;
 extern int result;
- extern char pathFits[];
+extern char pathFits[];
 extern unsigned int vga_gain;
 extern unsigned int lna_gain;
 extern uint32_t requested_fft_bin_width;
@@ -70,6 +70,8 @@ extern int fftSize;
 extern bool one_shot;
 extern bool finite_mode;
 extern float sampleRate;
+
+extern int generationMode;
 
 uint32_t nChannels = 200;
 
@@ -94,6 +96,7 @@ void usage() {
 	fprintf(stderr, "\t[-1] # one shot mode\n");
 	fprintf(stderr, "\t[-N num_sweeps] # Number of sweeps to perform\n");
 	fprintf(stderr, "\t-r filename # output file\n");
+	fprintf(stderr, "\t[-c generation mode] # generation mode (0 python; 1 C\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Output fields:\n");
 	fprintf(stderr, "\tdate, time, hz_low, hz_high, hz_bin_width, num_samples, dB, dB, . . .\n");
@@ -267,7 +270,7 @@ void assignGenericParameters()
  */
 int execApiBasicConfiguration(int opt, int argc, char**argv)
 {
-while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
+while( (opt = getopt(argc, argv, "a:c:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 		result = HACKRF_SUCCESS;
 		switch( opt ) 
 		{
@@ -279,6 +282,11 @@ while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 			amp = true;
 			result = parse_u32(optarg, &amp_enable);
 			break;
+
+		case 'c':
+			result = parse_u32(optarg, &generationMode);
+			break;
+			
 		case 'n':
 			result = parse_u32(optarg, &nChannels);
 			break;
@@ -358,6 +366,22 @@ while( (opt = getopt(argc, argv, "a:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 			usage();
 			return EXIT_FAILURE;
 		}		
+	}
+
+	if (generationMode == 0)
+	{
+		printf("functions | execApiBasicConfiguration() | Generation of fits file will be with Python\n");
+	}
+
+	else if (generationMode == 1)
+	{
+		printf("functions | execApiBasicConfiguration() | Generation of fits file will be with C\n");
+	}
+
+	else
+	{
+		printf("functions | execApiBasicConfiguration() | Error. Generation Mode not recognise. Use 0 for Python or 1 for C\nExample: hackrf_sweep -f45:245 -c1\n");
+		return EXIT_FAILURE;
 	}
 
 	assignGenericParameters();

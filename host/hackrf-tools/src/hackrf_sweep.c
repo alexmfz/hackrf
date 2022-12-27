@@ -82,6 +82,7 @@ int numberOfSteps = 0; // Number of channels
 float sampleRate = 0; // Custom sample rate 
 
 char pathFits[50]; // File name of fits file
+int generationMode = 5; // Generation Mode (0 python; 0 C)
 extern long naxes[2]; // Number of axis of fits file
 
 extern float *frequencyDataRanges; // Frecuency Datas of the sweeping in ranges
@@ -1078,14 +1079,18 @@ static int runGeneration(struct tm localTimeFirst, struct tm localTimeLast)
 	
 	printf("hackrf_sweep | runGeneration() | reorganizeSamples() | Execution Success;\n");
 	// add input argument to generate throught C or python
-
-	/*if((generateFitsFile(pathFits,
-						samplesOrdered,
-						localTimeFirst, localTimeLast,
-						freq_min)) == EXIT_FAILURE) { return EXIT_FAILURE; }*/
-
-	if (writeHackrfDataIntoTxtFiles() == EXIT_FAILURE) { return EXIT_FAILURE; }
-
+	if (generationMode == 1)
+	{
+		if((generateFitsFile(pathFits,
+							samplesOrdered,
+							localTimeFirst, localTimeLast,
+							freq_min)) == EXIT_FAILURE) { return EXIT_FAILURE; }
+	}
+	
+	else
+	{
+		if (writeHackrfDataIntoTxtFiles(localTimeFirst, localTimeLast) == EXIT_FAILURE) { return EXIT_FAILURE; }
+	}	
 	
 	printf("=============================================================\n");
 	printf("hackrf_sweep | runGeneration() | Execution Success\n");

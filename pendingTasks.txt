@@ -20,4 +20,4 @@ Status:  OK | PENDING
 18: TODO: Finish generationFits.py
 19: Generate .txt of power samples/times/frequencies as input of generationFits.py --> OK
 20: TODO: Make tests for integration python and C scripts
-21. TODO: Add input argument
+21. Add input argument for generation mode --> OK
