@@ -16,7 +16,7 @@
 #include <inttypes.h>
 
 // -I/usr/local/src/cfitsio-4.1.0 -lcfitsio
-#define TRIGGERING_TIMES (5) //3600
+#define TRIGGERING_TIMES (3600) //3600
 #define FD_BUFFER_SIZE  (8*1024)
 /*** Global Variables***/
 fitsfile *fptr =NULL;
@@ -36,6 +36,7 @@ int8_t array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
 extern struct timeval timeValStartSweeping;
 extern struct tm timeFirstSweeping;
 extern float step_value;
+extern FILE* hackrfLogsFile;
 
 /********************/
 
@@ -91,7 +92,6 @@ float maxData(float * samples)
 long getSecondsOfDayOfFirstSweeping(struct tm timeFirstSweeping)
 {
     long sec_of_day = timeFirstSweeping.tm_hour*3600 + timeFirstSweeping.tm_min*60 + timeFirstSweeping.tm_sec;
-    printf("Sec of day: %ld\n", sec_of_day);
     return sec_of_day;
 }
 
@@ -107,36 +107,36 @@ int createFile(char fileFitsName[])
     fits_file_exists(fileFitsName, &exist, &status);
     if(exist == 1)
     {
-        printf("generationFits | createFile() | File already exists. Overwritting fits file\n");
+        fprintf(hackrfLogsFile, "generationFits | createFile() | File already exists. Overwritting fits file\n");
         if(fits_open_file(&fptr, fileFitsName, READWRITE, &status))
         {
-            fprintf(stderr, "generationFits | createFile() | Was not possible to open the file\n");
+            fprintf(hackrfLogsFile, "generationFits | createFile() | Was not possible to open the file\n");
             return EXIT_FAILURE;
         }
         
         if(fits_delete_file(fptr,&status))
         {
-            fprintf(stderr,"generationFits | createFile() | Was not possible to delete the file\n");
+            fprintf(hackrfLogsFile, "generationFits | createFile() | Was not possible to delete the file\n");
             return EXIT_FAILURE;
         }
         if(fits_create_file(&fptr, fileFitsName, &status))
         {
-            fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
+            fprintf(hackrfLogsFile, "generationFits | createFile() | Was not possible to create the file\n");
             return EXIT_FAILURE;
         }
         
-        printf("generationFits | createFile() | Execution Sucess. File overwrriten: %s\n", fileFitsName);
+        fprintf(hackrfLogsFile, "generationFits | createFile() | Execution Sucess. File overwrriten: %s\n", fileFitsName);
         return EXIT_SUCCESS;
     }
     else //if not exist
     {
         if(fits_create_file(&fptr, fileFitsName, &status))
         {
-            fprintf(stderr, "generationFits | createFile() | Was not possible to create the file\n");
+            fprintf(hackrfLogsFile, "generationFits | createFile() | Was not possible to create the file\n");
             return EXIT_FAILURE;
         }
 
-        printf("generationFits | createFile() | Execution Sucess\n");
+        fprintf(hackrfLogsFile, "generationFits | createFile() | Execution Sucess\n");
         return EXIT_SUCCESS;
     }
 }
@@ -151,11 +151,11 @@ int createImage()
     /*create the primary array image*/
     if(fits_create_img(fptr, BYTE_IMG, naxis, naxes, &status))
     {
-        fprintf(stderr, "generationFits | createImage() | Was not possible to create the image\n");
+        fprintf(hackrfLogsFile, "generationFits | createImage() | Was not possible to create the image\n");
         return EXIT_FAILURE;
     }
 
-    printf("generationFits | createImage() | Execution Success\n");
+    fprintf(hackrfLogsFile, "generationFits | createImage() | Execution Success\n");
     return EXIT_SUCCESS;
 }
 
@@ -189,7 +189,7 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
     strftime(content, sizeof content, "%Y/%m/%d", &localTimeFirst);
     strcat(content, " Radio Flux density, HackRF-One (Spain)");
 
-    printf("generationFits | updateHeadersFitsFileImage() | Updating fits headers to format\n");
+    fprintf(hackrfLogsFile, "generationFits | updateHeadersFitsFileImage() | Updating fits headers to format\n");
 
     double bzero = 0., bscale = 1.;
     float dataMax = maxData(samples), dataMin= minData(samples);
@@ -247,7 +247,7 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
 
     fits_update_key(fptr, TLONG, "PWM_VAL", &pwm_val, "PWM value to control tuner gain", &status);
 
-    printf("generationFits | updateHeadersFitsFile() | Execution Sucess\n");
+    fprintf(hackrfLogsFile, "generationFits | updateHeadersFitsFile() | Execution Sucess\n");
 }
 
 /**
@@ -259,7 +259,7 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
 int insertDataImage(float* samples)
 {
     /*Initialize the values in the image with a linear ramp function*/
-    printf("generationFits | insertDta() | Inserting data...\n");
+    fprintf(hackrfLogsFile, "generationFits | insertDta() | Inserting data...\n");
     int id = 0;
     for(ii= 0; ii< naxes[0]; ii++ ) 
     {        
@@ -271,16 +271,16 @@ int insertDataImage(float* samples)
         
     }
     
-    printf("generationFits | insertDataImage() | Inserting data finished. Creating fits image...\n");
+    fprintf(hackrfLogsFile, "generationFits | insertDataImage() | Inserting data finished. Creating fits image...\n");
 
     /*Write the array of integers of the image*/
     if(fits_write_img(fptr, TBYTE, fpixel, nElements, array_img[0], &status))
     {
-        fprintf(stderr, "generationFits | insertDataImage() | Was not possible to write data into the image");
+        fprintf(hackrfLogsFile, "generationFits | insertDataImage() | Was not possible to write data into the image");
         return EXIT_FAILURE;
     }
 
-    printf("generationFits | insertDataImage() | Execution Sucess\n");
+    fprintf(hackrfLogsFile, "generationFits | insertDataImage() | Execution Sucess\n");
     return EXIT_SUCCESS;
 }
 
@@ -301,16 +301,16 @@ int createBinTable()
 
     char *extname = {"BINARY TABLE"}; // Name of the table
 
-    printf("generationFits | createBinTable() | Creating Binary table\n");
+    fprintf(hackrfLogsFile, "generationFits | createBinTable() | Creating Binary table\n");
 
     /*create the binary table*/
     if(fits_create_tbl(fptr, BINARY_TBL, nRows, nCols, ttype, tform, tunit, NULL, &status))
     {
-        fprintf(stderr, "generationFits | createBinTable() | Was not possible to create the binary table\n");
+        fprintf(hackrfLogsFile, "generationFits | createBinTable() | Was not possible to create the binary table\n");
         return EXIT_FAILURE;
     }
 
-    printf("generationFits | createBinTable() | Execution Sucess\n");
+    fprintf(hackrfLogsFile, "generationFits | createBinTable() | Execution Sucess\n");
     return EXIT_SUCCESS;
 }
 
@@ -329,7 +329,7 @@ void updateHeadersFitsFileBinTable()
     fits_update_key(fptr, TDOUBLE, "TSCALE2", &tscale, "Scaling factor", &status);  // Scaling factor
     fits_update_key(fptr, TDOUBLE, "TZERO2", &tzero, "Scaling offset", &status); // Scaling offset
 
-    printf("generationFits | updateHeadersFitsFileBinTable() | Execution Sucess\n");
+    fprintf(hackrfLogsFile, "generationFits | updateHeadersFitsFileBinTable() | Execution Sucess\n");
 }
 
 /**
@@ -341,28 +341,28 @@ void updateHeadersFitsFileBinTable()
  */
 int insertDataBinTable(float* times, float* frequencies)
 {
-    printf("generationFits | insertDataBinTable() | Inserting data into the binary table\n");
+    fprintf(hackrfLogsFile, "generationFits | insertDataBinTable() | Inserting data into the binary table\n");
     
     if (times == NULL || frequencies == NULL)
     {
-        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting data into the binary table failed\n");
+        fprintf(hackrfLogsFile, "generationFits | insertDataBinTable() | Inserting data into the binary table failed\n");
         return EXIT_FAILURE;
     }   
 
 
     if (fits_write_col(fptr, TFLOAT, 1, 1, 1, naxes[0], times, &status)) 
     {
-        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting time datas into col failed\n");
+        fprintf(hackrfLogsFile, "generationFits | insertDataBinTable() | Inserting time datas into col failed\n");
         return EXIT_FAILURE;
     }
 
     if (fits_write_col(fptr, TFLOAT, 2, 1, 1, naxes[1], frequencies, &status)) 
     {
-        fprintf(stderr, "generationFits | insertDataBinTable() | Inserting frequency datas into col failed\n");
+        fprintf(hackrfLogsFile, "generationFits | insertDataBinTable() | Inserting frequency datas into col failed\n");
         return EXIT_FAILURE;
     }
 
-    printf("generationFits | insertDataBinTable() | Execution Success\n");
+    fprintf(hackrfLogsFile, "generationFits | insertDataBinTable() | Execution Success\n");
     return EXIT_SUCCESS;
 }
 
@@ -377,7 +377,7 @@ void closeFits()
     fits_close_file(fptr, &status);
     fits_report_error(stderr, status);
     
-    printf("generationFits | closeFits() | Execution Sucess\n");
+    fprintf(hackrfLogsFile, "generationFits | closeFits() | Execution Sucess\n");
 }
 
 /**
@@ -393,7 +393,7 @@ int saveFrequencies(uint32_t freq_min, uint32_t freq_max, int n_ranges, float st
     int i = 0;
     float actualFrequency = (float)freq_min;
     float actualFrequencyAux = (float)freq_min;
-    printf("generationFits | saveFrequencies() | Start saving index data frequencies in ranges to generate fits file\n");
+    fprintf(hackrfLogsFile, "generationFits | saveFrequencies() | Start saving index data frequencies in ranges to generate fits file\n");
     
     frequencyDataRanges = (float*)calloc(n_ranges,sizeof(float));
     frequencyDatas = (float*)calloc(naxes[1], sizeof(float));
@@ -406,11 +406,11 @@ int saveFrequencies(uint32_t freq_min, uint32_t freq_max, int n_ranges, float st
     
     if (frequencyDataRanges == NULL && frequencyDataRanges[n_ranges] != freq_max) 
     {
-        fprintf(stderr, "generationFits | saveFrequencies() | Was not possible to save frequencies by ranges.\n");
+        fprintf(hackrfLogsFile, "generationFits | saveFrequencies() | Was not possible to save frequencies by ranges.\n");
         return EXIT_FAILURE; 
     }
     
-    printf("generationFits | saveFrequencies() | Start saving index data frequencies by steps to generate fits file\n");
+    fprintf(hackrfLogsFile, "generationFits | saveFrequencies() | Start saving index data frequencies by steps to generate fits file\n");
     
     for (i = 0; i< naxes[1]; i++)
     {
@@ -420,11 +420,11 @@ int saveFrequencies(uint32_t freq_min, uint32_t freq_max, int n_ranges, float st
 
      if (frequencyDatas == NULL && frequencyDatas[naxes[1]] != freq_max) 
     {
-        fprintf(stderr, "generationFits | saveFrequencies() | Was not possible to save frequencies by steps.\n");
+        fprintf(hackrfLogsFile, "generationFits | saveFrequencies() | Was not possible to save frequencies by steps.\n");
         return EXIT_FAILURE; 
     }
 
-    printf("generationFits | saveFrequencies() | Execution Sucess.\n");
+    fprintf(hackrfLogsFile, "generationFits | saveFrequencies() | Execution Sucess.\n");
     return EXIT_SUCCESS; 
     
 }
@@ -441,7 +441,7 @@ int saveTimes(int i, int triggeringTimes, char* sweepingTime)
 {
     if (i == 0)
     {
-        printf("generationFits | saveTimes() | Start saving index data to generate fits file\n");
+        fprintf(hackrfLogsFile, "generationFits | saveTimes() | Start saving index data to generate fits file\n");
     }
     
     // Saving step
@@ -450,13 +450,13 @@ int saveTimes(int i, int triggeringTimes, char* sweepingTime)
     // Checks
     if (strcmp(timeDatas[i], "") == 0)
     {
-        fprintf(stderr, "generationFits | saveTimes() | Was not possible to save timing data\n");
+        fprintf(hackrfLogsFile, "generationFits | saveTimes() | Was not possible to save timing data\n");
         return EXIT_FAILURE;
     }
 
     if (i == triggeringTimes-1)
     {
-        printf("generationFits | saveTimes() | Execution Sucess\n");
+        fprintf(hackrfLogsFile, "generationFits | saveTimes() | Execution Sucess\n");
     }
 
     return EXIT_SUCCESS;
@@ -472,12 +472,12 @@ int saveTimeSteps()
     int i = 0;
     float previousTime = 0;
 
-    printf("generationFits | saveTimeSteps() | Start Saving time by steps\n");
+    fprintf(hackrfLogsFile, "generationFits | saveTimeSteps() | Start Saving time by steps\n");
     timeSteps = (float*)calloc(TRIGGERING_TIMES, sizeof(float));
     
     if(timeSteps == NULL)
     {
-        fprintf(stderr, "generationFits | saveTimeSteps() | Was not possible to allocate mmeory.\n");
+        fprintf(hackrfLogsFile, "generationFits | saveTimeSteps() | Was not possible to allocate mmeory.\n");
         return EXIT_FAILURE;
     }
     
@@ -487,7 +487,7 @@ int saveTimeSteps()
         previousTime += 0.25;
     }
 
-    printf("generationFits | saveTimeSteps() | Execution Success\n");
+    fprintf(hackrfLogsFile, "generationFits | saveTimeSteps() | Execution Success\n");
     return EXIT_SUCCESS;
 }
 
@@ -502,7 +502,7 @@ int saveSamples(int i, float powerSample, int nElements)
 {
     if (i == 0)
     {
-        printf("generationFits | saveSamples() | Start saving power sample data to generate fits file\n");
+        fprintf(hackrfLogsFile, "generationFits | saveSamples() | Start saving power sample data to generate fits file\n");
         samples = (float*)calloc(nElements,sizeof(float));
         samples[i] = powerSample;
     }
@@ -514,13 +514,13 @@ int saveSamples(int i, float powerSample, int nElements)
     
     if (samples == NULL)
     {
-        fprintf(stderr, "generationFits | saveSamples() | Was not possible to save power samples\n");
+        fprintf(hackrfLogsFile, "generationFits | saveSamples() | Was not possible to save power samples\n");
         return EXIT_FAILURE;
     }
 
     if (i == nElements-1)
     {
-        printf("generationFits | saveSamples() | Execution Sucess\n");
+        fprintf(hackrfLogsFile, "generationFits | saveSamples() | Execution Sucess\n");
     }
 
     return EXIT_SUCCESS;
@@ -535,30 +535,30 @@ int saveSamples(int i, float powerSample, int nElements)
 int checkSavedData(int nElements)
 {
     int i = 0;
-    printf("generationFits | checkSavedData() | Start checking saved times data to generate fits file\n");
+    fprintf(hackrfLogsFile, "generationFits | checkSavedData() | Start checking saved times data to generate fits file\n");
     
     // Check timing data
-    for (i = 0; i < TRIGGERING_TIMES; i++)
+  /*  for (i = 0; i < TRIGGERING_TIMES; i++) TODO: REMOVE COMMENT
     {
         if (strcmp(timeDatas[i], "") == 0)
         {
-            fprintf(stderr, "generationFits | checkSavedData() | Was not possible to save timing data\n");
+            fprintf(hackrfLogsFile, "generationFits | checkSavedData() | Was not possible to save timing data\n");
             return EXIT_FAILURE;
         }
     }
-
-    printf("generationFits | checkSavedData() | Start checking saved power sample data to generate fits file\n");
+*/
+    fprintf(hackrfLogsFile, "generationFits | checkSavedData() | Start checking saved power sample data to generate fits file\n");
     // Check power sample data
     for (i = 0; i < nElements; i++)
     {
         if (samples[i] == 0)
         {
-            fprintf(stderr, "Data not saved correctly\n");
+            fprintf(hackrfLogsFile, "Data not saved correctly\n");
             return EXIT_FAILURE;
         }
     }
 
-    printf("generationFits | checkSavedData() | Execution Sucess\n");
+    fprintf(hackrfLogsFile, "generationFits | checkSavedData() | Execution Sucess\n");
     return EXIT_SUCCESS;
 }
 
@@ -576,7 +576,7 @@ int generateFitsFile(char fileFitsName[], float*samples, struct tm localTimeFirs
 {   
     nElements = naxes[0]*naxes[1];
 
-    printf("generationFits | generateFitsFile() | Start generating fits file\n");
+    fprintf(hackrfLogsFile, "generationFits | generateFitsFile() | Start generating fits file\n");
     
     // Creation of file
     if (createFile(fileFitsName) == EXIT_FAILURE) { return EXIT_FAILURE; }
@@ -602,7 +602,7 @@ int generateFitsFile(char fileFitsName[], float*samples, struct tm localTimeFirs
     //CloseFile
     closeFits();
 
-    printf("generationFits | generateFitsFile() | Execution Sucess\n");
+    fprintf(hackrfLogsFile, "generationFits | generateFitsFile() | Execution Sucess\n");
     return EXIT_SUCCESS;
 }
 
@@ -643,7 +643,7 @@ int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLas
 	strftime(time_end, sizeof time_end, "%H:%M:%S", &localTimeLast); 
 
 
-    printf("generationFits | writeHackrfDataIntoTxtFiles() | Data will be stored into files %s , %s, %s, %s\n", samplePath, frequencyPath, timingPath, headerPath);
+    fprintf(hackrfLogsFile, "generationFits | writeHackrfDataIntoTxtFiles() | Data will be stored into files %s , %s, %s, %s\n", samplePath, frequencyPath, timingPath, headerPath);
 
     if (samplePath == NULL || strstr(samplePath, ".txt")== NULL || 
         frequencyPath == NULL || strstr(frequencyPath, ".txt") == NULL ||
@@ -655,7 +655,7 @@ int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLas
             timingFile = stdout;
             headerFile = stdout;
             
-            fprintf(stderr, "generationFits | writeHackrfDataIntoTxtFiles() | Error extension incorrect. Should be .txt\n");
+            fprintf(hackrfLogsFile, "generationFits | writeHackrfDataIntoTxtFiles() | Error extension incorrect. Should be .txt\n");
             return EXIT_FAILURE;
         }
 
@@ -669,7 +669,7 @@ int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLas
 
     if (samplesFile == NULL || frequenciesFile == NULL || timingFile == NULL || headerFile == NULL)
     {
-        fprintf(stderr, "generationFits | writeHackrfDataIntoTxtFiles() | Failed to open files\n");
+        fprintf(hackrfLogsFile, "generationFits | writeHackrfDataIntoTxtFiles() | Failed to open files\n");
         return EXIT_FAILURE; 
     }
 
@@ -679,7 +679,7 @@ int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLas
        setvbuf(timingFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS ||
        setvbuf(headerFile, NULL, _IOFBF, FD_BUFFER_SIZE) != EXIT_SUCCESS)
        {
-            fprintf(stderr, "generationFits | writeHackrfDataIntoTxtFiles() | setvbuf failed\n");
+            fprintf(hackrfLogsFile, "generationFits | writeHackrfDataIntoTxtFiles() | setvbuf failed\n");
             return EXIT_FAILURE;
        }
 
@@ -719,8 +719,6 @@ int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLas
     fprintf(headerFile, "%s\n",time_end);
     fprintf(headerFile, "%ld", getSecondsOfDayOfFirstSweeping(localTimeFirst));
 
-
-
     fflush(samplesFile);
     fflush(frequenciesFile);
     fflush(timingFile);
@@ -735,9 +733,9 @@ int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLas
             fclose(frequenciesFile);
             fclose(timingFile);
             fclose(headerFile);
-            printf("generationFits | writeHackrfDataIntoTxtFiles() | Files closed\n");
+            fprintf(hackrfLogsFile, "generationFits | writeHackrfDataIntoTxtFiles() | Files closed\n");
         }
 
-    printf("generationFits | writeHackrfDataIntoTxtFiles() | Execution Success\n");
+    fprintf(hackrfLogsFile, "generationFits | writeHackrfDataIntoTxtFiles() | Execution Success\n");
     return EXIT_SUCCESS;
 }

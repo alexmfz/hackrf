@@ -5,6 +5,10 @@ rm hackrf_sweep
 rm hackrf_info
 
 cd /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder
+rm samples.txt
+rm header_times.txt
+rm times.txt
+rm frequencies.txt
 rm hackrf_sweep
 rm hackrf_info
 echo "Executable hackrf_sweep successfully removed"

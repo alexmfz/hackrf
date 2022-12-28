@@ -1,4 +1,3 @@
-v3.7:
+v3.7.2:
 
-- Added generation of header_times.txt to provide the input for python script fits file header_times
-- Added new input argument to check if the generation will be with python or C
+- Added log text file to have a report

@@ -39,7 +39,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFT_DEFAULT_SIZE	(20)
 
-#define TRIGGERING_TIMES (5) //3600
+#define TRIGGERING_TIMES (3600) //3600
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)
@@ -74,7 +74,7 @@ extern float sampleRate;
 extern int generationMode;
 
 uint32_t nChannels = 200;
-
+extern FILE* hackrfLogsFile;
 /*******/
 
 /**
@@ -83,24 +83,24 @@ uint32_t nChannels = 200;
  * @retval None
  */
 void usage() {
-	fprintf(stderr, "Usage:\n");
-	fprintf(stderr, "\t[-h] # this help\n");
-	fprintf(stderr, "\t[-d serial_number] # Serial number of desired HackRF\n");
-	fprintf(stderr, "\t[-a amp_enable] # RX RF amplifier 1=Enable, 0=Disable\n");
-	fprintf(stderr, "\t[-f freq_min:freq_max] # minimum and maximum frequencies in MHz\n");
-	fprintf(stderr, "\t[-n number channels] # Number of channels, default value = 200");
-	fprintf(stderr, "\t[-p antenna_enable] # Antenna port power, 1=Enable, 0=Disable\n");
-	fprintf(stderr, "\t[-l gain_db] # RX LNA (IF) gain, 0-40dB, 8dB steps\n");
-	fprintf(stderr, "\t[-g gain_db] # RX VGA (baseband) gain, 0-62dB, 2dB steps\n");
-	fprintf(stderr, "\t[-w bin_width] # FFT bin width (frequency resolution) in Hz, 2445-5000000\n");
-	fprintf(stderr, "\t[-1] # one shot mode\n");
-	fprintf(stderr, "\t[-N num_sweeps] # Number of sweeps to perform\n");
-	fprintf(stderr, "\t-r filename # output file\n");
-	fprintf(stderr, "\t[-c generation mode] # generation mode (0 python; 1 C\n");
-	fprintf(stderr, "\n");
-	fprintf(stderr, "Output fields:\n");
-	fprintf(stderr, "\tdate, time, hz_low, hz_high, hz_bin_width, num_samples, dB, dB, . . .\n");
-	printf("functions | Usage\n");
+	fprintf(hackrfLogsFile, "Usage:\n");
+	fprintf(hackrfLogsFile, "\t[-h] # this help\n");
+	fprintf(hackrfLogsFile, "\t[-d serial_number] # Serial number of desired HackRF\n");
+	fprintf(hackrfLogsFile, "\t[-a amp_enable] # RX RF amplifier 1=Enable, 0=Disable\n");
+	fprintf(hackrfLogsFile, "\t[-f freq_min:freq_max] # minimum and maximum frequencies in MHz\n");
+	fprintf(hackrfLogsFile, "\t[-n number channels] # Number of channels, default value = 200");
+	fprintf(hackrfLogsFile, "\t[-p antenna_enable] # Antenna port power, 1=Enable, 0=Disable\n");
+	fprintf(hackrfLogsFile, "\t[-l gain_db] # RX LNA (IF) gain, 0-40dB, 8dB steps\n");
+	fprintf(hackrfLogsFile, "\t[-g gain_db] # RX VGA (baseband) gain, 0-62dB, 2dB steps\n");
+	fprintf(hackrfLogsFile, "\t[-w bin_width] # FFT bin width (frequency resolution) in Hz, 2445-5000000\n");
+	fprintf(hackrfLogsFile, "\t[-1] # one shot mode\n");
+	fprintf(hackrfLogsFile, "\t[-N num_sweeps] # Number of sweeps to perform\n");
+	fprintf(hackrfLogsFile, "\t-r filename # output file\n");
+	fprintf(hackrfLogsFile, "\t[-c generation mode] # generation mode (0 python; 1 C\n");
+	fprintf(hackrfLogsFile, "\n");
+	fprintf(hackrfLogsFile, "Output fields:\n");
+	fprintf(hackrfLogsFile, "\tdate, time, hz_low, hz_high, hz_bin_width, num_samples, dB, dB, . . .\n\n");
+
 }
 
 /**
@@ -181,7 +181,7 @@ void generateDynamicName(struct tm baseName)
 	strcat(date, suffix);
 	strcat(preffix,date);
 	strcpy(pathFits, preffix);
-	fprintf(stderr, "Filename: %s\n", pathFits);
+
 }
 
 /**
@@ -191,8 +191,8 @@ void generateDynamicName(struct tm baseName)
  */
 int assignFitsParameters()
 {
-	printf("functions | assignFitsParameters() | Assigning parameters of fits file\n");
-	printf("functions | assignFitsParameters() | Filaname: %s\n",pathFits);
+	fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Assigning parameters of fits file\n");
+	fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Filaname: %s\n",pathFits);
 
 	if(strstr(pathFits, "fit") != NULL)
 	{
@@ -202,33 +202,33 @@ int assignFitsParameters()
 
 		if(naxes[1] <=2)
 		{
-			fprintf(stderr, "functions | assignFitsParameters() | Number of steps cannot be less than 0");
+			fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Number of steps cannot be less than 0");
 			return EXIT_FAILURE;
 		}
 
 		if(naxes[0] <= 0)
 		{
-			fprintf(stderr, "functions | assignFitsParameters() | Number of samples cannot be less than 0");
+			fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Number of samples cannot be less than 0");
 			return EXIT_FAILURE;
 		}
 
 		/*Creating Fits File*/
-		printf("functions | assignFitsParameters() | Receiving measures and saving as a FITS file\n\n||===Parameters FITS file===||\n");
-		printf("functions | assignFitsParameters() | Freq min: %d\n", freq_min);
-		printf("functions | assignFitsParameters() | Freq max: %d\n", freq_max);
-		printf("functions | assignFitsParameters() | Step Value: %f\n",step_value);
-		printf("functions | assignFitsParameters() | Number of steps(X): %ld\n",naxes[0]);
-		printf("functions | assignFitsParameters() | Number of samples(Z) per frequency: %d\n", fftSize/4);
-		printf("functions | assignFitsParameters() | Number of total samples : %ld\n", naxes[0]*naxes[1]);
+		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Receiving measures and saving as a FITS file\n\n||===Parameters FITS file===||\n");
+		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Freq min: %d\n", freq_min);
+		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Freq max: %d\n", freq_max);
+		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Step Value: %f\n",step_value);
+		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Number of steps(X): %ld\n",naxes[0]);
+		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Number of samples(Z) per frequency: %d\n", fftSize/4);
+		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Number of total samples : %ld\n", naxes[0]*naxes[1]);
 		
 		if(pathFits==NULL )
 		{
-			fprintf(stderr, "functions | assignFitsParameters() | File not able\n");
+			fprintf(hackrfLogsFile, "functions | assignFitsParameters() | File not able\n");
 			return EXIT_FAILURE;
 		}
 	}
 	
-	printf("functions | assignFitsParameters() | Execution Sucess\n");
+	fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Execution Sucess\n");
 	return EXIT_SUCCESS;
 }
 
@@ -239,7 +239,7 @@ int assignFitsParameters()
  */
 void assignGenericParameters()
 {
-	printf("functions | assignGenericParameters() | Assigning parameters of API\n ===GENERIC PARAMS===\n");
+	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Assigning parameters of API\n ===GENERIC PARAMS===\n");
 	
 	numberOfSteps = nChannels;
 	fftSize = FFT_DEFAULT_SIZE;
@@ -252,13 +252,13 @@ void assignGenericParameters()
 
 //	fftSize = sampleRate/requested_fft_bin_width;
 
-	printf("functions | assignGenericParameters() | Number of Channels: %d\n", nChannels);
-	printf("functions | assignGenericParameters() | Step Value: %f MHz\n", step_value);
-	printf("functions | assignGenericParameters() | Sample Rate: %f MHz\n", sampleRate);
-	printf("functions | assignGenericParameters() | FFT size: %d\n", fftSize);	
-	printf("functions | assignGenericParameters() | Samples per channel: %d\n", fftSize/4);
+	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Number of Channels: %d\n", nChannels);
+	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Step Value: %f MHz\n", step_value);
+	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Sample Rate: %f MHz\n", sampleRate);
+	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | FFT size: %d\n", fftSize);	
+	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Samples per channel: %d\n", fftSize/4);
 
-	printf("functions | assignGenericParameters() | Execution Success\n");
+	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Execution Success\n");
 }
 
 /**
@@ -294,20 +294,20 @@ while( (opt = getopt(argc, argv, "a:c:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 		case 'f':
 			result = parse_u32_range(optarg, &freq_min, &freq_max);
 			if(freq_min >= freq_max) {
-				fprintf(stderr,
+				fprintf(hackrfLogsFile, 
 						"functions | showMenu | argument error: freq_max must be greater than freq_min.\n");
 				usage();
 				return EXIT_FAILURE;
 			}
 			if(FREQ_MAX_MHZ <freq_max) {
-				fprintf(stderr,
+				fprintf(hackrfLogsFile, 
 						"functions | showMenu | argument error: freq_max may not be higher than %u.\n",
 						FREQ_MAX_MHZ);
 				usage();
 				return EXIT_FAILURE;
 			}
 			if(MAX_SWEEP_RANGES <= num_ranges) {
-				fprintf(stderr,
+				fprintf(hackrfLogsFile, 
 						"functions | showMenu | argument error: specify a maximum of %u frequency ranges.\n",
 						MAX_SWEEP_RANGES);
 				usage();
@@ -356,13 +356,13 @@ while( (opt = getopt(argc, argv, "a:c:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 			return EXIT_SUCCESS;
 
 		default:
-			fprintf(stderr, "functions | showMenu | unknown argument '-%c %s'\n", opt, optarg);
+			fprintf(hackrfLogsFile,  "functions | showMenu | unknown argument '-%c %s'\n", opt, optarg);
 			usage();
 			return EXIT_FAILURE;
 		}
 		
 		if( result != HACKRF_SUCCESS ) {
-			fprintf(stderr, "functions | showMenu | argument error: '-%c %s' %s (%d)\n", opt, optarg, hackrf_error_name(result), result);
+			fprintf(hackrfLogsFile,  "functions | showMenu | argument error: '-%c %s' %s (%d)\n", opt, optarg, hackrf_error_name(result), result);
 			usage();
 			return EXIT_FAILURE;
 		}		
@@ -370,17 +370,17 @@ while( (opt = getopt(argc, argv, "a:c:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 
 	if (generationMode == 0)
 	{
-		printf("functions | execApiBasicConfiguration() | Generation of fits file will be with Python\n");
+		fprintf(hackrfLogsFile, "functions | execApiBasicConfiguration() | Generation of fits file will be with Python\n");
 	}
 
 	else if (generationMode == 1)
 	{
-		printf("functions | execApiBasicConfiguration() | Generation of fits file will be with C\n");
+		fprintf(hackrfLogsFile, "functions | execApiBasicConfiguration() | Generation of fits file will be with C\n");
 	}
 
 	else
 	{
-		printf("functions | execApiBasicConfiguration() | Error. Generation Mode not recognise. Use 0 for Python or 1 for C\nExample: hackrf_sweep -f45:245 -c1\n");
+		fprintf(hackrfLogsFile, "functions | execApiBasicConfiguration() | Error. Generation Mode not recognise. Use 0 for Python or 1 for C\nExample: hackrf_sweep -f45:245 -c1\n");
 		return EXIT_FAILURE;
 	}
 

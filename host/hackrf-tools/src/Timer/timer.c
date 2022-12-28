@@ -20,6 +20,7 @@
 struct itimerval timer;    
 struct timeval preTriggering;
 struct timeval postTriggering;
+extern FILE* hackrfLogsFile;
 
 
 /**
@@ -29,11 +30,11 @@ struct timeval postTriggering;
  */
 void setTimerParams()
 {
-    printf ("timer | setTimerParams() | Configuration timer parameters\n");
+    fprintf(hackrfLogsFile, "timer | setTimerParams() | Configuration timer parameters\n");
     timer.it_value.tv_sec = 0;
     timer.it_value.tv_usec = INTERVAL;
     timer.it_interval = timer.it_value;
 
-    printf("timer | setTimerParams() | Value interval: %ld us\n", timer.it_interval.tv_usec);
-    printf("timer | setTimerParams() | Execution Success\n");
+    fprintf(hackrfLogsFile, "timer | setTimerParams() | Value interval: %ld us\n", timer.it_interval.tv_usec);
+    fprintf(hackrfLogsFile, "timer | setTimerParams() | Execution Success\n");
 }
