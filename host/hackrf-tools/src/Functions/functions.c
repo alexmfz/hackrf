@@ -39,7 +39,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFT_DEFAULT_SIZE	(20)
 
-#define TRIGGERING_TIMES (3600) //3600
+#define TRIGGERING_TIMES (5) //3600
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)

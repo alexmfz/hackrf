@@ -16,7 +16,7 @@
 #include <inttypes.h>
 
 // -I/usr/local/src/cfitsio-4.1.0 -lcfitsio
-#define TRIGGERING_TIMES (3600) //3600
+#define TRIGGERING_TIMES (5) //3600
 #define FD_BUFFER_SIZE  (8*1024)
 /*** Global Variables***/
 fitsfile *fptr =NULL;
@@ -31,7 +31,7 @@ int status = 0, ii, jj;
 int fpixel = 1;
 int naxis = 2, nElements, exposure;
 long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
-int8_t array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
+int array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
 
 extern struct timeval timeValStartSweeping;
 extern struct tm timeFirstSweeping;
@@ -265,7 +265,7 @@ int insertDataImage(float* samples)
     {        
         for (jj=0; jj< naxes[1]; jj++) 
         {
-            array_img[jj][ii] = (int8_t)samples[id];
+            array_img[jj][ii] = (int)samples[id];
             id++;
         }
         
@@ -686,7 +686,7 @@ int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLas
     // Write data samples
     for (i = 0; i < nElements; i++)
     {
-        fprintf(samplesFile, "%d", (int8_t)samplesOrdered[i]);
+        fprintf(samplesFile, "%d", (int)samplesOrdered[i]);
         if (i < nElements -1 )
         {
             fprintf(samplesFile, "\n");
