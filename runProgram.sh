@@ -27,10 +27,10 @@ else
     else
       echo "...Fits file will be generate with Python script..."
       ./hackrf_sweep -f$1:$2 -p$3
-      mv samples.txt /pythonScripts
-      mv times.txt /pythonScripts
-      mv frequencies.txt /pythonScripts
-      mv header_times.txt /pythonScripts
+      mv samples.txt pythonScripts/
+      mv times.txt pythonScripts/
+      mv frequencies.txt pythonScripts/
+      mv header_times.txt pythonScripts/
       mv *_logs.txt Result/
 
       cd pythonScripts
@@ -43,12 +43,13 @@ else
       echo "...Moving fits and logs into Result folder"
 
       cd ..
-      mv pythonScripts/*.fit Result/
-      mv pythonScripts/*_logs.txt Result/
+
+      mv pythonScripts/*.fit Result/LastResult
+      mv pythonScripts/*_logs.txt Result/LastResult
     fi
 
     echo "...Program Finished..."
     echo "...Opening JavaViewer..."
-    cd Result/
+    cd Result/LastResult/
     java -jar RAPPViewer.jar
 fi
