@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 if  [[ -z "$1" || -z "$2" || -z "$3" ]]
@@ -9,21 +8,22 @@ then
 else
     echo "...Running Compiler..."
     
-    cd /home/manolo/hackrf
     ./runCompiler.sh
     
     echo "...Compiler Finished..."
     
     echo "...Running Program..."
 
-    cd /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder
+    cd host/hackrf-tools/src/FitsFolder/
 
     if [ "$3" -eq 1 ]
     then
       echo "...Fits file will be generate with C script..."
       ./hackrf_sweep -f$1:$2 -p$3
-      echo "...Moving fits into Result folder"
+      echo "...Moving fits and logs into Result folder"
       mv *.fit Result/
+      mv *_logs.txt Result/
+      
     else
       echo "...Fits file will be generate with Python script..."
       ./hackrf_sweep -f$1:$2 -p$3
@@ -31,6 +31,7 @@ else
       mv times.txt /pythonScripts
       mv frequencies.txt /pythonScripts
       mv header_times.txt /pythonScripts
+      mv *_logs.txt Result/
 
       cd pythonScripts
       python3 generationFits.py
@@ -38,15 +39,16 @@ else
       rm times.txt
       rm frequencies.txt
       rm header_times.txt
+      
+      echo "...Moving fits and logs into Result folder"
 
-      echo "...Moving fits into Result folder"
-      mv *.fit /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder/Result
+      cd ..
+      mv pythonScripts/*.fit Result/
+      mv pythonScripts/*_logs.txt Result/
     fi
 
     echo "...Program Finished..."
     echo "...Opening JavaViewer..."
-    cd /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder/Result
+    cd Result/
     java -jar RAPPViewer.jar
 fi
-
-

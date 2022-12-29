@@ -1,4 +1,4 @@
-v0.3.0:
-- Resolved bug
-- Reverse data to adapt to standar of fits
+v0.4.0:
+- Generate dynamic log name
+- Generate comment for code
 

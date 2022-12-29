@@ -4,16 +4,24 @@ from astropy.io import fits
 import numpy as np
 
 from io import open
-import pickle
+
+import os
 
 error_code = "ERROR"
 success_code = "OK"
 hdul = None
 min_value = None
 max_value = None
+fits_name = None
 
 
 def create_image():
+    """
+    Creates a fits image as primary extension with the dimensions of nChannels and triggeringTimes
+
+    @return: Result of the function was succesfull or not (OK | ERROR)
+    """
+
     global hdul
     global max_value
     global min_value
@@ -26,13 +34,16 @@ def create_image():
     if power_sample == error_code:
         logger.error("generationFits | create_image() | Error at reading power samples")
         return error_code
-    # Before inserting data into img save max and min values of power samples
+
+    # Before inserting data into img save max and min values of power samples for headers
     max_value = max(power_sample)
     min_value = min(power_sample)
 
+    # Reverse array to start from max freq to min freq. Samples must be reversed too
     power_sample.reverse()
-    image_data = np.ones((n_channels, triggering_times), dtype='i1')
 
+    # Insert data into image es primary HDU in fit file
+    image_data = np.ones((n_channels, triggering_times), dtype='i1')
     image_data = insert_data_image(image_data, power_sample)
 
     if image_data is None:
@@ -55,6 +66,13 @@ def create_image():
 
 
 def read_header_data():
+    """
+    Read header extra info (dates and times) from header_times.txt
+
+    @return: Header data as an array.
+             If the file cannot be opened, return "ERROR"
+    """
+
     header_data = []
 
     logger.info("generationFits | read_header_data() | Reading headers extra data")
@@ -75,6 +93,12 @@ def read_header_data():
 
 
 def update_headers_image():
+    """
+    Update headers image to adapt to fit standar header. Some headers are extract from header_times.txt
+
+    @return: Result of the function was succesfull or not (OK | ERROR)
+    """
+
     global hdul
     global max_value
     global min_value
@@ -128,18 +152,25 @@ def update_headers_image():
 
 
 def create_binary_table():
+    """
+    Create a binary table formed by 2 columns (frequencies and times).
+    This data is read from frequencies.txt and times.txt
+
+    @return: Result of the function was successful or not (OK | ERROR)
+    """
+
     global hdul
 
     frequencies = np.arange(n_channels)
     frequencies = read_frequencies()
     if frequencies == "ERROR":
-        logger.error("generationFits | create_binary_table() | Error at reding frequency file")
+        logger.error("generationFits | create_binary_table() | Error at reading frequency file")
         return error_code
 
     times = np.arange(triggering_times)
     times = read_times()
     if times == "ERROR":
-        logger.error("generationFits | create_binary_table() | Error at reding times file")
+        logger.error("generationFits | create_binary_table() | Error at reading times file")
         return error_code
 
     # Create binary table
@@ -159,7 +190,13 @@ def create_binary_table():
 
 
 def generate_dynamic_name():
+    """
+    Generate the name of the fit file in a dynamic way
+    @return: name of the fits
+    """
+
     global hdul
+    global fits_name
 
     extension = ".fit"
     date_obs = hdul[0].header["DATE-OBS"].replace("/", "") + "_"
@@ -167,17 +204,27 @@ def generate_dynamic_name():
     format_date = start_date[:3].replace(":", "h_") + start_date[3:6].replace(":", "m")
 
     fits_name = "hackRFOne_UAH_" + date_obs + format_date + extension
+
+
     logger.info("generationFits | generate_dynamic_name() | File generated with name: " + fits_name)
     return fits_name
 
 
 def read_power_samples():
+    """
+    Read power samples from samples.txt which is the output of executing hackrf_sweep
+
+    return: If OK: Return the power samples read from samples.txt as an array and reformated.
+            If there is an error: Return "ERROR
+    """
+
     logger.info("generationFits | read_power_samples() | Reading samples as output of SDR")
 
     sample_formated = []
+
     sample_file = open("samples.txt", "r")
     if sample_file is None:
-        return sample_file
+        return error_code
 
     samples_not_formated = sample_file.readlines()
     for sample in samples_not_formated:
@@ -190,9 +237,18 @@ def read_power_samples():
 
 
 def insert_data_image(image_data, power_sample):
-    logger.info("generationFits | insert_data_image() | Inserting data into image")
+    """
+    Insert data to the image taking it from the previous ones read
+
+    @param image_data: Initial data of img (which is 2 full arrays of ones
+    @param power_sample: Power samples read
+    @return: image data created
+    """
 
     i = 0
+
+    logger.info("generationFits | insert_data_image() | Inserting data into image")
+
     for times in range(triggering_times):
         for frequencies in range(n_channels):
             image_data[frequencies][times] = power_sample[i]
@@ -203,6 +259,13 @@ def insert_data_image(image_data, power_sample):
 
 
 def read_frequencies():
+    """
+    Read frequencies from frequencies.txt which is the output of executing hackrf_sweep
+
+    return: If OK: Return the frequencies read from frequencies.txt as an array and reformated.
+            If there is an error: Return "ERROR
+    """
+
     logger.info("generationFits | read_frequencies() | Reading frequencies as output of SDR")
     frequency_formated = []
 
@@ -223,6 +286,13 @@ def read_frequencies():
 
 
 def read_times():
+    """
+    Read times from times.txt which is the output of executing hackrf_sweep
+
+    return: If OK: Return the times read from times.txt as an array and reformated.
+            If there is an error: Return "ERROR
+    """
+
     logger.info("generationFits | read_times() | Reading frequencies as output of SDR")
     times_formated = []
 
@@ -240,6 +310,12 @@ def read_times():
 
 
 def print_fits_info():
+    """
+    Test function to check data
+
+    @return: None
+    """
+
     global hdul
     # FIT-file structure
     print(hdul.info())
@@ -258,6 +334,14 @@ def print_fits_info():
 
 
 def generate_fits(n_channels, triggering_times):
+    """
+    Main functions which creates the fits file formed by an image and a binary table wich dimensions 3600x200
+
+    @param n_channels: Nº of frequencies
+    @param triggering_times: Nº of shots
+    @return: Result of the function was successful or not (OK | ERROR)
+    """
+
     global hdul
 
     logger.info("generationFits | Initializing generation of fits file through python")
@@ -283,16 +367,26 @@ def generate_fits(n_channels, triggering_times):
 
 
 if __name__ == "__main__":
+
     triggering_times = 3600
     n_channels = 200
 
     logger.basicConfig(filename='fits.log', filemode='w', level=logger.INFO)
-
     if generate_fits(n_channels, triggering_times) != success_code:
         logger.info("generationFits | " + error_code)
 
     logger.info("generationFits | Execution Success")
+    logger.shutdown()
 
+    # Rename fits.log with the name of the data
+    old_name = r"fits.log"
+    new_name = fits_name.replace(".fit", "_logs.txt")
+
+    # Renaming the file
+    os.rename(old_name, new_name)
+    """
     # print fits data to debug
     print_fits_info()
+    """
+
 
