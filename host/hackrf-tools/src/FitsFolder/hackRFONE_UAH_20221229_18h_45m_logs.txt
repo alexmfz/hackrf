@@ -1,0 +1,118 @@
+=============================================================
+hackrf_sweep | runConfiguration() | Starting Configuration
+functions | execApiBasicConfiguration() | Generation of fits file will be with C
+functions | assignGenericParameters() | Assigning parameters of API
+ ===GENERIC PARAMS===
+functions | assignGenericParameters() | Number of Channels: 200
+functions | assignGenericParameters() | Step Value: 1.000000 MHz
+functions | assignGenericParameters() | Sample Rate: 20000000.000000 MHz
+functions | assignGenericParameters() | FFT size: 20
+functions | assignGenericParameters() | Samples per channel: 5
+functions | assignGenericParameters() | Execution Success
+functions | assignFitsParameters() | Assigning parameters of fits file
+functions | assignFitsParameters() | Filaname: hackRFOne_UAH_20221229_18h_45m.fit
+functions | assignFitsParameters() | Receiving measures and saving as a FITS file
+
+||===Parameters FITS file===||
+functions | assignFitsParameters() | Freq min: 45
+functions | assignFitsParameters() | Freq max: 245
+functions | assignFitsParameters() | Step Value: 1.000000
+functions | assignFitsParameters() | Number of steps(X): 3600
+functions | assignFitsParameters() | Number of samples(Z) per frequency: 5
+functions | assignFitsParameters() | Number of total samples : 720000
+functions | assignFitsParameters() | Execution Sucess
+hackrf_sweep | checkParams() | Checking if parameters values are correct
+hackrf_sweep | checkParams() | Execution Success
+hackrf_sweep | initConfigHackRF() | Initialize configuration of HackRF One
+hackrf_sweep | initConfigHackRF() | Execution Success
+hackrf_sweep | setHackRFParams() | call hackrf_sample_rate_set(20.000 MHz)
+setHackRFParams | call hackrf_baseband_filter_bandwidth_set(15.000 MHz)
+hackrf_sweep | setHackRFParams() | Execution Success
+hackrf_sweep | runConfiguration() | Sweeping from 45 MHz to 245 MHz
+hackrf_sweep | runConfiguration() | HackRF One configuration DONE.
+
+hackrf_sweep | runConfiguration() | nElements = 720000
+ nRanges = 40
+ sampeRate = 20000000.00
+ customTuneUp = 20.000000
+ stepValue = 1.000000
+ naxes[0] = 3600
+ naxes[1] = 200
+ requested_fft_bin_width = 1000000
+ fft_bin_width = 1000000.000000
+ fftSize/4 = 5
+ step_range = 5.000000
+
+generationFits | saveFrequencies() | Start saving index data frequencies in ranges to generate fits file
+generationFits | saveFrequencies() | Start saving index data frequencies by steps to generate fits file
+generationFits | saveFrequencies() | Execution Sucess.
+generationFits | saveTimeSteps() | Start Saving time by steps
+generationFits | saveTimeSteps() | Execution Success
+timer | setTimerParams() | Configuration timer parameters
+timer | setTimerParams() | Value interval: 250000 us
+timer | setTimerParams() | Execution Success
+hackrf_sweep | setSweeping() | Configuring sweeping parameters
+hackrf_sweep | setSweeping() | Execution Sucess
+hackrf_sweep | runConfiguration() | Memory allocated for power samples
+hackrf_sweep | runConfiguration() | Execution Success
+=============================================================
+
+=============================================================
+hackrf_sweep | runExecution() | Execution starts
+hackrf_sweep | hackRFTrigger() | Triggering Start
+hackrf_sweep | hackRFTrigger() | Execution Success
+hackrf_sweep | sweeping() | ===SWEEPING STARTED===
+hackrf_sweep | Start triggering 3600 times
+hackrf_sweep | sweeping() | ===SWEEPING DONE===
+hackrf_sweep | checkAvailabilityAmpOption() | Checking availabilty amp option
+hackrf_sweep | checkAvailabilityAmpOption() | Execution Success
+hackrf_sweep | checkAvailabilityAntennaOption() | Checking availability of antenna option
+hackrf_sweep | checkAvailabilityAntennaOption() | Execution Success
+hackrf_sweep | sweepDuration()
+hackrf_sweep() | checkStreaming() | Checking streaming status
+
+hackrf_sweep | Exiting...
+hackrf_sweep() | checkStreaming() | Execution Success
+hackrf_sweep| Total sweep completed successfully: 3600 out of 3600
+hackrf_sweep | All triggering actions(3600) where completed
+hackrf_sweep | Total duration of sweeping: 899.76 s ||generationFits | checkSavedData() | Start checking saved times data to generate fits file
+generationFits | checkSavedData() | Start checking saved power sample data to generate fits file
+generationFits | checkSavedData() | Execution Sucess
+hackrf_sweep | endConnection() | Ending connection with HackRF One
+hackrf_sweep | endConnection() | hackrf_close() done
+hackrf_sweep | endConnection() | hackrf_exit() done
+hackrf_sweep | endConnection() | Execution Success
+=============================================================
+hackrf_sweep | runExecution() | Execution Success
+=============================================================
+hackrf_sweep | runGeneration() | Execution starts
+hackrf_sweep | runGeneration() | reorganizeSamples() | Reorganizing Samples Started
+hackrf_sweep | runGeneration() | reorganizeSamples() | Execution Success;
+generationFits | generateFitsFile() | Start generating fits file
+generationFits | createFile() | Execution Sucess
+generationFits | createImage() | Execution Success
+generationFits | updateHeadersFitsFileImage() | Updating fits headers to format
+generationFits | updateHeadersFitsFile() | Execution Sucess
+generationFits | insertDta() | Inserting data...
+generationFits | insertDataImage() | Inserting data finished. Creating fits image...
+generationFits | insertDataImage() | Execution Sucess
+generationFits | createBinTable() | Creating Binary table
+generationFits | createBinTable() | Execution Sucess
+generationFits | updateHeadersFitsFileBinTable() | Execution Sucess
+generationFits | insertDataBinTable() | Inserting data into the binary table
+generationFits | insertDataBinTable() | Execution Success
+generationFits | closeFits() | Execution Sucess
+generationFits | generateFitsFile() | Execution Sucess
+=============================================================
+hackrf_sweep | runGeneration() | Execution Success
+hackrf_sweep | The dynamic memory used was successfully released.
+END.
+=============================================================
+
+Time parameters for command ./hackrf_sweep f45:245 -c1 (C Generation)
+Program Execution Start: 2022-12-29 18:45:23	 Program Execution Finish: 2022-12-29 19:00:24	 Duration: 900.150085s
+Configuration Start: 2022-12-29 18:45:23	 Configuration Finish: 2022-12-29 18:45:23	 Duration: 0.030014s
+Sweeping Start: 2022-12-29 18:45:24	 Sweeping Finish: 2022-12-29 19:00:23	 Duration: 899.755127s
+Generation FITS Part Start: 2022-12-29 19:00:24	 Generation FITS Part Finish: 2022-12-29 19:00:24	 Duration: 0.033542s
+Filename FITS generated: hackRFOne_UAH_20221229_18h_45m.fit
+HackRF Logs filename generated: hackRFONE_UAH_20221229_18h_45m_logs.txt

@@ -31,7 +31,7 @@ int status = 0, ii, jj;
 int fpixel = 1;
 int naxis = 2, nElements, exposure;
 long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
-int array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
+uint8_t array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
 
 extern struct timeval timeValStartSweeping;
 extern struct tm timeFirstSweeping;
@@ -265,7 +265,7 @@ int insertDataImage(float* samples)
     {        
         for (jj=0; jj< naxes[1]; jj++) 
         {
-            array_img[jj][ii] = (int)samples[id];
+            array_img[jj][ii] = (uint8_t)samples[nElements-id-1];
             id++;
         } 
     }
@@ -276,6 +276,7 @@ int insertDataImage(float* samples)
     if(fits_write_img(fptr, TBYTE, fpixel, nElements, array_img[0], &status))
     {
         fprintf(hackrfLogsFile, "generationFits | insertDataImage() | Was not possible to write data into the image");
+        fits_report_error(hackrfLogsFile, status);
         return EXIT_FAILURE;
     }
 //    for (ii = 0; ii< nElements; ii++){ fprintf(hackrfLogsFile, "Sample[%d]: %f\t SampleReverse[%d]: %f\n", ii, samples[ii], ii, samples[nElements-1-ii]); }
