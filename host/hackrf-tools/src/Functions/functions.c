@@ -39,7 +39,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFT_DEFAULT_SIZE	(20)
 
-#define TRIGGERING_TIMES (5) //3600
+#define TRIGGERING_TIMES (3600) //3600
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)
@@ -176,7 +176,7 @@ void generateDynamicName(struct tm baseName)
     char suffix[50] = ".fit";
     char preffix[50] = "hackRFOne_UAH_";
 
-    strftime(date, sizeof date, "%d%m%Y_%Hh_%Mm", &baseName);
+    strftime(date, sizeof date, "%Y%m%d_%Hh_%Mm", &baseName);
     
 	strcat(date, suffix);
 	strcat(preffix,date);

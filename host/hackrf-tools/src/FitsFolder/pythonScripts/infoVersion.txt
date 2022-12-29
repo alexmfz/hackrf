@@ -1,4 +1,0 @@
-v0.2.0:
-    - Resolved pending problems with headers
-    - Add functions read some headers such as dates of start and end
-    - TODO: Remember to remove comment of type of data in img (in generationFits.py)

@@ -52,7 +52,7 @@ typedef int bool;
 #define FFTMAX (8180)
 #define FFTMIN (4)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGGERING_TIMES (5)						 // 3600
+#define TRIGGERING_TIMES (3600)						 // 3600
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 #define FD_BUFFER_SIZE (8 * 1024)
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -1206,7 +1206,7 @@ int main(int argc, char **argv)
 	calculateTimes(&timeBeginningExecution, &tm_timeBeginningExecution, &timeValStartExecution);
 	strftime(timeStartProgram, sizeof timeStartProgram, "%Y-%m-%d %H:%M:%S", &tm_timeBeginningExecution);
 	
-	strftime(executionDate, sizeof executionDate, "%d%m%Y_%Hh_%Mm", &tm_timeBeginningExecution);
+	strftime(executionDate, sizeof executionDate, "%Y%m%d_%Hh_%Mm", &tm_timeBeginningExecution);
 	generateDynamicName(tm_timeBeginningExecution);
 
 	strcat(hackrfLogsPath, "hackRFONE_UAH_");

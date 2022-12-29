@@ -16,7 +16,7 @@
 #include <inttypes.h>
 
 // -I/usr/local/src/cfitsio-4.1.0 -lcfitsio
-#define TRIGGERING_TIMES (5) //3600
+#define TRIGGERING_TIMES (3600) //3600
 #define FD_BUFFER_SIZE  (8*1024)
 /*** Global Variables***/
 fitsfile *fptr =NULL;
@@ -267,8 +267,7 @@ int insertDataImage(float* samples)
         {
             array_img[jj][ii] = (int)samples[id];
             id++;
-        }
-        
+        } 
     }
     
     fprintf(hackrfLogsFile, "generationFits | insertDataImage() | Inserting data finished. Creating fits image...\n");
@@ -279,6 +278,7 @@ int insertDataImage(float* samples)
         fprintf(hackrfLogsFile, "generationFits | insertDataImage() | Was not possible to write data into the image");
         return EXIT_FAILURE;
     }
+//    for (ii = 0; ii< nElements; ii++){ fprintf(hackrfLogsFile, "Sample[%d]: %f\t SampleReverse[%d]: %f\n", ii, samples[ii], ii, samples[nElements-1-ii]); }
 
     fprintf(hackrfLogsFile, "generationFits | insertDataImage() | Execution Sucess\n");
     return EXIT_SUCCESS;
@@ -392,7 +392,7 @@ int saveFrequencies(uint32_t freq_min, uint32_t freq_max, int n_ranges, float st
 {   
     int i = 0;
     float actualFrequency = (float)freq_min;
-    float actualFrequencyAux = (float)freq_min;
+    float actualFrequencyAux = (float)freq_max;
     fprintf(hackrfLogsFile, "generationFits | saveFrequencies() | Start saving index data frequencies in ranges to generate fits file\n");
     
     frequencyDataRanges = (float*)calloc(n_ranges,sizeof(float));
@@ -415,7 +415,7 @@ int saveFrequencies(uint32_t freq_min, uint32_t freq_max, int n_ranges, float st
     for (i = 0; i< naxes[1]; i++)
     {
         frequencyDatas[i] = actualFrequencyAux;
-        actualFrequencyAux += step_value;
+        actualFrequencyAux -= step_value;
     }
 
      if (frequencyDatas == NULL && frequencyDatas[naxes[1]] != freq_max) 

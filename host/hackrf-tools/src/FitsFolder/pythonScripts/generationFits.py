@@ -30,7 +30,8 @@ def create_image():
     max_value = max(power_sample)
     min_value = min(power_sample)
 
-    image_data = np.ones((n_channels, triggering_times)) #dtype='i1') # TODO: Discomment after getting good .txt
+    power_sample.reverse()
+    image_data = np.ones((n_channels, triggering_times), dtype='i1')
 
     image_data = insert_data_image(image_data, power_sample)
 
@@ -87,25 +88,23 @@ def update_headers_image():
     len_headers = len(hdul[0].header)
 
     # Update headers
-    hdul[0].header.append(("DATE", header_data[0].replace("/", "-"), "Time of observation"))    # TODO
+    hdul[0].header.append(("DATE", header_data[0].replace("/", "-"), "Time of observation"))
     hdul[0].header.append(("CONTENT", header_data[0] + "Radio Flux density, HackRF-One (Spain)", "Title"))
 
     hdul[0].header.append(("INSTRUME", "HACKRF One", "Name of the instrument"))
     hdul[0].header.append(("OBJECT", "Space", "Object name"))
 
-    hdul[0].header.append(("DATE-OBS", header_data[0], "Date observation starts"))    # TODO
-    hdul[0].header.append(("TIME-OBS", header_data[1], "Time observation starts"))  # TODO
-    hdul[0].header.append(("DATE-END", header_data[2], "Date Observation ends"))  # TODO
-    hdul[0].header.append(("TIME-END", header_data[3], "Time observation ends"))    # TODO
+    hdul[0].header.append(("DATE-OBS", header_data[0], "Date observation starts"))
+    hdul[0].header.append(("TIME-OBS", header_data[1], "Time observation starts"))
+    hdul[0].header.append(("DATE-END", header_data[2], "Date Observation ends"))
+    hdul[0].header.append(("TIME-END", header_data[3], "Time observation ends"))
 
-    hdul[0].header.append(("BZERO", 0, "Scaling offset"))
-    hdul[0].header.append(("BSCALE", 1., "Scaling factor"))
     hdul[0].header.append(("BUNIT", "digits", "Z - axis title"))
 
     hdul[0].header.append(("DATAMAX", max_value, "Max pixel data"))
     hdul[0].header.append(("DATAMIN", min_value, "Min pixel data"))
 
-    hdul[0].header.append(("CRVAL1", header_data[4], "Value on axis 1 [sec of day]")) # TODO
+    hdul[0].header.append(("CRVAL1", header_data[4], "Value on axis 1 [sec of day]"))
     hdul[0].header.append(("CRPIX1", 0, "Reference pixel of axis 1"))
     hdul[0].header.append(("CTYPE1", "TIME [UT]", "Title of axis 1"))
     hdul[0].header.append(("CDELT1", 0.25, "Step between first and second element in x-axis"))
@@ -213,7 +212,9 @@ def read_frequencies():
 
     frequency_not_formated = freq_file.readlines()
     for freq in frequency_not_formated:
-        frequency_formated.append(int(freq.replace("\n", "")))
+        frequency_formated.append(float(freq.replace("\n", "")))
+
+    frequency_formated.reverse()
 
     freq_file.close()
 
@@ -282,7 +283,7 @@ def generate_fits(n_channels, triggering_times):
 
 
 if __name__ == "__main__":
-    triggering_times = 5
+    triggering_times = 3600
     n_channels = 200
 
     logger.basicConfig(filename='fits.log', filemode='w', level=logger.INFO)
