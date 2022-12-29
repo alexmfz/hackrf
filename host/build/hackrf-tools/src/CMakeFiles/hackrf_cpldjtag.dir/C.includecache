@@ -6,25 +6,3 @@
 
 #IncludeRegexTransform: 
 
-/home/manolo/hackrf/host/hackrf-tools/src/hackrf_cpldjtag.c
-/home/manolo/hackrf/host/libhackrf/src/hackrf.h
--
-stdio.h
--
-stdlib.h
--
-string.h
--
-getopt.h
--
-sys/types.h
--
-stdint.h
--
-
-/home/manolo/hackrf/host/libhackrf/src/hackrf.h
-stdint.h
--
-sys/types.h
--
-
