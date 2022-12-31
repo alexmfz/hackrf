@@ -380,7 +380,7 @@ if __name__ == "__main__":
 
     # Rename fits.log with the name of the data
     old_name = r"fits.log"
-    new_name = fits_name.replace(".fit", "_logs.txt")
+    new_name = fits_name.replace(".fit", "_python_logs.txt")
 
     # Renaming the file
     os.rename(old_name, new_name)
