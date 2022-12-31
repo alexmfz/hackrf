@@ -16,7 +16,7 @@
 #include <inttypes.h>
 
 // -I/usr/local/src/cfitsio-4.1.0 -lcfitsio
-#define TRIGGERING_TIMES (3600) //3600
+#define TRIGGERING_TIMES (3600) //36005
 #define FD_BUFFER_SIZE  (8*1024)
 /*** Global Variables***/
 fitsfile *fptr =NULL;

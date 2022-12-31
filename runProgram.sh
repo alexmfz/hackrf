@@ -20,21 +20,21 @@ else
     if [ "$3" -eq 1 ]
     then
       echo "...Fits file will be generate with C script..."
-      ./hackrf_sweep -f$1:$2 -p$3
+      ./hackrf_sweep -f$1:$2 -c$3
       echo "...Moving fits and logs into Result folder"
       mv *.fit Result/LastResult
       mv *_logs.txt Result/LastResult
       
     else
       echo "...Fits file will be generate with Python script..."
-      ./hackrf_sweep -f$1:$2 -p$3
+      ./hackrf_sweep -f$1:$2 -c$3
       mv samples.txt pythonScripts/
       mv times.txt pythonScripts/
       mv frequencies.txt pythonScripts/
       mv header_times.txt pythonScripts/
       mv *_logs.txt Result/LastResult
 
-      cd pythonScripts
+      cd pythonScripts/
       python3 generationFits.py
       rm samples.txt
       rm times.txt

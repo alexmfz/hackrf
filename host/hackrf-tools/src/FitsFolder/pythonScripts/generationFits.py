@@ -43,7 +43,7 @@ def create_image():
     power_sample.reverse()
 
     # Insert data into image es primary HDU in fit file
-    image_data = np.ones((n_channels, triggering_times), dtype='i1')
+    image_data = np.ones((n_channels, triggering_times), dtype='u1')
     image_data = insert_data_image(image_data, power_sample)
 
     if image_data is None:
