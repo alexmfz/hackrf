@@ -1,6 +1,6 @@
 
 originalPath=$(pwd)
-echo $originalPath
+
 #Remove previous files .c.o, .o
 cd $originalPath/host/build/hackrf-tools/src/
 echo $(pwd)
@@ -52,6 +52,10 @@ cp -R $originalPath/host/build/hackrf-tools/src/hackrf_info $originalPath/host/h
 cd $originalPath/host/hackrf-tools/src/FitsFolder/Result/
 mv *.fit PreviousResults
 mv *_logs.txt PreviousResults
+
+cd $originalPath/host/hackrf-tools/src/FitsFolder/Result/
+mv LastResult/*.fit PreviousResults
+mv LastResult/*_logs.txt PreviousResults
 
 echo "Ready to exec"
 

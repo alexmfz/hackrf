@@ -1,0 +1,24 @@
+INFO:root:generationFits | Initializing generation of fits file through python
+INFO:root:generationsFits | Dimensions Fits file: 3600x200
+INFO:root:generationFits | createImage() | Creation of fits image
+INFO:root:generationFits | createImage() | Reading power samples from SDR
+INFO:root:generationFits | read_power_samples() | Reading samples as output of SDR
+INFO:root:generationFits | read_power_samples() | Execution Success
+INFO:root:generationFits | insert_data_image() | Inserting data into image
+INFO:root:generationFits | insert_data_image() | Execution Success
+INFO:root:generationFits | createImage() | Execution Success
+INFO:root:generationFits | read_header_data() | Reading headers extra data
+INFO:root:generationFits | read_header_data() | Execution Success
+INFO:root:generationFits 1 UpdateHeadersImage() | Updating headers of fits image
+INFO:root:generationFits | read_frequencies() | Reading frequencies as output of SDR
+INFO:root:generationFits | read_frequencies() | Execution Success
+INFO:root:generationFits | UpdateHeadersImage() | Execution Success
+INFO:root:generationFits | read_frequencies() | Reading frequencies as output of SDR
+INFO:root:generationFits | read_frequencies() | Execution Success
+INFO:root:generationFits | read_times() | Reading frequencies as output of SDR
+INFO:root:generationFits | read_times() | Execution Success
+INFO:root:generationFits | createBinaryTable() | Creating binary table of dimensions 1x2
+INFO:root:generationFits | createBinaryTable() | Execution Success
+INFO:root:generationFits | generate_dynamic_name() | File generated with name: hackRFOne_UAH_20221229_13h_19m.fit
+INFO:root:generationFits | generateFits() | Execution Success
+INFO:root:generationFits | Execution Success
