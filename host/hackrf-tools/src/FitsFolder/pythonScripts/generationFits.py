@@ -102,7 +102,8 @@ def update_headers_image():
     global hdul
     global max_value
     global min_value
-
+    bscale = 1.
+    bzero = 0.
     header_data = read_header_data()
     if header_data == "ERROR":
         logger.error("generationFits | update_headers_image() | Error at reading header file")
@@ -123,7 +124,10 @@ def update_headers_image():
     hdul[0].header.append(("DATE-END", header_data[2], "Date Observation ends"))
     hdul[0].header.append(("TIME-END", header_data[3], "Time observation ends"))
 
-    hdul[0].header.append(("BUNIT", "digits", "Z - axis title"))
+    hdul[0].header.append(("BZERO", bzero, "Scaling offset"))
+    hdul[0].header.append(("BSCALE", bscale, "Scaling factor"))
+
+    hdul[0].header.append(("BUNIT", "digits", "Z - axis title"))    
 
     hdul[0].header.append(("DATAMAX", max_value, "Max pixel data"))
     hdul[0].header.append(("DATAMIN", min_value, "Min pixel data"))
@@ -251,7 +255,7 @@ def insert_data_image(image_data, power_sample):
 
     for times in range(triggering_times):
         for frequencies in range(n_channels):
-            image_data[frequencies][times] = power_sample[i]
+            image_data[frequencies][times] = np.array(power_sample[i]).astype("u1")
             i += 1
 
     logger.info("generationFits | insert_data_image() | Execution Success")
@@ -276,8 +280,6 @@ def read_frequencies():
     frequency_not_formated = freq_file.readlines()
     for freq in frequency_not_formated:
         frequency_formated.append(float(freq.replace("\n", "")))
-
-    frequency_formated.reverse()
 
     freq_file.close()
 

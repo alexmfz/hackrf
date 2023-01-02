@@ -256,7 +256,7 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
  * @param  samples: Data to be inserted into fits file from callback function
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int insertDataImage(float* samples)
+int insertDataImage(float* samplesOrdered)
 {
     /*Initialize the values in the image with a linear ramp function*/
     fprintf(hackrfLogsFile, "generationFits | insertDta() | Inserting data...\n");
@@ -265,7 +265,7 @@ int insertDataImage(float* samples)
     {        
         for (jj=0; jj< naxes[1]; jj++) 
         {
-            array_img[jj][ii] = (uint8_t)samples[nElements-id-1];
+            array_img[jj][ii] = (uint8_t)samplesOrdered[nElements-id-1];
             id++;
         } 
     }
@@ -393,7 +393,7 @@ int saveFrequencies(uint32_t freq_min, uint32_t freq_max, int n_ranges, float st
 {   
     int i = 0;
     float actualFrequency = (float)freq_min;
-    float actualFrequencyAux = (float)freq_max;
+    float actualFrequencyAux = (float)freq_max - step_value;
     fprintf(hackrfLogsFile, "generationFits | saveFrequencies() | Start saving index data frequencies in ranges to generate fits file\n");
     
     frequencyDataRanges = (float*)calloc(n_ranges,sizeof(float));
@@ -536,18 +536,7 @@ int saveSamples(int i, float powerSample, int nElements)
 int checkSavedData(int nElements)
 {
     int i = 0;
-    fprintf(hackrfLogsFile, "generationFits | checkSavedData() | Start checking saved times data to generate fits file\n");
-    
-    // Check timing data
-  /*  for (i = 0; i < TRIGGERING_TIMES; i++) TODO: REMOVE COMMENT
-    {
-        if (strcmp(timeDatas[i], "") == 0)
-        {
-            fprintf(hackrfLogsFile, "generationFits | checkSavedData() | Was not possible to save timing data\n");
-            return EXIT_FAILURE;
-        }
-    }
-*/
+
     fprintf(hackrfLogsFile, "generationFits | checkSavedData() | Start checking saved power sample data to generate fits file\n");
     // Check power sample data
     for (i = 0; i < nElements; i++)
@@ -573,7 +562,7 @@ int checkSavedData(int nElements)
  * @param  step_value: step value between frequencies
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int generateFitsFile(char fileFitsName[], float*samples, struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min)
+int generateFitsFile(char fileFitsName[], float*samplesOrdered, struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min)
 {   
     nElements = naxes[0]*naxes[1];
 
@@ -589,7 +578,7 @@ int generateFitsFile(char fileFitsName[], float*samples, struct tm localTimeFirs
     updateHeadersFitsFileImage(localTimeFirst, localTimeLast, freq_min);
    
     // Insert data of image
-    if(insertDataImage(samples) == EXIT_FAILURE)  { return EXIT_FAILURE;  }
+    if(insertDataImage(samplesOrdered) == EXIT_FAILURE)  { return EXIT_FAILURE;  }
     
     // Creation of binary table
     if(createBinTable() == EXIT_FAILURE) { return EXIT_FAILURE; }

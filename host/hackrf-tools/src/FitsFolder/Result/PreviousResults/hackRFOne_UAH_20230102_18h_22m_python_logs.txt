@@ -19,6 +19,6 @@ INFO:root:generationFits | read_times() | Reading frequencies as output of SDR
 INFO:root:generationFits | read_times() | Execution Success
 INFO:root:generationFits | createBinaryTable() | Creating binary table of dimensions 1x2
 INFO:root:generationFits | createBinaryTable() | Execution Success
-INFO:root:generationFits | generate_dynamic_name() | File generated with name: hackRFOne_UAH_20221229_13h_19m.fit
+INFO:root:generationFits | generate_dynamic_name() | File generated with name: hackRFOne_UAH_20230102_18h_22m.fit
 INFO:root:generationFits | generateFits() | Execution Success
 INFO:root:generationFits | Execution Success
