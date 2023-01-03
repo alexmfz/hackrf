@@ -6,16 +6,21 @@ then
     echo "Was not possible to execute."
     echo "Frequency range values not selected"
     echo "Example: './runProgram.sh 45 245' [0 (C generation) or 1 (python generation)] "
-else
-    echo "...Running Compiler..."
-    
-    ./runCompiler.sh
-    
-    echo "...Compiler Finished..."
-    
-    echo "...Running Program..."
+else   
+
+    echo "...Moving previous Results into PreviousResults folder..."
+    cd $originalPath/host/hackrf-tools/src/FitsFolder/Result/
+    mv LastResult/*.fit PreviousResults
+    mv LastResult/*_logs.txt PreviousResults
+
 
     cd $originalPath/host/hackrf-tools/src/FitsFolder/
+    rm samples.txt
+    rm header_times.txt
+    rm times.txt
+    rm frequencies.txt
+
+    echo "...Running Program..."
 
     if [ "$3" -eq 1 ]
     then

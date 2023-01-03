@@ -3,7 +3,6 @@ originalPath=$(pwd)
 
 #Remove previous files .c.o, .o
 cd $originalPath/host/build/hackrf-tools/src/
-echo $(pwd)
 rm hackrf_sweep
 
 cd CMakeFiles/hackrf_sweep.dir
@@ -14,10 +13,7 @@ echo "Files object successfully removed"
 
 
 cd $originalPath/host/hackrf-tools/src/FitsFolder/
-rm samples.txt
-rm header_times.txt
-rm times.txt
-rm frequencies.txt
+
 rm hackrf_sweep
 
 echo "Executable hackrf_sweep successfully removed"
@@ -48,14 +44,6 @@ echo "All files were successfully compiled"
 
 cp -R $originalPath/host/build/hackrf-tools/src/hackrf_sweep $originalPath/host/hackrf-tools/src/FitsFolder/
 cp -R $originalPath/host/build/hackrf-tools/src/hackrf_info $originalPath/host/hackrf-tools/src/FitsFolder/
-
-cd $originalPath/host/hackrf-tools/src/FitsFolder/Result/
-mv *.fit PreviousResults
-mv *_logs.txt PreviousResults
-
-cd $originalPath/host/hackrf-tools/src/FitsFolder/Result/
-mv LastResult/*.fit PreviousResults
-mv LastResult/*_logs.txt PreviousResults
 
 echo "Ready to exec"
 
