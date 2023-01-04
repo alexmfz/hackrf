@@ -20,7 +20,7 @@ echo "Executable hackrf_sweep successfully removed"
 
 ###Compile###
 #Fits functions
-gcc -c generationFits.c -o generationFits.c.o -I usr/local/cfitsio-4.1.0 -lcfitsio
+gcc -c generationFits.c -o generationFits.c.o -I usr/local/cfitsio-4.1.0 -L. -lcfitsio -lm -lz
 cp -R generationFits.c.o $originalPath/host/build/hackrf-tools/src/CMakeFiles/hackrf_sweep.dir
 echo "Fits functions successfully compiled"
 
