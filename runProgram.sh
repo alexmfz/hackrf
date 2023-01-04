@@ -1,11 +1,12 @@
 #!/bin/bash
 originalPath=$(pwd)
 
-if  [[ -z "$1" || -z "$2" || -z "$3" ]]
+if  [[ -z "$1" || -z "$2" || -z "$3" || -z "$4" || -z "$5" ]]
 then
     echo "Was not possible to execute."
-    echo "Frequency range values not selected"
-    echo "Example: './runProgram.sh 45 245' [0 (C generation) or 1 (python generation)] "
+    echo "Example: './runProgram.sh fmin fmax' generationMode stationName Focus"
+    echo "Example: './runProgram.sh 45 245' 0 SPAIN-PERALEJOS 63"
+    echo "generationMode == 0  -> C generation or generationMode == 1 -> Python generation"
 else   
 
     echo "...Moving previous Results into PreviousResults folder..."
@@ -25,14 +26,14 @@ else
     if [ "$3" -eq 1 ]
     then
       echo "...Fits file will be generate with C script..."
-      ./hackrf_sweep -f$1:$2 -c$3
+      ./hackrf_sweep -f$1:$2 -c$3 -s$4 -z$5
       echo "...Moving fits and logs into Result folder"
       mv *.fit Result/LastResult
       mv *_logs.txt Result/LastResult
       
     else
       echo "...Fits file will be generate with Python script..."
-      ./hackrf_sweep -f$1:$2 -c$3
+      ./hackrf_sweep -f$1:$2 -c$3 -s$4 -z$5
       mv samples.txt pythonScripts/
       mv times.txt pythonScripts/
       mv frequencies.txt pythonScripts/
@@ -40,7 +41,7 @@ else
       mv *_logs.txt Result/LastResult
 
       cd pythonScripts/
-      python3 generationFits.py
+      python3 generationFits.py $4 $5
       rm samples.txt
       rm times.txt
       rm frequencies.txt

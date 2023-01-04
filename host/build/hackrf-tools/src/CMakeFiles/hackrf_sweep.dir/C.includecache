@@ -68,6 +68,20 @@ sys/time.h
 
 /home/manolo/hackrf/host/hackrf-tools/src/Timer/timer.h
 
+/home/manolo/hackrf/host/hackrf-tools/src/cfitsio/fitsio.h
+stdio.h
+-
+sys/types.h
+-
+stdlib.h
+-
+limits.h
+-
+longnam.h
+/home/manolo/hackrf/host/hackrf-tools/src/cfitsio/longnam.h
+
+/home/manolo/hackrf/host/hackrf-tools/src/cfitsio/longnam.h
+
 /home/manolo/hackrf/host/hackrf-tools/src/hackrf_sweep.c
 /home/manolo/hackrf/host/libhackrf/src/hackrf.h
 -
@@ -103,8 +117,8 @@ signal.h
 -
 math.h
 -
-fitsio.h
-/home/manolo/hackrf/host/hackrf-tools/src/fitsio.h
+/home/manolo/hackrf/host/hackrf-tools/src/cfitsio/fitsio.h
+-
 FitsFolder/generatationFits.h
 /home/manolo/hackrf/host/hackrf-tools/src/FitsFolder/generatationFits.h
 Functions/functions.h

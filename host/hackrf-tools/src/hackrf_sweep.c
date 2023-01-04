@@ -26,10 +26,9 @@
 #include <sys/time.h>
 #include <time.h>
 #endif
-
 #include <signal.h>
 #include <math.h>
-#include "fitsio.h"
+#include "/home/manolo/hackrf/host/hackrf-tools/src/cfitsio/fitsio.h"
 #include "FitsFolder/generatationFits.h"
 #include "Functions/functions.h"
 #include "Timer/timer.h"
@@ -52,7 +51,7 @@ typedef int bool;
 #define FFTMAX (8180)
 #define FFTMIN (4)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGGERING_TIMES (3600)						 // 3600
+#define TRIGGERING_TIMES (5)						 // 3600
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 #define FD_BUFFER_SIZE (8 * 1024)
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -83,6 +82,9 @@ float sampleRate = 0; // Custom sample rate
 
 char pathFits[50];		// File name of fits file
 int generationMode = 5; // Generation Mode (0 python; 0 C)
+int focusCode = 63;
+char stationName[50];
+
 extern long naxes[2];	// Number of axis of fits file
 
 extern float *frequencyDataRanges; // Frecuency Datas of the sweeping in ranges
@@ -963,22 +965,19 @@ void calculateTimes(time_t *t_time, struct tm *tm_time, struct timeval *timeVal)
  * @param i: iteration variable
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE)
  */
-static int runConfiguration(int argc, char **argv)
+static int runConfiguration()
 {
-	int opt = 0, i;
+	int i;
 	float step_range = 0;
 
 	fprintf(hackrfLogsFile, "=============================================================\n");
 	fprintf(hackrfLogsFile, "hackrf_sweep | runConfiguration() | Starting Configuration\n");
-	if (execApiBasicConfiguration(opt, argc, argv) == EXIT_FAILURE)
-	{
-		return EXIT_FAILURE;
-	}
+	
+	assignGenericParameters();
 
-	if (checkParams() == EXIT_FAILURE)
-	{
-		return EXIT_FAILURE;
-	}
+	if (assignFitsParameters() == EXIT_FAILURE) { return EXIT_FAILURE; }
+	if (checkParams() == EXIT_FAILURE){ return EXIT_FAILURE; }
+
 	while ((fftSize + 4) % 8)
 	{
 		fftSize++;
@@ -1185,6 +1184,7 @@ static int runGeneration(struct tm localTimeFirst, struct tm localTimeLast)
  */
 int main(int argc, char **argv)
 {
+	int opt = 0;
 	struct tm tm_timeBeginningExecution, tm_timeEndExecution;  // Struct of time values at beginning and end of the program
 	struct timeval timeValStartExecution, timeValEndExecution; // Use to get duration of the exection
 	char timeStartProgram[70], timeEndProgram[70];			   // Time as date and hours
@@ -1207,11 +1207,15 @@ int main(int argc, char **argv)
 	strftime(timeStartProgram, sizeof timeStartProgram, "%Y-%m-%d %H:%M:%S", &tm_timeBeginningExecution);
 	
 	strftime(executionDate, sizeof executionDate, "%Y%m%d_%Hh_%Mm", &tm_timeBeginningExecution);
+
+	if (execApiBasicConfiguration(opt, argc, argv) == EXIT_FAILURE) { return EXIT_FAILURE; }
+
 	generateDynamicName(tm_timeBeginningExecution);
 
-	strcat(hackrfLogsPath, "hackRFONE_UAH_");
-	strcat(hackrfLogsPath, executionDate);
+	strcat(hackrfLogsPath, pathFits);
 	strcat(hackrfLogsPath, "_logs.txt");
+
+	strcat(pathFits, ".fit");
 
 	/* START CONFIGURATION */
 	if (hackrfLogsPath == NULL || strstr(hackrfLogsPath, ".txt") == NULL)
@@ -1219,6 +1223,7 @@ int main(int argc, char **argv)
 		hackrfLogsFile = stdout;
 		return EXIT_FAILURE;
 	}
+	
 	hackrfLogsFile = fopen(hackrfLogsPath, "wb");
 	if (hackrfLogsFile == NULL)
 	{
@@ -1239,6 +1244,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
+	
 	calculateTimes(&t_timeEndConfig, &tm_timeEndConfig, &timeValEndConfig);
 	strftime(timeEndConfig, sizeof timeEndConfig, "%Y-%m-%d %H:%M:%S", &tm_timeEndConfig);
 

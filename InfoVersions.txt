@@ -1,3 +1,4 @@
-v3.8.3:
+v3.9:
 
-- Corrected bash file
+- Added input arguments
+- Changed format of fits and logs

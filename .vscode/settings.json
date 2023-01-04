@@ -3,6 +3,8 @@
         "functions.h": "c",
         "stdlib.h": "c",
         "stdio.h": "c",
-        "inttypes.h": "c"
+        "inttypes.h": "c",
+        "fitsio.h": "c",
+        "generatationfits.h": "c"
     }
 }

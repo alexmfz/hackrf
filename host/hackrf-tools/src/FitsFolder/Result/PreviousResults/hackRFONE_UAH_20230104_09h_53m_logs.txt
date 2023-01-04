@@ -1,0 +1,50 @@
+=============================================================
+hackrf_sweep | runConfiguration() | Starting Configuration
+functions | execApiBasicConfiguration() | Generation of fits file will be with Python
+functions | assignGenericParameters() | Assigning parameters of API
+ ===GENERIC PARAMS===
+functions | assignGenericParameters() | Number of Channels: 200
+functions | assignGenericParameters() | Step Value: 1.000000 MHz
+functions | assignGenericParameters() | Sample Rate: 20000000.000000 MHz
+functions | assignGenericParameters() | FFT size: 20
+functions | assignGenericParameters() | Samples per channel: 5
+functions | assignGenericParameters() | Execution Success
+functions | assignFitsParameters() | Assigning parameters of fits file
+functions | assignFitsParameters() | Filaname: 
+functions | assignFitsParameters() | Execution Sucess
+hackrf_sweep | checkParams() | Checking if parameters values are correct
+hackrf_sweep | checkParams() | Execution Success
+hackrf_sweep | initConfigHackRF() | Initialize configuration of HackRF One
+hackrf_sweep | initConfigHackRF() | Execution Success
+hackrf_sweep | setHackRFParams() | call hackrf_sample_rate_set(20.000 MHz)
+setHackRFParams | call hackrf_baseband_filter_bandwidth_set(15.000 MHz)
+hackrf_sweep | setHackRFParams() | Execution Success
+hackrf_sweep | runConfiguration() | Sweeping from 45 MHz to 245 MHz
+hackrf_sweep | runConfiguration() | HackRF One configuration DONE.
+
+hackrf_sweep | runConfiguration() | nElements = 0
+ nRanges = 40
+ sampeRate = 20000000.00
+ customTuneUp = 20.000000
+ stepValue = 1.000000
+ naxes[0] = 0
+ naxes[1] = 0
+ requested_fft_bin_width = 1000000
+ fft_bin_width = 1000000.000000
+ fftSize/4 = 5
+ step_range = 5.000000
+
+generationFits | saveFrequencies() | Start saving index data frequencies in ranges to generate fits file
+generationFits | saveFrequencies() | Start saving index data frequencies by steps to generate fits file
+generationFits | saveFrequencies() | Execution Sucess.
+generationFits | saveTimeSteps() | Start Saving time by steps
+generationFits | saveTimeSteps() | Execution Success
+timer | setTimerParams() | Configuration timer parameters
+timer | setTimerParams() | Value interval: 250000 us
+timer | setTimerParams() | Execution Success
+hackrf_sweep | setSweeping() | Configuring sweeping parameters
+hackrf_sweep | setSweeping() | Execution Sucess
+hackrf_sweep | runConfiguration() | Memory allocated for power samples
+hackrf_sweep | runConfiguration() | Execution Success
+=============================================================
+

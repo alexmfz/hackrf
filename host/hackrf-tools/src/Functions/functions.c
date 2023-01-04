@@ -39,7 +39,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFT_DEFAULT_SIZE	(20)
 
-#define TRIGGERING_TIMES (3600) //3600
+#define TRIGGERING_TIMES (5) //3600
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)
@@ -72,6 +72,8 @@ extern bool finite_mode;
 extern float sampleRate;
 
 extern int generationMode;
+extern int focusCode;
+extern char stationName[50];
 
 uint32_t nChannels = 200;
 extern FILE* hackrfLogsFile;
@@ -83,23 +85,25 @@ extern FILE* hackrfLogsFile;
  * @retval None
  */
 void usage() {
-	fprintf(hackrfLogsFile, "Usage:\n");
-	fprintf(hackrfLogsFile, "\t[-h] # this help\n");
-	fprintf(hackrfLogsFile, "\t[-d serial_number] # Serial number of desired HackRF\n");
-	fprintf(hackrfLogsFile, "\t[-a amp_enable] # RX RF amplifier 1=Enable, 0=Disable\n");
-	fprintf(hackrfLogsFile, "\t[-f freq_min:freq_max] # minimum and maximum frequencies in MHz\n");
-	fprintf(hackrfLogsFile, "\t[-n number channels] # Number of channels, default value = 200");
-	fprintf(hackrfLogsFile, "\t[-p antenna_enable] # Antenna port power, 1=Enable, 0=Disable\n");
-	fprintf(hackrfLogsFile, "\t[-l gain_db] # RX LNA (IF) gain, 0-40dB, 8dB steps\n");
-	fprintf(hackrfLogsFile, "\t[-g gain_db] # RX VGA (baseband) gain, 0-62dB, 2dB steps\n");
-	fprintf(hackrfLogsFile, "\t[-w bin_width] # FFT bin width (frequency resolution) in Hz, 2445-5000000\n");
-	fprintf(hackrfLogsFile, "\t[-1] # one shot mode\n");
-	fprintf(hackrfLogsFile, "\t[-N num_sweeps] # Number of sweeps to perform\n");
-	fprintf(hackrfLogsFile, "\t-r filename # output file\n");
-	fprintf(hackrfLogsFile, "\t[-c generation mode] # generation mode (0 python; 1 C\n");
-	fprintf(hackrfLogsFile, "\n");
-	fprintf(hackrfLogsFile, "Output fields:\n");
-	fprintf(hackrfLogsFile, "\tdate, time, hz_low, hz_high, hz_bin_width, num_samples, dB, dB, . . .\n\n");
+	fprintf(stderr, "Usage:\n");
+	fprintf(stderr, "\t[-h] # this help\n");
+	fprintf(stderr, "\t[-d serial_number] # Serial number of desired HackRF\n");
+	fprintf(stderr, "\t[-a amp_enable] # RX RF amplifier 1=Enable, 0=Disable\n");
+	fprintf(stderr, "\t[-f freq_min:freq_max] # minimum and maximum frequencies in MHz\n");
+	fprintf(stderr, "\t[-n number channels] # Number of channels, default value = 200");
+	fprintf(stderr, "\t[-p antenna_enable] # Antenna port power, 1=Enable, 0=Disable\n");
+	fprintf(stderr, "\t[-l gain_db] # RX LNA (IF) gain, 0-40dB, 8dB steps\n");
+	fprintf(stderr, "\t[-g gain_db] # RX VGA (baseband) gain, 0-62dB, 2dB steps\n");
+	fprintf(stderr, "\t[-w bin_width] # FFT bin width (frequency resolution) in Hz, 2445-5000000\n");
+	fprintf(stderr, "\t[-1] # one shot mode\n");
+	fprintf(stderr, "\t[-N num_sweeps] # Number of sweeps to perform\n");
+	fprintf(stderr, "\t-r filename # output file\n");
+	fprintf(stderr, "\t[-c generation mode] # generation mode (0 python; 1 C\n");
+	fprintf(stderr, "\t[-s] # station name\n");
+	fprintf(stderr, "\t[-z focus code] # HackRF Code\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "Output fields:\n");
+	fprintf(stderr, "\tdate, time, hz_low, hz_high, hz_bin_width, num_samples, dB, dB, . . .\n\n");
 
 }
 
@@ -173,14 +177,14 @@ int parse_u32_range(char* s, uint32_t* const value_min, uint32_t* const value_ma
 void generateDynamicName(struct tm baseName)
 {
     char date[50]="";
-    char suffix[50] = ".fit";
-    char preffix[50] = "hackRFOne_UAH_";
-
-    strftime(date, sizeof date, "%Y%m%d_%Hh_%Mm", &baseName);
+	char code[50]="";
+	sprintf(code, "_%d", focusCode);
+    strftime(date, sizeof date, "%Y%m%d_%H%M%S", &baseName);
     
-	strcat(date, suffix);
-	strcat(preffix,date);
-	strcpy(pathFits, preffix);
+	strcat(date, code);
+	strcat(stationName, "_");
+	strcat(stationName, date);
+	strcpy(pathFits, stationName);
 
 }
 
@@ -270,7 +274,7 @@ void assignGenericParameters()
  */
 int execApiBasicConfiguration(int opt, int argc, char**argv)
 {
-while( (opt = getopt(argc, argv, "a:c:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
+while( (opt = getopt(argc, argv, "a:c:s:z:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 		result = HACKRF_SUCCESS;
 		switch( opt ) 
 		{
@@ -286,7 +290,15 @@ while( (opt = getopt(argc, argv, "a:c:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 		case 'c':
 			result = parse_u32(optarg, &generationMode);
 			break;
-			
+		
+		case 's':
+			strcpy(stationName, optarg);
+			break;
+		
+		case 'z':
+			result = parse_u32(optarg, &focusCode);
+			break;
+
 		case 'n':
 			result = parse_u32(optarg, &nChannels);
 			break;
@@ -294,20 +306,20 @@ while( (opt = getopt(argc, argv, "a:c:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 		case 'f':
 			result = parse_u32_range(optarg, &freq_min, &freq_max);
 			if(freq_min >= freq_max) {
-				fprintf(hackrfLogsFile, 
+				fprintf(stderr, 
 						"functions | showMenu | argument error: freq_max must be greater than freq_min.\n");
 				usage();
 				return EXIT_FAILURE;
 			}
 			if(FREQ_MAX_MHZ <freq_max) {
-				fprintf(hackrfLogsFile, 
+				fprintf(stderr, 
 						"functions | showMenu | argument error: freq_max may not be higher than %u.\n",
 						FREQ_MAX_MHZ);
 				usage();
 				return EXIT_FAILURE;
 			}
 			if(MAX_SWEEP_RANGES <= num_ranges) {
-				fprintf(hackrfLogsFile, 
+				fprintf(stderr, 
 						"functions | showMenu | argument error: specify a maximum of %u frequency ranges.\n",
 						MAX_SWEEP_RANGES);
 				usage();
@@ -356,13 +368,13 @@ while( (opt = getopt(argc, argv, "a:c:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 			return EXIT_SUCCESS;
 
 		default:
-			fprintf(hackrfLogsFile,  "functions | showMenu | unknown argument '-%c %s'\n", opt, optarg);
+			fprintf(stderr,  "functions | showMenu | unknown argument '-%c %s'\n", opt, optarg);
 			usage();
 			return EXIT_FAILURE;
 		}
 		
 		if( result != HACKRF_SUCCESS ) {
-			fprintf(hackrfLogsFile,  "functions | showMenu | argument error: '-%c %s' %s (%d)\n", opt, optarg, hackrf_error_name(result), result);
+			fprintf(stderr,  "functions | showMenu | argument error: '-%c %s' %s (%d)\n", opt, optarg, hackrf_error_name(result), result);
 			usage();
 			return EXIT_FAILURE;
 		}		
@@ -370,22 +382,21 @@ while( (opt = getopt(argc, argv, "a:c:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 
 	if (generationMode == 0)
 	{
-		fprintf(hackrfLogsFile, "functions | execApiBasicConfiguration() | Generation of fits file will be with Python\n");
+		fprintf(stderr, "functions | execApiBasicConfiguration() | Generation of fits file will be with Python\n");
 	}
 
 	else if (generationMode == 1)
 	{
-		fprintf(hackrfLogsFile, "functions | execApiBasicConfiguration() | Generation of fits file will be with C\n");
+		fprintf(stderr, "functions | execApiBasicConfiguration() | Generation of fits file will be with C\n");
 	}
 
 	else
 	{
-		fprintf(hackrfLogsFile, "functions | execApiBasicConfiguration() | Error. Generation Mode not recognise. Use 0 for Python or 1 for C\nExample: hackrf_sweep -f45:245 -c1\n");
+		fprintf(stderr, "functions | execApiBasicConfiguration() | Error. Generation Mode not recognise. Use 0 for Python or 1 for C\nExample: hackrf_sweep -f45:245 -c1\n");
 		return EXIT_FAILURE;
 	}
 
-	assignGenericParameters();
-	assignFitsParameters();
+
 	return EXIT_SUCCESS;
 }
 

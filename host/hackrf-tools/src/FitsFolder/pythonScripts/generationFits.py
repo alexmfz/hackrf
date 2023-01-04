@@ -6,6 +6,7 @@ import numpy as np
 from io import open
 
 import os
+import sys
 
 error_code = "ERROR"
 success_code = "OK"
@@ -207,7 +208,7 @@ def generate_dynamic_name():
     start_date = hdul[0].header["TIME-OBS"]
     format_date = start_date[:3].replace(":", "h_") + start_date[3:6].replace(":", "m")
 
-    fits_name = "hackRFOne_UAH_" + date_obs + format_date + extension
+    fits_name = sys.argv[1] + "_" + date_obs + format_date + "_" + sys.argv[2] + extension
 
 
     logger.info("generationFits | generate_dynamic_name() | File generated with name: " + fits_name)
@@ -370,7 +371,7 @@ def generate_fits(n_channels, triggering_times):
 
 if __name__ == "__main__":
 
-    triggering_times = 3600
+    triggering_times = 5
     n_channels = 200
 
     logger.basicConfig(filename='fits.log', filemode='w', level=logger.INFO)

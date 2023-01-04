@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2022
  * 
  */
-#include "fitsio.h"
+#include "/home/manolo/hackrf/host/hackrf-tools/src/cfitsio/fitsio.h"
 #include "time.h"
 #include <string.h>
 #include "generatationFits.h"
@@ -16,7 +16,7 @@
 #include <inttypes.h>
 
 // -I/usr/local/src/cfitsio-4.1.0 -lcfitsio
-#define TRIGGERING_TIMES (3600) //36005
+#define TRIGGERING_TIMES (5) //36005
 #define FD_BUFFER_SIZE  (8*1024)
 /*** Global Variables***/
 fitsfile *fptr =NULL;
