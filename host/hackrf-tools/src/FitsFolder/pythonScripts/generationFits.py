@@ -371,7 +371,7 @@ def generate_fits(n_channels, triggering_times):
 
 if __name__ == "__main__":
 
-    triggering_times = 5
+    triggering_times = 3600
     n_channels = 200
 
     logger.basicConfig(filename='fits.log', filemode='w', level=logger.INFO)
