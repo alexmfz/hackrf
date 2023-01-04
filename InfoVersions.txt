@@ -1,4 +1,3 @@
-v3.9:
+v4.0:
 
-- Added input arguments
-- Changed format of fits and logs
+- Added bash file to install cfitsio dependency (installDependency.sh)
