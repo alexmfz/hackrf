@@ -20,3 +20,5 @@ Status:  OK | PENDING
 18: Generate .txt of power samples/times/frequencies as input of generationFits.py --> OK
 19: Make tests for integration python and C scripts --> OK
 20. Add input argument for generation mode --> OK
+21. TODO: Upload data to FTP --> PENDING
+22. TODO: Make scheduler functionality --> PENDING
