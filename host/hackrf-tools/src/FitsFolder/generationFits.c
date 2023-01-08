@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2022
  * 
  */
-#include "/home/manolo/hackrf/host/hackrf-tools/src/cfitsio/fitsio.h"
+#include "fitsio.h"
 #include "time.h"
 #include <string.h>
 #include "generatationFits.h"
@@ -29,7 +29,8 @@ float* samples; // Array of float samples where dbs measures will be saved
 int exist = 0;
 int status = 0, ii, jj;
 int fpixel = 1;
-int naxis = 2, nElements, exposure;
+int naxis = 2 , exposure;
+extern int nElements;
 long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
 uint8_t array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
 
