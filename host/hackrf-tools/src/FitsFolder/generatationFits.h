@@ -16,20 +16,20 @@
 #include <sys/time.h>
 #endif
 
-float minData(float * samples);
-float maxData(float * samples);
+int minData(int * samples);
+int maxData(int * samples);
 long getSecondsOfDayOfFirstSweeping(struct tm timeFirstSweeping);
 int createFile(char filename[]);
 int createImage();
 void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min);
-int insertDataImage(float* samples);
+int insertDataImage(int* samples);
 int createBinTable();
 void updateHeadersFitsFileBinTable();
 void closeFits();
-int generateFitsFile(char fileFitsName[], float*samples, struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min);
+int generateFitsFile(char fileFitsName[], int*samples, struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min);
 int saveFrequencies(uint32_t freq_min, uint32_t freq_max, int nRanges, float step_value_between_ranges);
 int saveTimes(int i, int triggeringTimes, char* sweepingTime); // TODO: Wont be used by the moment
 int saveTimeSteps();
-int saveSamples(int i, float powerSample, int nElements); // TODO: Wont be used by the moment
+int saveSamples(int i, int powerSample, int nElements); // TODO: Wont be used by the moment
 int checkSavedData(int nElements);
-int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLast, float* samplesOrdered, float* frequencies, float* times);
+int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLast, int* samplesOrdered, float* frequencies, float* times);

@@ -91,8 +91,8 @@ extern float *frequencyDataRanges; // Frecuency Datas of the sweeping in ranges
 extern float *frequencyDatas;	   // Frecuency Datas of the sweeping in steps
 extern float *timeSteps;		   // Time data in steps
 
-extern float *samples;		 // Array of float samples where dbs measures will be saved (but are disordered)
-float *samplesOrdered;		 // Array of float samples where dbs measures will be saved in a correct order
+extern int *samples;		 // Array of float samples where dbs measures will be saved (but are disordered)
+int *samplesOrdered;		 // Array of float samples where dbs measures will be saved in a correct order
 int *flagsOrder;			 // Array which represents the flags to check if a range of frequency is ordered or not
 int *real_order_frequencies; // Insertion order of freqs
 int orderValue = 1;			 // 1 => Ordered ; 0 => disordered
@@ -810,12 +810,12 @@ static int endConnection()
  * @param  nChannels: number of channels
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE)
  */
-int reorganizeSamples(int ordered_frecuency_position, int real_order_frequency_position, int nRanges, float *samples, float *samplesOrdered, int nElements, int valuesPerFreq, long nChannels)
+int reorganizeSamples(int ordered_frecuency_position, int real_order_frequency_position, int nRanges, int *samples, int *samplesOrdered, int nElements, int valuesPerFreq, long nChannels)
 {
 	int j = 0, z = 0, i = 0;
 	int samplesPerSweeping = valuesPerFreq * nRanges; // 200
 	int actualElementIndex = 0;						  // Actual element index
-	float sampleToSave;								  // sample to backup
+	int sampleToSave;								  // sample to backup
 
 	// Initial positions at first iteration
 	j = (ordered_frecuency_position - 1) * valuesPerFreq;	 // Index of ordered samples
@@ -1056,8 +1056,8 @@ static int runConfiguration()
 	}
 
 	// Reserve memory for power sample data
-	samples = (float *)calloc(nElements, sizeof(float));
-	samplesOrdered = (float *)calloc(nElements, sizeof(float));
+	samples = (int *)calloc(nElements, sizeof(int));
+	samplesOrdered = (int *)calloc(nElements, sizeof(int));
 
 	if (samples == NULL || samplesOrdered == NULL)
 	{
