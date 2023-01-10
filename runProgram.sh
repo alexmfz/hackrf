@@ -6,7 +6,7 @@ then
     echo "Was not possible to execute."
     echo "Example: './runProgram.sh fmin fmax' generationMode stationName Focus"
     echo "Example: './runProgram.sh 45 245' 0 SPAIN-PERALEJOS 63"
-    echo "generationMode == 0  -> C generation or generationMode == 1 -> Python generation"
+    echo "generationMode == 1  -> C generation or generationMode == 0 -> Python generation"
 else   
 
     echo "...Moving previous Results into PreviousResults folder..."
