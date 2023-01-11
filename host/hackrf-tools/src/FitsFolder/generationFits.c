@@ -24,7 +24,7 @@ float *frequencyDataRanges; // Frecuency Datas of the sweeping in ranges
 float *frequencyDatas; // Frecuency Datas of the sweeping in steps
 float *timeSteps; // Time data in steps
 char timeDatas[TRIGGERING_TIMES][60] = {""}; // Time Datas of the sweeping | 3600 dates
-float* samples; // Array of float samples where dbs measures will be saved
+int* samples; // Array of float samples where dbs measures will be saved
 
 int exist = 0;
 int status = 0, ii, jj;
@@ -47,10 +47,10 @@ extern FILE* hackrfLogsFile;
  * @param  samples: power sample 
  * @retval Min value of the power samples
  */
-float minData(float * samples)
+int minData(int * samples)
 {
     int  i = 0;
-    float minimum = samples[i];
+    int minimum = samples[i];
 
     for (i = 0; i< nElements; i++)
     {
@@ -69,10 +69,10 @@ float minData(float * samples)
  * @param  samples: power sample
  * @retval Max value of power samples
  */
-float maxData(float * samples)
+int maxData(int * samples)
 {
     int  i = 0;
-    float maximum = samples[i];
+    int maximum = samples[i];
     for (i = 0; i< nElements; i++)
     {
         if (maximum < samples[i])
@@ -193,7 +193,7 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
     fprintf(hackrfLogsFile, "generationFits | updateHeadersFitsFileImage() | Updating fits headers to format\n");
 
     double bzero = 0., bscale = 1.;
-    float dataMax = maxData(samples), dataMin= minData(samples);
+    int dataMax = maxData(samples), dataMin= minData(samples);
     double exposure = 1500. ;
     double crVal1 = getSecondsOfDayOfFirstSweeping(localTimeFirst);
     long crPix1 = 0;
@@ -227,8 +227,8 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
     
     fits_update_key(fptr, TSTRING, "BUNIT", "digits", "Z - axis title", &status); // z- axis title
 
-    fits_update_key(fptr, TFLOAT, "DATAMAX", &dataMax, "Max pixel data", &status);
-    fits_update_key(fptr, TFLOAT, "DATAMIN", &dataMin, "Min pixel data", &status);
+    fits_update_key(fptr, TINT, "DATAMAX", &dataMax, "Max pixel data", &status);
+    fits_update_key(fptr, TINT, "DATAMIN", &dataMin, "Min pixel data", &status);
 
     fits_update_key(fptr, TDOUBLE, "CRVAL1", &crVal1, "Value on axis 1 at the reference pixel [sec of a day]", &status);  // Value on axis 1 at reference pixel [sec of a day]
     fits_update_key(fptr, TLONG, "CRPIX1", &crPix1, "Reference pixel of axis 1", &status); // Reference pixel of axis 1
@@ -257,7 +257,7 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
  * @param  samples: Data to be inserted into fits file from callback function
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int insertDataImage(float* samplesOrdered)
+int insertDataImage(int* samplesOrdered)
 {
     /*Initialize the values in the image with a linear ramp function*/
     fprintf(hackrfLogsFile, "generationFits | insertDta() | Inserting data...\n");
@@ -500,12 +500,12 @@ int saveTimeSteps()
  * @param  powerSample: parameter of power sample from sweeping
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int saveSamples(int i, float powerSample, int nElements)
+int saveSamples(int i, int powerSample, int nElements)
 {
     if (i == 0)
     {
         fprintf(hackrfLogsFile, "generationFits | saveSamples() | Start saving power sample data to generate fits file\n");
-        samples = (float*)calloc(nElements,sizeof(float));
+        samples = (int*)calloc(nElements,sizeof(int));
         samples[i] = powerSample;
     }
 
@@ -563,7 +563,7 @@ int checkSavedData(int nElements)
  * @param  step_value: step value between frequencies
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int generateFitsFile(char fileFitsName[], float*samplesOrdered, struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min)
+int generateFitsFile(char fileFitsName[], int*samplesOrdered, struct tm localTimeFirst, struct tm localTimeLast, uint32_t freq_min)
 {   
     nElements = naxes[0]*naxes[1];
 
@@ -602,7 +602,7 @@ int generateFitsFile(char fileFitsName[], float*samplesOrdered, struct tm localT
  * @note   
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
  */
-int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLast, float* samplesOrdered, float* frequencies, float* times)
+int writeHackrfDataIntoTxtFiles(struct tm localTimeFirst, struct tm localTimeLast, int* samplesOrdered, float* frequencies, float* times)
 {
     int i = 0;
     int nElements = naxes[1] * TRIGGERING_TIMES;

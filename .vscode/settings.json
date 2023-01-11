@@ -5,6 +5,7 @@
         "stdio.h": "c",
         "inttypes.h": "c",
         "fitsio.h": "c",
-        "generatationfits.h": "c"
+        "generatationfits.h": "c",
+        "stat.h": "c"
     }
 }

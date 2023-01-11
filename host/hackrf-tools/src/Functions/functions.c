@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2022
  * 
  */
-#include "/home/manolo/hackrf/host/libhackrf/src/hackrf.h"
+#include "../../../libhackrf/src/hackrf.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
