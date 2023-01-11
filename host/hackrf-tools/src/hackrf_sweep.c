@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2022
  *
  */
-#include "/home/manolo/hackrf/host/libhackrf/src/hackrf.h"
+#include "../../libhackrf/src/hackrf.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,7 +28,7 @@
 #endif
 #include <signal.h>
 #include <math.h>
-#include "/home/manolo/hackrf/host/hackrf-tools/src/cfitsio/fitsio.h"
+#include "fitsio.h"
 #include "FitsFolder/generatationFits.h"
 #include "Functions/functions.h"
 #include "Timer/timer.h"
