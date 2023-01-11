@@ -37,8 +37,8 @@ sys/time.h
 -
 
 /home/manolo/hackrf/host/hackrf-tools/src/Functions/functions.h
+../../../libhackrf/src/hackrf.h
 /home/manolo/hackrf/host/libhackrf/src/hackrf.h
--
 stdio.h
 -
 stdlib.h
