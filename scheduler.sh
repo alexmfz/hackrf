@@ -1,4 +1,5 @@
 #!/bin/bash
+gcc scheduler_mock.c -o scheduler_mock
 filename='scheduler.cfg'
 
 time_now=$(date +%H%M%S)

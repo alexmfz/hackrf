@@ -1,3 +1,4 @@
-v4.2.0:
+v4.2.1:
 
 - Implement scheduler (it leaves to integrate it)
+- Folders of results reestructured
