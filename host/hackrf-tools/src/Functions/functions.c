@@ -101,6 +101,7 @@ void usage() {
 	fprintf(stderr, "\t[-c generation mode] # generation mode (0 python; 1 C\n");
 	fprintf(stderr, "\t[-s] # station name\n");
 	fprintf(stderr, "\t[-z focus code] # HackRF Code\n");
+	fprintf(stderr, "\t[-t Scheduling time] # Scheduling time read from scheduler.cfg\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Output fields:\n");
 	fprintf(stderr, "\tdate, time, hz_low, hz_high, hz_bin_width, num_samples, dB, dB, . . .\n\n");
@@ -189,6 +190,70 @@ void generateDynamicName(struct tm baseName)
 }
 
 /**
+ * @brief  Checks if the string introduced is well formated or not and cast it into a date
+ * @note
+ * @param timeScheduled: String received from scheduled.cfg not reformated
+ * @param tm_timeScheduled: timeScheduled reformated as date
+ * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
+*/
+static int formatStringToDate(char* timeScheduled, struct tm* tm_timeScheduled)
+{
+    char hour[3];
+    char min[3];
+    char sec[3];
+    int len = strlen(timeScheduled);
+    char double_dot[2] = ":";
+
+    if (len != 8)
+    {
+        printf("Error, Incorrect format of date introduced\n");
+        return EXIT_FAILURE;
+    }    
+    
+    strncpy(hour, timeScheduled, 2);
+    
+    if (strncmp(double_dot, timeScheduled + 2, 1) != 0)
+    {
+        printf("Error, Incorrect format of date introduced\n");
+        return EXIT_FAILURE;
+    }
+
+    strncpy(min, timeScheduled + 3, 2);
+
+    if (strncmp(double_dot, timeScheduled + 5, 1) != 0)
+    {
+        printf("Error, Incorrect format of date introduced\n");
+        return EXIT_FAILURE;   
+    }
+    
+    strncpy(sec, timeScheduled + 6, 2);
+
+    tm_timeScheduled->tm_hour = atoi(hour);
+    tm_timeScheduled->tm_min = atoi(min);
+    tm_timeScheduled->tm_sec = atoi(sec);
+
+    if (tm_timeScheduled->tm_hour >= 24 || tm_timeScheduled->tm_hour < 0)
+    {
+        printf("Hour values range is between 0 and 23\n");
+        return EXIT_FAILURE;
+    }
+    
+    if (tm_timeScheduled->tm_min > 59 || tm_timeScheduled->tm_min < 0)
+    {
+        printf("Minute values range is between 0 and 59\n");
+        return EXIT_FAILURE;
+    }
+    
+    if (tm_timeScheduled->tm_sec > 59 || tm_timeScheduled->tm_sec < 0)
+    {
+        printf("Seconds values range is between 0 and 59\n");
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+/**
  * @brief  Assing the parameters of the fits file
  * @note   
  * @retval Result of the function was succesfull or not (EXIT_SUCCESS | EXIT_FAILURE) 
@@ -274,7 +339,7 @@ void assignGenericParameters()
  */
 int execApiBasicConfiguration(int opt, int argc, char**argv)
 {
-while( (opt = getopt(argc, argv, "a:c:s:z:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
+while( (opt = getopt(argc, argv, "a:c:s:z:t:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 		result = HACKRF_SUCCESS;
 		switch( opt ) 
 		{
@@ -298,6 +363,14 @@ while( (opt = getopt(argc, argv, "a:c:s:z:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 		case 'z':
 			result = parse_u32(optarg, &focusCode);
 			break;
+		/*REVIEW
+		        case 't':
+            strcpy(timeScheduled, optarg);
+            if (formatStringToDate(timeScheduled, &tm_timeScheduled) == EXIT_FAILURE) { return EXIT_FAILURE; }
+            
+            break;
+
+		*/
 
 		case 'n':
 			result = parse_u32(optarg, &nChannels);
@@ -403,31 +476,31 @@ while( (opt = getopt(argc, argv, "a:c:s:z:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 /**
  * @brief  Wait until the time is multiple of 15 minutes and 0 seconds to execute sweepings
  * @note   
+ * @param tmScheduled: Time scheduled (input from scheduler.cfg reformated as date)
  * @retval Return 1 when time matches with the conditions of start XX:MM/15:00
  */
-void startExecution()
+void startExecution(struct tm tmScheduled)
 {
     time_t tStart;
     struct tm tmStart;
-    char startString[50];
+    char timeScheduledString[50];
     tStart = time(NULL);
     localtime_r(&tStart, &tmStart);
     
-    tmStart.tm_min = tmStart.tm_min + 15 - tmStart.tm_min%15;
-    tmStart.tm_sec = 0;
-    strftime(startString, sizeof(startString), "%H:%M:%S", &tmStart);
+    strftime(timeScheduledString, sizeof(timeScheduledString), "%H:%M:%S", &tmScheduled);
     
     tStart = time(NULL);
     localtime_r(&tStart, &tmStart);
     
-    printf("functions| startExecution() | Execution will start at %s\n", startString);
+    printf("functions| startExecution() | Execution will start at %s\n", timeScheduledString);
 
-    while(tmStart.tm_min %15 != 0 || tmStart.tm_sec != 0 )
+    while(tmStart.tm_hour != tmScheduled.tm_hour ||
+          tmStart.tm_min  != tmScheduled.tm_min  ||
+          tmStart.tm_sec  != tmScheduled.tm_sec)
     {
         tStart = time(NULL);
         localtime_r(&tStart, &tmStart);
     }
 
-    strftime(startString, sizeof(startString), "%H:%M:%S", &tmStart);
     printf("functions| startExecution() | Execution Started\n");
 }

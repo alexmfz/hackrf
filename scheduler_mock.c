@@ -86,9 +86,7 @@ static int formatStringToDate(char* timeScheduled, struct tm* tm_timeScheduled)
         return EXIT_FAILURE;
     }
 
-
     return EXIT_SUCCESS;
-
 }
 
 /**
