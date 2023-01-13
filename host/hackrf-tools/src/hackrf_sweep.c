@@ -51,7 +51,7 @@ typedef int bool;
 #define FFTMAX (8180)
 #define FFTMIN (4)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGGERING_TIMES (3600)						 // 3600
+#define TRIGGERING_TIMES (5)						 // 3600
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 #define FD_BUFFER_SIZE (8 * 1024)
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -81,9 +81,11 @@ int numberOfSteps = 0; // Number of channels
 float sampleRate = 0; // Custom sample rate
 
 char pathFits[50];		// File name of fits file
-int generationMode = 5; // Generation Mode (0 python; 0 C)
-int focusCode = 63;
-char stationName[50];
+int generationMode = 5; // Generation Mode (0 python; 0 C) => Input parameter
+int focusCode = 63; // Input parameter
+char stationName[50]; // Input parameter
+struct tm tm_timeScheduled; // Scheduling time => Input parameter
+
 
 extern long naxes[2];	// Number of axis of fits file
 
@@ -1250,7 +1252,7 @@ int main(int argc, char **argv)
 
 	/* END CONFIGURATION*/
 
-	// startExecution();
+	// startExecution(tm_timeScheduled);
 
 	/* START EXECUTION */
 

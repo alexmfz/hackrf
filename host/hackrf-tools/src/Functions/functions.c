@@ -39,7 +39,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFT_DEFAULT_SIZE	(20)
 
-#define TRIGGERING_TIMES (3600) //3600
+#define TRIGGERING_TIMES (5) //3600
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)
@@ -74,6 +74,7 @@ extern float sampleRate;
 extern int generationMode;
 extern int focusCode;
 extern char stationName[50];
+extern struct tm tm_timeScheduled;
 
 uint32_t nChannels = 200;
 extern FILE* hackrfLogsFile;
@@ -97,7 +98,7 @@ void usage() {
 	fprintf(stderr, "\t[-w bin_width] # FFT bin width (frequency resolution) in Hz, 2445-5000000\n");
 	fprintf(stderr, "\t[-1] # one shot mode\n");
 	fprintf(stderr, "\t[-N num_sweeps] # Number of sweeps to perform\n");
-	fprintf(stderr, "\t-r filename # output file\n");
+	fprintf(stderr, "\t[-r filename] # output file\n");
 	fprintf(stderr, "\t[-c generation mode] # generation mode (0 python; 1 C\n");
 	fprintf(stderr, "\t[-s] # station name\n");
 	fprintf(stderr, "\t[-z focus code] # HackRF Code\n");
@@ -339,7 +340,9 @@ void assignGenericParameters()
  */
 int execApiBasicConfiguration(int opt, int argc, char**argv)
 {
-while( (opt = getopt(argc, argv, "a:c:s:z:t:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
+	char timeScheduled[50];
+
+	while( (opt = getopt(argc, argv, "a:c:s:z:t:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
 		result = HACKRF_SUCCESS;
 		switch( opt ) 
 		{
@@ -363,14 +366,12 @@ while( (opt = getopt(argc, argv, "a:c:s:z:t:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) 
 		case 'z':
 			result = parse_u32(optarg, &focusCode);
 			break;
-		/*REVIEW
-		        case 't':
+
+	    case 't':
             strcpy(timeScheduled, optarg);
             if (formatStringToDate(timeScheduled, &tm_timeScheduled) == EXIT_FAILURE) { return EXIT_FAILURE; }
             
             break;
-
-		*/
 
 		case 'n':
 			result = parse_u32(optarg, &nChannels);

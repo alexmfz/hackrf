@@ -1,4 +1,4 @@
-v4.2.3:
+v4.3.0:
 
-- Implement scheduler (it leaves to finish integrating it)
-- Folders of results reestructured
+- Integration of scheduler_mock.c (Leaves to test it)
+- Add check functionality of file, content (comments and dates) of runProgram.sh
