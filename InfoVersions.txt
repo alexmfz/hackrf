@@ -1,6 +1,10 @@
-v4.4.0:
+v4.5.1:
 
 - Tests with scheduler:
     - Test with hackrf_sweep 5 executions. Command: ./hackrf_sweep -f45:245 -c1 -sSPAIN-PERALEJOS -z63 -t13:06:30 ==> OK
     - Test with wrong parameters. Command: ./hackrf_sweep -f45:245 -c1 -sSPAIN-PERALEJOS -z63 -t33:06:30 ==> OK
-    - Test with ./runProgram 5 executions (1 time). Command: ./runProgram 45 245 1 SPAIN-PERALEJOS 63 13:13:00 
+    - Test with ./runProgram 5 executions (1 time). Command: ./runProgram 45 245 1 SPAIN-PERALEJOS 63 (the time is 13:39:20  ==> OK
+    - Test with ./runProgram 5 executions (3 time). Command: ./runProgram 45 245 1 SPAIN-PERALEJOS 63 ==> OK
+        - Time 1: 13:44:00
+        - Time 2: 13:44:30
+        - Time 3: 13:45:00

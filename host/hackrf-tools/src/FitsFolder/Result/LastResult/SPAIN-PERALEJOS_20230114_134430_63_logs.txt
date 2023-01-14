@@ -9,7 +9,7 @@ functions | assignGenericParameters() | FFT size: 20
 functions | assignGenericParameters() | Samples per channel: 5
 functions | assignGenericParameters() | Execution Success
 functions | assignFitsParameters() | Assigning parameters of fits file
-functions | assignFitsParameters() | Filaname: SPAIN-PERALEJOS_20230114_133920_63.fit
+functions | assignFitsParameters() | Filaname: SPAIN-PERALEJOS_20230114_134430_63.fit
 functions | assignFitsParameters() | Receiving measures and saving as a FITS file
 
 ||===Parameters FITS file===||
@@ -56,7 +56,7 @@ hackrf_sweep | runConfiguration() | Memory allocated for power samples
 hackrf_sweep | runConfiguration() | Execution Success
 =============================================================
 
-functions| startExecution() | Execution will start at 13:39:20
+functions| startExecution() | Execution will start at 13:44:30
 functions| startExecution() | Execution Started
 =============================================================
 hackrf_sweep | runExecution() | Execution starts
@@ -109,10 +109,10 @@ hackrf_sweep | The dynamic memory used was successfully released.
 END.
 =============================================================
 
-Time parameters for command ./hackrf_sweep f45:245 -c1 (C Generation) -sSPAIN-PERALEJOS_20230114_133920_63 -z63 -t13:39:20
-Program Execution Start: 2023-01-14 13:38:12	 Program Execution Finish: 2023-01-14 13:39:21	 Duration: 69.004578s
-Configuration Start: 2023-01-14 13:38:12	 Configuration Finish: 2023-01-14 13:38:12	 Duration: 0.017951s
-Sweeping Start: 2023-01-14 13:39:20	 Sweeping Finish: 2023-01-14 13:39:21	 Duration: 1.004261s
-Generation FITS Part Start: 2023-01-14 13:39:21	 Generation FITS Part Finish: 2023-01-14 13:39:21	 Duration: 0.001805s
-Filename FITS generated: SPAIN-PERALEJOS_20230114_133920_63.fit
-HackRF Logs filename generated: SPAIN-PERALEJOS_20230114_133920_63_logs.txt
+Time parameters for command ./hackrf_sweep f45:245 -c1 (C Generation) -sSPAIN-PERALEJOS_20230114_134430_63 -z63 -t13:44:30
+Program Execution Start: 2023-01-14 13:44:01	 Program Execution Finish: 2023-01-14 13:44:31	 Duration: 29.973457s
+Configuration Start: 2023-01-14 13:44:01	 Configuration Finish: 2023-01-14 13:44:01	 Duration: 0.021207s
+Sweeping Start: 2023-01-14 13:44:30	 Sweeping Finish: 2023-01-14 13:44:31	 Duration: 1.002842s
+Generation FITS Part Start: 2023-01-14 13:44:31	 Generation FITS Part Finish: 2023-01-14 13:44:31	 Duration: 0.001883s
+Filename FITS generated: SPAIN-PERALEJOS_20230114_134430_63.fit
+HackRF Logs filename generated: SPAIN-PERALEJOS_20230114_134430_63_logs.txt
