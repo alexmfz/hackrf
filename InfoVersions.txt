@@ -1,4 +1,6 @@
-v4.3.0:
+v4.4.0:
 
-- Integration of scheduler_mock.c (Leaves to test it)
-- Add check functionality of file, content (comments and dates) of runProgram.sh
+- Tests with scheduler:
+    - Test with hackrf_sweep 5 executions. Command: ./hackrf_sweep -f45:245 -c1 -sSPAIN-PERALEJOS -z63 -t13:06:30 ==> OK
+    - Test with wrong parameters. Command: ./hackrf_sweep -f45:245 -c1 -sSPAIN-PERALEJOS -z63 -t33:06:30 ==> OK
+    - Test with ./runProgram 5 executions (1 time). Command: ./runProgram 45 245 1 SPAIN-PERALEJOS 63 13:13:00 

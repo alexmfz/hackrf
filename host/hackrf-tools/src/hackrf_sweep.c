@@ -1203,6 +1203,7 @@ int main(int argc, char **argv)
 	char timeEndSweeping[70], dateEndSweeping[70];
 
 	char executionDate[50]="";
+	char scheduleTime[50];
 	
 	/* START PROGRAM */
 	calculateTimes(&timeBeginningExecution, &tm_timeBeginningExecution, &timeValStartExecution);
@@ -1211,6 +1212,7 @@ int main(int argc, char **argv)
 	strftime(executionDate, sizeof executionDate, "%Y%m%d_%Hh_%Mm", &tm_timeBeginningExecution);
 
 	if (execApiBasicConfiguration(opt, argc, argv) == EXIT_FAILURE) { return EXIT_FAILURE; }
+	strftime(scheduleTime, sizeof scheduleTime, "%H:%M:%S", &tm_timeScheduled);
 
 	generateDynamicName(tm_timeBeginningExecution);
 
@@ -1251,8 +1253,7 @@ int main(int argc, char **argv)
 	strftime(timeEndConfig, sizeof timeEndConfig, "%Y-%m-%d %H:%M:%S", &tm_timeEndConfig);
 
 	/* END CONFIGURATION*/
-
-	// startExecution(tm_timeScheduled);
+	startExecution(tm_timeScheduled);
 
 	/* START EXECUTION */
 
@@ -1303,22 +1304,23 @@ int main(int argc, char **argv)
 	{
 		strcat(extraInfo, "C Generation");
 	}
-
+	
 	fprintf(hackrfLogsFile, "=============================================================\n\n");
-	fprintf(hackrfLogsFile, "Time parameters for command ./hackrf_sweep f%d:%d -c%d (%s)\n"
+	fprintf(hackrfLogsFile, "Time parameters for command ./hackrf_sweep f%d:%d -c%d (%s) -s%s -z%d -t%s\n"
 							"Program Execution Start: %s\t Program Execution Finish: %s\t Duration: %fs\n"
 							"Configuration Start: %s\t Configuration Finish: %s\t Duration: %fs\n"
 							"Sweeping Start: %s\t Sweeping Finish: %s\t Duration: %fs\n"
 							"Generation FITS Part Start: %s\t Generation FITS Part Finish: %s\t Duration: %fs\n"
 							"Filename FITS generated: %s\n"
 							"HackRF Logs filename generated: %s\n",
-			freq_min, freq_max, generationMode, extraInfo,
-			timeStartProgram, timeEndProgram, TimevalDiff(&timeValEndExecution, &timeValStartExecution),
-			timeStartConfig, timeEndConfig, TimevalDiff(&timeValEndConfig, &timeValStartConfig),
-			timeStartSweeping, timeEndSweeping, TimevalDiff(&timeValEndSweeping, &timeValStartSweeping),
-			timeStartGeneration, timeEndGeneration, TimevalDiff(&timeValEndGeneration, &timeValStartGeneration),
-			pathFits,
-			hackrfLogsPath);
+							freq_min, freq_max, generationMode, extraInfo, stationName, focusCode, scheduleTime,
+							timeStartProgram, timeEndProgram, TimevalDiff(&timeValEndExecution, &timeValStartExecution),
+							timeStartConfig, timeEndConfig, TimevalDiff(&timeValEndConfig, &timeValStartConfig),
+							timeStartSweeping, timeEndSweeping, TimevalDiff(&timeValEndSweeping, &timeValStartSweeping),
+							timeStartGeneration, timeEndGeneration, TimevalDiff(&timeValEndGeneration, &timeValStartGeneration),
+							pathFits,
+							hackrfLogsPath
+			);
 
 	fflush(hackrfLogsFile);
 	if (hackrfLogsFile != NULL && hackrfLogsFile != stdout)

@@ -180,9 +180,12 @@ void generateDynamicName(struct tm baseName)
 {
     char date[50]="";
 	char code[50]="";
+	baseName.tm_hour = tm_timeScheduled.tm_hour;
+	baseName.tm_min = tm_timeScheduled.tm_min;
+	baseName.tm_sec = tm_timeScheduled.tm_sec;
+
 	sprintf(code, "_%d", focusCode);
     strftime(date, sizeof date, "%Y%m%d_%H%M%S", &baseName);
-    
 	strcat(date, code);
 	strcat(stationName, "_");
 	strcat(stationName, date);
@@ -250,6 +253,7 @@ static int formatStringToDate(char* timeScheduled, struct tm* tm_timeScheduled)
         printf("Seconds values range is between 0 and 59\n");
         return EXIT_FAILURE;
     }
+	
 
     return EXIT_SUCCESS;
 }
@@ -370,7 +374,7 @@ int execApiBasicConfiguration(int opt, int argc, char**argv)
 	    case 't':
             strcpy(timeScheduled, optarg);
             if (formatStringToDate(timeScheduled, &tm_timeScheduled) == EXIT_FAILURE) { return EXIT_FAILURE; }
-            
+					           
             break;
 
 		case 'n':
@@ -493,7 +497,8 @@ void startExecution(struct tm tmScheduled)
     tStart = time(NULL);
     localtime_r(&tStart, &tmStart);
     
-    printf("functions| startExecution() | Execution will start at %s\n", timeScheduledString);
+    fprintf(hackrfLogsFile, "functions| startExecution() | Execution will start at %s\n", timeScheduledString);
+	printf("functions| startExecution() | Execution will start at %s\n", timeScheduledString);
 
     while(tmStart.tm_hour != tmScheduled.tm_hour ||
           tmStart.tm_min  != tmScheduled.tm_min  ||
@@ -503,5 +508,5 @@ void startExecution(struct tm tmScheduled)
         localtime_r(&tStart, &tmStart);
     }
 
-    printf("functions| startExecution() | Execution Started\n");
+    fprintf(hackrfLogsFile, "functions| startExecution() | Execution Started\n");
 }
