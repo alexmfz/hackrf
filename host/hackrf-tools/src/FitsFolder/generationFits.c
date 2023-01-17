@@ -4,7 +4,6 @@
  * @brief 
  * @version 0.1
  * @date 2022-11-05
- * 
  * @copyright Copyright (c) 2022
  * 
  */
@@ -16,7 +15,7 @@
 #include <inttypes.h>
 
 // -I/usr/local/src/cfitsio-4.1.0 -lcfitsio
-#define TRIGGERING_TIMES (5) //36005
+#define TRIGGERING_TIMES (3600) //36005
 #define FD_BUFFER_SIZE  (8*1024)
 /*** Global Variables***/
 fitsfile *fptr =NULL;
@@ -262,11 +261,14 @@ int insertDataImage(int* samplesOrdered)
     /*Initialize the values in the image with a linear ramp function*/
     fprintf(hackrfLogsFile, "generationFits | insertDta() | Inserting data...\n");
     int id = 0;
+    int offset = minData(samplesOrdered);
     for(ii= 0; ii< naxes[0]; ii++ ) 
     {        
         for (jj=0; jj< naxes[1]; jj++) 
         {
-            array_img[jj][ii] = (uint8_t)samplesOrdered[nElements-id-1];
+            //array_img[jj][ii] = (uint8_t)samplesOrdered[nElements-id-1];
+            // TODO: REVIEW
+            array_img[jj][ii] = (uint8_t)(samplesOrdered[nElements-id-1] + offset);
             id++;
         } 
     }

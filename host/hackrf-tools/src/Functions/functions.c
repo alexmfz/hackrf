@@ -39,7 +39,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFT_DEFAULT_SIZE	(20)
 
-#define TRIGGERING_TIMES (5) //3600
+#define TRIGGERING_TIMES (3600) //3600
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)
@@ -458,17 +458,7 @@ int execApiBasicConfiguration(int opt, int argc, char**argv)
 		}		
 	}
 
-	if (generationMode == 0)
-	{
-		fprintf(stderr, "functions | execApiBasicConfiguration() | Generation of fits file will be with Python\n");
-	}
-
-	else if (generationMode == 1)
-	{
-		fprintf(stderr, "functions | execApiBasicConfiguration() | Generation of fits file will be with C\n");
-	}
-
-	else
+	if (generationMode != 0 && generationMode != 1)
 	{
 		fprintf(stderr, "functions | execApiBasicConfiguration() | Error. Generation Mode not recognise. Use 0 for Python or 1 for C\nExample: hackrf_sweep -f45:245 -c1\n");
 		return EXIT_FAILURE;

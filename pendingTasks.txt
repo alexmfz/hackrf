@@ -14,11 +14,12 @@ Status:  OK | PENDING
 12. Execute program when time is multiple of 15 minutes and 0 seconds (XX:XX/15:00.0000) --> OK
 13. Check why the order is wrong for 45-840  --> OK
 14. Send test to Manuel --> OK
-15. Create binary table and integrate it with code --> POK
+15. Create binary table and integrate it with code --> OK
 16. Open images with RAPPViewer --> OK
 17: Finish generationFits.py --> OK
 18: Generate .txt of power samples/times/frequencies as input of generationFits.py --> OK
 19: Make tests for integration python and C scripts --> OK
 20. Add input argument for generation mode --> OK
 21. TODO: Upload data to FTP --> PENDING
-22. TODO: Make scheduler functionality --> PENDING
+22. TODO: Make scheduler functionality --> OK
+23. TODO: Resolve cast problem (wait to Monstein Response) or add offset parameter (min or max data as float?) --> PENDING

@@ -1,4 +1,4 @@
-v4.5.1:
+v4.6:
 
 - Tests with scheduler:
     - Test with hackrf_sweep 5 executions. Command: ./hackrf_sweep -f45:245 -c1 -sSPAIN-PERALEJOS -z63 -t13:06:30 ==> OK
@@ -8,3 +8,6 @@ v4.5.1:
         - Time 1: 13:44:00
         - Time 2: 13:44:30
         - Time 3: 13:45:00
+    - Test with scheduler (7 times) successfully.
+
+- In data image added offset
