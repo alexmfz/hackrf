@@ -9,6 +9,7 @@ check_format_2="^[2][0-3]:[0-5][0-9]:[0-5][0-9]" # Checks times from 20:00:00 to
 time_now=$(date +%H%M%S) # Time at this momnet
 
 # Checks file content
+cd $originalPath/host/hackrf-tools/src/FitsFolder
 if [[ ! -z "$content" && -s $filename ]]
 then
 	if [ -z "$check_comment" ]
@@ -55,6 +56,7 @@ then
     echo "generationMode == 1  -> C generation or generationMode == 0 -> Python generation"
     echo "...Exiting..."
     exit 0
+    
 else   
 
     # Move last results into previous results folder

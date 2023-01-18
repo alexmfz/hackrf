@@ -266,9 +266,9 @@ int insertDataImage(int* samplesOrdered)
     {        
         for (jj=0; jj< naxes[1]; jj++) 
         {
-            //array_img[jj][ii] = (uint8_t)samplesOrdered[nElements-id-1];
+            array_img[jj][ii] = (uint8_t)samplesOrdered[nElements-id-1];
             // TODO: REVIEW
-            array_img[jj][ii] = (uint8_t)(samplesOrdered[nElements-id-1] + offset);
+            //array_img[jj][ii] = (uint8_t)(samplesOrdered[nElements-id-1]) + offset;
             id++;
         } 
     }
