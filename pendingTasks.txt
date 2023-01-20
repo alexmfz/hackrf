@@ -21,5 +21,6 @@ Status:  OK | PENDING
 19: Make tests for integration python and C scripts --> OK
 20. Add input argument for generation mode --> OK
 21. TODO: Upload data to FTP --> PENDING
-22. TODO: Make scheduler functionality --> OK
+22. Make scheduler functionality --> OK
 23. TODO: Resolve cast problem (wait to Monstein Response) or add offset parameter (min or max data as float?) --> PENDING
+24. TODO: Make scheduler functionality period --> PENDING (It leaves to integrate it)

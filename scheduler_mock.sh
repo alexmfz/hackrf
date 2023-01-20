@@ -8,6 +8,10 @@ check_format_1="^[0-1][0-9]:[0-5][0-9]:[0-5][0-9]"
 check_format_2="^[2][0-3]:[0-5][0-9]:[0-5][0-9]"
 
 time_now=$(date +%H%M%S)
+period_time="07:59:00"
+time_check_repetition=$(date -d "$period_time" +"%H%M%S")
+enable_repetition=1
+control_log=0
 
 if [[ ! -z "$output" && -s $filename ]]
 then
@@ -45,14 +49,42 @@ else
 	exit 0
 fi
 
-while read schedule_time;
-do	
-	schedule_time_formated=$(date -d "$schedule_time" +"%H%M%S")
-	if [ $time_now -gt $schedule_time_formated ]
+# Do it again and again when time_now is 07:59:00
+while [ 1 ]
+do 
+	time_now=$(date +%H%M%S) # Update time
+
+	if [ $time_now == $time_check_repetition ]
 	then
-		echo "Cannot be scheduled on the pass"
-	else
-		echo "Executing script with param $schedule_time"
-		#./scheduler_mock -t $schedule_time
+		enable_repetition=1
+		echo "Repetition period enable"
 	fi
-done < $filename
+
+	if [ $control_log == 1 ]
+	then 
+		echo "Program will be executed again at $period_time"
+		control_log=0
+	fi
+
+	## Read all the file
+	if [ $enable_repetition == 1 ]
+	then
+		while read schedule_time 
+		do	
+			schedule_time_formated=$(date -d "$schedule_time" +"%H%M%S")
+			if [ $time_now -gt $schedule_time_formated ]
+			then
+				echo "Cannot be scheduled on the pass"
+				echo "Time now :" $time_now " Time scheduled: " $schedule_time
+			else
+				echo "Executing script with param $schedule_time"
+				#./scheduler_mock -t $schedule_time
+			fi
+		done < $filename
+
+		enable_repetition=0
+		control_log=1
+		sleep 5
+
+	fi
+done
