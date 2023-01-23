@@ -1,4 +1,6 @@
 #!/bin/bash
+./hackrf_spiflash -R  # Restart script
+sleep 1
 originalPath=$(pwd)
 
 filename='scheduler.cfg' # file that will contain scheduling times
@@ -73,6 +75,7 @@ else
     fi
 
     echo "...Running Program..."
+   
     while read schedule_time;
       do
 	      schedule_time_formated=$(date -d "$schedule_time" +"%H%M%S")
@@ -84,26 +87,18 @@ else
 
           if [ "$3" -eq 1 ]
           then
-            echo "...Fits file will be generate with C script..."
+            #echo "...Fits file will be generate with C script..."
             ./hackrf_sweep -f$1:$2 -c$3 -s$4 -z$5 -t$schedule_time
-            echo "...Moving fits and logs into Result folder"
-            mv *.fit Result/LastResult
-            mv *_logs.txt Result/LastResult
       
           else
-            echo "...Fits file will be generate with Python script..."
+#            echo "...Fits file will be generate with Python script..."
             ./hackrf_sweep -f$1:$2 -c$3 -s$4 -z$5 -t$schedule_time
-            mv *_logs.txt Result/LastResult
             python3 generationFits.py $4 $5
-            rm samples.txt
+            
+            rm samples.txt # header, times, frequencies and values
             rm times.txt
             rm frequencies.txt
             rm header_times.txt
-
-            echo "...Moving fits and logs into Result folder"
-
-            mv *.fit Result/LastResult
-            mv *_logs.txt Result/LastResult
           
           fi
         
@@ -111,6 +106,10 @@ else
       
       done < $filename
 
+    echo "...Moving fits and logs into Result folder"
+    mv *.fit Result/LastResult
+    mv *_logs.txt Result/LastResult
+            
     echo "...Program Finished..."
     echo "...Opening JavaViewer..."
     cd Result/LastResult/

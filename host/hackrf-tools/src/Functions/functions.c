@@ -491,8 +491,7 @@ void startExecution(struct tm tmScheduled)
 	printf("functions| startExecution() | Execution will start at %s\n", timeScheduledString);
 
     while(tmStart.tm_hour != tmScheduled.tm_hour ||
-          tmStart.tm_min  != tmScheduled.tm_min  ||
-          tmStart.tm_sec  != tmScheduled.tm_sec)
+          tmStart.tm_min  != tmScheduled.tm_min) 
     {
         tStart = time(NULL);
         localtime_r(&tStart, &tmStart);

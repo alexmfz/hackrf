@@ -206,7 +206,8 @@ def generate_dynamic_name():
     extension = ".fit"
     date_obs = hdul[0].header["DATE-OBS"].replace("/", "") + "_"
     start_date = hdul[0].header["TIME-OBS"]
-    format_date = start_date[:3].replace(":", "h_") + start_date[3:6].replace(":", "m")
+    logger.info("Start date" + start_date)
+    format_date = start_date[:3].replace(":", "") + start_date[3:6].replace(":", "") + start_date[6:8]
 
     fits_name = sys.argv[1] + "_" + date_obs + format_date + "_" + sys.argv[2] + extension
 
