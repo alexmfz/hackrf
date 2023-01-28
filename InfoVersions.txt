@@ -1,3 +1,4 @@
-v4.6.2:
+v4.7:
 
-- Scheduling period mock up done (leave to integrate it)
+- Solved some bugs at fits image. They were moved 
+- Solved a bug from runProgram.sh at reading scheduler.cfg

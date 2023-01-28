@@ -487,15 +487,16 @@ void startExecution(struct tm tmScheduled)
     tStart = time(NULL);
     localtime_r(&tStart, &tmStart);
     
-    fprintf(hackrfLogsFile, "functions| startExecution() | Execution will start at %s\n", timeScheduledString);
-	printf("functions| startExecution() | Execution will start at %s\n", timeScheduledString);
+    fprintf(hackrfLogsFile, "functions | startExecution() | Execution will start at %s\n", timeScheduledString);
+	printf("functions | startExecution() | Execution will start at %s\n", timeScheduledString);
 
     while(tmStart.tm_hour != tmScheduled.tm_hour ||
-          tmStart.tm_min  != tmScheduled.tm_min) 
+          tmStart.tm_min  != tmScheduled.tm_min ||
+		  tmStart.tm_sec < tmScheduled.tm_sec)
     {
         tStart = time(NULL);
         localtime_r(&tStart, &tmStart);
     }
 
-    fprintf(hackrfLogsFile, "functions| startExecution() | Execution Started\n");
+    fprintf(hackrfLogsFile, "functions | startExecution() | Execution Started\n");
 }

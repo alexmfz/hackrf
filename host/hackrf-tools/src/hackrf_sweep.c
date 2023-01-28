@@ -887,7 +887,7 @@ static void printValuesHackRFOne()
 {
 	int i = 0;
 	int nElements = naxes[0] * naxes[1];
-	float step_range = (float)((fft_bin_width) / FREQ_ONE_MHZ) * (fftSize / 4);
+	//float step_range = (float)((fft_bin_width) / FREQ_ONE_MHZ) * (fftSize / 4);
 
 	/*
 		printf("hackrf_sweep | printValuesHackRFOne() | Data results: Timing\n");
@@ -907,13 +907,13 @@ static void printValuesHackRFOne()
 
 		}*/
 
-	/*	for (i = 0; i < nElements; i++)
+		for (i = 0; i < 300; i++)
 		{
 
-			printf("Power sample[%d]: %f\t Power samples uint8_t[%d]: %d", i, samplesOrdered[i], i, (int8_t)samplesOrdered[i]);
+			fprintf(hackrfLogsFile, "Power sample id([%d]): %d\t Power samples nElements -id -1([%d]): %d\n", i, samplesOrdered[i], i, samplesOrdered[nElements - i -1]);
 
 		}
-	*/
+	
 	/*	printf("hackrf_sweep | printValuesHackRFOne() | Data results: Frequencies\n");
 		for (i = 0; i< nRanges; i++)
 		{
@@ -1160,7 +1160,7 @@ static int runGeneration(struct tm localTimeFirst, struct tm localTimeLast)
 							  localTimeFirst, localTimeLast,
 							  freq_min)) == EXIT_FAILURE)
 		{
-			return EXIT_FAILURE;
+			return EXIT_FAILURE;  
 		}
 	}
 
@@ -1248,7 +1248,6 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	
 	calculateTimes(&t_timeEndConfig, &tm_timeEndConfig, &timeValEndConfig);
 	strftime(timeEndConfig, sizeof timeEndConfig, "%Y-%m-%d %H:%M:%S", &tm_timeEndConfig);
 
@@ -1281,7 +1280,6 @@ int main(int argc, char **argv)
 
 	calculateTimes(&t_timeEndGeneration, &tm_timeEndGeneration, &timeValEndGeneration);
 	strftime(timeEndGeneration, sizeof timeEndGeneration, "%Y-%m-%d %H:%M:%S", &tm_timeEndGeneration);
-	// printValuesHackRFOne();
 
 	/* END GENERATION */
 
@@ -1305,6 +1303,8 @@ int main(int argc, char **argv)
 		strcat(extraInfo, "C Generation");
 	}
 	
+//	printValuesHackRFOne();
+
 	fprintf(hackrfLogsFile, "=============================================================\n\n");
 	fprintf(hackrfLogsFile, "Time parameters for command ./hackrf_sweep f%d:%d -c%d (%s) -s%s -z%d -t%s\n"
 							"Program Execution Start: %s\t Program Execution Finish: %s\t Duration: %fs\n"

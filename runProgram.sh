@@ -1,15 +1,22 @@
 #!/bin/bash
+echo "...Reattaching HackRF One..."
+./hackrf_spiflash -R  # Restart script
+sleep 1
 originalPath=$(pwd) # Base path
+cd $originalPath/host/hackrf-tools/src/FitsFolder
 
 filename='scheduler.cfg' # File name with schedule times
 content=$(cat $filename) # Content of file name
 check_comment=$(cat $filename | grep "END SCHEDULING") # Checks if exists comment in filename
 check_format_1="^[0-1][0-9]:[0-5][0-9]:[0-5][0-9]" # Checks times from 00:00:00 to 19:59:59
 check_format_2="^[2][0-3]:[0-5][0-9]:[0-5][0-9]" # Checks times from 20:00:00 to 23:59:59
-time_now=$(date +%H%M%S) # Time at this momnet
+time_now=$(date +%H%M%S) # Time at this moment
 
 # Checks file content
-cd $originalPath/host/hackrf-tools/src/FitsFolder
+cp $filename original.tmp
+head -n -1 $filename > scheduler.tmp
+cp scheduler.tmp $filename
+
 if [[ ! -z "$content" && -s $filename ]]
 then
 	if [ -z "$check_comment" ]
@@ -46,6 +53,7 @@ else
 	exit 0
 fi
 
+cp original.tmp $filename
 
 #Checks parameters of execution an run it if everything is ok
 if  [[ -z "$1" || -z "$2" || -z "$3" || -z "$4" || -z "$5" ]]
@@ -83,21 +91,19 @@ else
         cd $originalPath/host/hackrf-tools/src/FitsFolder/
         if [ "$3" -eq 1 ]
         then
-          echo "...Fits file will be generate with C script..."
+        #echo "...Fits file will be generate with C script..."
           ./hackrf_sweep -f$1:$2 -c$3 -s$4 -z$5 -t$schedule_time
-          echo "...Moving fits and logs into Result folder"
           mv *.fit Result/LastResult
           mv *_logs.txt Result/LastResult
 
         else
-          echo "...Fits file will be generate with Python script..."
+         # echo "...Fits file will be generate with Python script..."
           ./hackrf_sweep -f$1:$2 -c$3 -s$4 -z$5 -t$schedule_time
           mv samples.txt pythonScripts/
           mv times.txt pythonScripts/
           mv frequencies.txt pythonScripts/
           mv header_times.txt pythonScripts/
-          mv *_logs.txt Result/LastResult
-
+          
           cd pythonScripts/
           python3 generationFits.py $4 $5
           rm samples.txt
@@ -105,17 +111,16 @@ else
           rm frequencies.txt
           rm header_times.txt
 
-          echo "...Moving fits and logs into Result folder"
-
           cd ..
-
-          mv pythonScripts/*.fit Result/LastResult
-          mv pythonScripts/*_logs.txt Result/LastResult
       
         fi
       fi
     done < $filename
 
+    echo "...Moving fits and logs into Result folder"
+    mv *_logs.txt Result/LastResult
+    mv pythonScripts/*.fit Result/LastResult
+    mv pythonScripts/*_logs.txt Result/LastResult
     # Execute FITS viewer
     echo "...Program Finished..."
     echo "...Opening JavaViewer..."

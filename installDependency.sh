@@ -24,6 +24,7 @@ sudo make
 sudo make install
 sudo make clean
 sudo ldconfig
-
+sudo pip3 install astropy
+sudo cp $base/host/build/libhackrf/src/libhackrf.so.0 /lib/arm-linux/gnueabihf/libhackrf.so.0
 
 echo "...Dependencies successfully installed..."

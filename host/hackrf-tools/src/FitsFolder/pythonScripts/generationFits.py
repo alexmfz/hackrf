@@ -7,6 +7,7 @@ from io import open
 
 import os
 import sys
+import datetime as dt
 
 error_code = "ERROR"
 success_code = "OK"
@@ -128,7 +129,7 @@ def update_headers_image():
     hdul[0].header.append(("BZERO", bzero, "Scaling offset"))
     hdul[0].header.append(("BSCALE", bscale, "Scaling factor"))
 
-    hdul[0].header.append(("BUNIT", "digits", "Z - axis title"))    
+    hdul[0].header.append(("BUNIT", "digits", "Z - axis title"))
 
     hdul[0].header.append(("DATAMAX", max_value, "Max pixel data"))
     hdul[0].header.append(("DATAMIN", min_value, "Min pixel data"))
@@ -211,7 +212,6 @@ def generate_dynamic_name():
 
     fits_name = sys.argv[1] + "_" + date_obs + format_date + "_" + sys.argv[2] + extension
 
-
     logger.info("generationFits | generate_dynamic_name() | File generated with name: " + fits_name)
     return fits_name
 
@@ -251,10 +251,29 @@ def insert_data_image(image_data, power_sample):
     @return: image data created
     """
 
-    i = 0
+    i = 0  # iterator of samples
+
+    j = 0  # Aux iterator
+    z = 0  # Aux iterator
+    y = 0  # Aux iterator
+    image_data_2 = np.ones((n_channels, triggering_times), dtype='u1')
 
     logger.info("generationFits | insert_data_image() | Inserting data into image")
 
+    for times in range(triggering_times):
+        for frequencies in range(n_channels):
+            image_data_2[frequencies][times] = np.array(power_sample[i]).astype("u1")
+            i += 1
+
+    # Values should be entered in ordered so there is a need of regroup
+    for element in range(n_channels * triggering_times):
+        if element % n_channels == 0 and element != 0:
+            j += 1
+            z = 0
+        power_sample[element] = image_data_2[z][triggering_times - j - 1]
+        z += 1
+
+    i = 0  # restart iterator
     for times in range(triggering_times):
         for frequencies in range(n_channels):
             image_data[frequencies][times] = np.array(power_sample[i]).astype("u1")
@@ -380,6 +399,7 @@ if __name__ == "__main__":
         logger.info("generationFits | " + error_code)
 
     logger.info("generationFits | Execution Success")
+    logger.info(dt.datetime.now())
     logger.shutdown()
 
     # Rename fits.log with the name of the data
@@ -392,5 +412,3 @@ if __name__ == "__main__":
     # print fits data to debug
     print_fits_info()
     """
-
-

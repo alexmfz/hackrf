@@ -31,12 +31,14 @@ int fpixel = 1;
 int naxis = 2 , exposure;
 extern int nElements;
 long naxes[2];// = {3600,200, 720000}; //200 filas(eje y) 400 columnas(eje x)
+uint8_t array_img_aux[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
 uint8_t array_img[200][TRIGGERING_TIMES]; //naxes[0]naxes[y] (axis x ,axis y)
 
 extern struct timeval timeValStartSweeping;
 extern struct tm timeFirstSweeping;
 extern float step_value;
 extern FILE* hackrfLogsFile;
+extern struct tm tm_timeScheduled;
 
 /********************/
 
@@ -260,19 +262,49 @@ int insertDataImage(int* samplesOrdered)
 {
     /*Initialize the values in the image with a linear ramp function*/
     fprintf(hackrfLogsFile, "generationFits | insertDta() | Inserting data...\n");
-    int id = 0;
+    int nChannels = naxes[1];
+    int id = 0; // Id sample iterator
     int offset = minData(samplesOrdered);
-    for(ii= 0; ii< naxes[0]; ii++ ) 
+    int z = 0, i = 0, j = 0; // Aux id sample iterators
+    // Saving data into array which is in wrong order, so we have to reorder it
+    for(ii = 0; ii < naxes[0]; ii++ ) 
     {        
-        for (jj=0; jj< naxes[1]; jj++) 
-        {
-            array_img[jj][ii] = (uint8_t)samplesOrdered[nElements-id-1];
+        for (jj = 0; jj < naxes[1]; jj++) 
+        {  
+            array_img_aux[jj][ii] = (uint8_t)samplesOrdered[nElements - id - 1];
             // TODO: REVIEW
-            //array_img[jj][ii] = (uint8_t)(samplesOrdered[nElements-id-1]) + offset;
+            //array_img[jj][ii] = (uint8_t)(samplesOrdered[nElements-id-1]) + offset;     
+            id++;
+        } 
+    }
+  
+    id = 0; // Reset iterator again
+
+    for (i = 0; i < nElements; i++)
+    {
+        samples[i] = 0;
+        if (i% nChannels == 0 && i != 0)
+        {
+            j++;
+            z = 0;
+        }
+
+        samples[i] = array_img_aux[z][naxes[0] - j -1];
+        z++;
+    }
+
+    for(ii = 0; ii < naxes[0]; ii++ ) 
+    {        
+        for (jj = 0; jj < naxes[1]; jj++) 
+        {  
+            array_img[jj][ii] = (uint8_t)samples[id];
+            // TODO: REVIEW
+            //array_img[jj][ii] = (uint8_t)(samplesOrdered[nElements-id-1]) + offset;     
             id++;
         } 
     }
     
+
     fprintf(hackrfLogsFile, "generationFits | insertDataImage() | Inserting data finished. Creating fits image...\n");
 
     /*Write the array of integers of the image*/
@@ -282,7 +314,6 @@ int insertDataImage(int* samplesOrdered)
         fits_report_error(hackrfLogsFile, status);
         return EXIT_FAILURE;
     }
-//    for (ii = 0; ii< nElements; ii++){ fprintf(hackrfLogsFile, "Sample[%d]: %f\t SampleReverse[%d]: %f\n", ii, samples[ii], ii, samples[nElements-1-ii]); }
 
     fprintf(hackrfLogsFile, "generationFits | insertDataImage() | Execution Sucess\n");
     return EXIT_SUCCESS;
@@ -396,6 +427,7 @@ int saveFrequencies(uint32_t freq_min, uint32_t freq_max, int n_ranges, float st
 {   
     int i = 0;
     float actualFrequency = (float)freq_min;
+    //float actualFrequencyAux = (float)freq_min;
     float actualFrequencyAux = (float)freq_max - step_value;
     fprintf(hackrfLogsFile, "generationFits | saveFrequencies() | Start saving index data frequencies in ranges to generate fits file\n");
     
