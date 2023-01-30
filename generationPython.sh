@@ -2,7 +2,7 @@
 originalPath=$(pwd) # Base path
 cd $originalPath/host/hackrf-tools/src/FitsFolder
 
-parameter_file='parameters.cfg' # File with parameters of the program to be executed
+parameter_file='config.cfg' # File with parameters of the program to be executed
 scheduler_file='scheduler.cfg' # File with scheduling times
 
 content_scheduling=$(cat $scheduler_file) # Content of file name with times
@@ -63,16 +63,27 @@ fi
 freq_min=$(head -n 1 $parameter_file | grep -o '^[^#]*' | grep -o '[^frq_min=]*')
 freq_max=$(head -n 2 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^frq_max=]*')
 gen_mode=$(head -n 3 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^gen_mode=]*')
-station_name=$(head -n 4 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^station_name=]*')
+station_name=$(head -n 4 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^station_name=].*')
 focus_code=$(head -n 5 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^focus_code=]*')
+gain=$(head -n 6 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^gain=]*')
+longitude=$(head -n 7 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^longitude=]*')
+longitude_code=$(head -n 8 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^longitude_code=].*')
+latitude=$(head -n 9 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^latitude=]*')
+latitude_code=$(head -n 10 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^latitude_code=].*')
+altitude=$(head -n 11 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^altitude=]*')
+object=$(head -n 12 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^object=].*')
+content=$(head -n 13 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^content=].*')
 
 # Check the content of the variables
-if [[ -z $freq_min || -z freq_max || -z $gen_mode || -z $station_name || -z $focus_code ]]
+if [[ -z $freq_min || -z $freq_max || -z $gain ||
+      -z $gen_mode   || -z $station_name || -z $focus_code || 
+      -z $longitude  || -z $longitude_code ||
+      -z $latitude   || -z $latitude_code  || -z $altitude ||
+      -z $object   || -z $content ]]
 then
     echo "File parameters are empty"
     echo "...Exiting..."
     exit 0
-
 else
     # Check gen mode and if gen_mode == 0, then scheduling.cfg will be read and sw will be executed
     if [ $gen_mode -eq 0 ]
@@ -88,7 +99,6 @@ else
                                                             + 1 seconds
                                                             + 1 seconds
                                                             + 1 seconds" +"%H%M%S")
-            echo "Time execution $schedule_time_future"
             while [ $time_now -lt $schedule_time_future ]
             do
                 time_now=$(date +%H%M%S) 
@@ -96,7 +106,7 @@ else
 
             # execute generation with python
             cd pythonScripts/
-            python3 generationFits.py $station_name $focus_code
+            python3 generationFits.py $station_name $focus_code $latitude $latitude_code $longitude $longitude_code $altitude $object $content # TODO: Add params
             rm samples.txt
             rm times.txt
             rm frequencies.txt

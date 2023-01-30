@@ -1,4 +1,6 @@
-v4.7:
+v5.0:
 
-- Solved some bugs at fits image. They were moved 
-- Solved a bug from runProgram.sh at reading scheduler.cfg
+- Implemented Monsteins comments to make it all more customizable
+- Added new version of runProgram.sh (runProgram_v2.sh) which executes ./hackrf_sweep with input parameters read from "config.cfg"
+- runProgram_v2.sh not execute generationFits.py to minimize times. So it is executed from another script call "generationPython.sh"
+- Implementation of "generationPython.sh" to separate functionalities. It will only execute if generationMode is with Python

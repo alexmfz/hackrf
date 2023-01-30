@@ -16,7 +16,52 @@ check_comment=$(cat $filename | grep "########### END SCHEDULING ###########") #
 check_format_1="^[0-1][0-9]:[0-5][0-9]:[0-5][0-9]" # datetime format 1
 check_format_2="^[2][0-3]:[0-5][0-9]:[0-5][0-9]" # # datetime format 2
 
+ # Checks file content
+cp $filename original.tmp
+head -n -1 $filename > scheduler.tmp
+cp scheduler.tmp $filename
 
+if [[ ! -z $content_filename && -s $filename ]]
+    then
+      # It must include last line as comment ########### END SCHEDULING ###########
+      if [ -z "$check_comment" ]
+      then
+        echo "File not empty, but not well formated.
+              Must include this exactly comment as last line:
+              ########### END SCHEDULING ###########"
+        echo "...Exiting..."
+        exit 0
+      
+      fi
+      # Check time format
+      while read schedule_time
+      do
+        check_time_1=$(echo $schedule_time | grep $check_format_1)
+		    check_time_2=$(echo $schedule_time | grep $check_format_2)
+        
+        if [[ -z $check_time_1 && -z $check_time_2 ]]
+		    then
+			    echo "Time not well formated"
+			    echo "...Exiting..."
+			    exit 0
+		    fi
+     
+      done < $filename
+
+    else
+      echo "File empty"
+      echo "Example (comment must be included):
+		        20:00:00
+		        20:15:00
+		        ########### END SCHEDULING ###########" 
+      echo "...Exiting..."
+      exit 0
+    fi
+  
+cp original.tmp $filename
+exit 0
+
+#Checks parameters of execution an run it if everything is ok
 if  [[ -z "$1" || -z "$2" || -z "$3" || -z "$4" || -z "$5" ]]
 then
     # At least one parameter is null
@@ -37,45 +82,6 @@ else
     cd $originalPath
     echo "...Checking scheduler file format..."
     
-    if [[ ! -z $content_filename && -s $filename ]]
-    then
-      # It must include last line as comment ########### END SCHEDULING ###########
-      if [ -z "$check_comment" ]
-      then
-        echo "File not empty, but not well formated.
-              Must include this exactly comment as last line:
-              ########### END SCHEDULING ###########"
-        echo "...Exiting..."
-        exit 0
-      
-      fi
-
-    else
-      echo "File empty"
-      echo "Example (comment must be included):
-		        20:00:00
-		        20:15:00
-		        ########### END SCHEDULING ###########" 
-      echo "...Exiting..."
-      exit 0
-
-      # Check time format
-      while read schedule_time
-      do
-        check_time_1=$(echo $schedule_time | grep $check_format_1)
-		    check_time_2=$(echo $schedule_time | grep $check_format_2)
-        
-        if [[ -z $check_time_1 && -z $check_time_2 ]]
-		    then
-			    echo "Time not well formated"
-			    echo "...Exiting..."
-			    exit 0
-		    fi
-     
-      done < $filename
-    
-    fi
-
     echo "...Running Program..."
    
     while read schedule_time;

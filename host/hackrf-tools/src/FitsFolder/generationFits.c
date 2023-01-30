@@ -15,7 +15,7 @@
 #include <inttypes.h>
 
 // -I/usr/local/src/cfitsio-4.1.0 -lcfitsio
-#define TRIGGERING_TIMES (3600) //36005
+#define TRIGGERING_TIMES (5) //36005
 #define FD_BUFFER_SIZE  (8*1024)
 /*** Global Variables***/
 fitsfile *fptr =NULL;
@@ -39,6 +39,17 @@ extern struct tm timeFirstSweeping;
 extern float step_value;
 extern FILE* hackrfLogsFile;
 extern struct tm tm_timeScheduled;
+
+extern float longitude;
+extern char longitude_code[1];
+
+extern float latitude;
+extern char latitude_code[1];
+
+extern float altitude;
+
+extern char obj[50];
+extern char content[100];
 
 /********************/
 
@@ -187,10 +198,6 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
 	char time_end[70]; // time observation ends
 	strftime(time_end, sizeof time_end, "%H:%M:%S", &localTimeLast); 
 
-    char content[70];
-    strftime(content, sizeof content, "%Y/%m/%d", &localTimeFirst);
-    strcat(content, " Radio Flux density, HackRF-One (Spain)");
-
     fprintf(hackrfLogsFile, "generationFits | updateHeadersFitsFileImage() | Updating fits headers to format\n");
 
     double bzero = 0., bscale = 1.;
@@ -204,9 +211,6 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
     long crPix2 = 0;
     double stepY = -1.; // crVal2 Start axis y value 0
     
-    double obs_lat = 40.5131623, obs_lon = -3.3527243, obs_alt = 594.; // Coordinates
-    long pwm_val = -10;
-
     fits_update_key(fptr, TSTRING,"DATE", date, "Time of observation" ,&status); // Date observation
 
     fits_update_key(fptr, TSTRING, "CONTENT", content, "Title", &status);
@@ -216,7 +220,7 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
     fits_update_key(fptr, TSTRING, "TELESCOP","SDR", "Type of intrument", &status); // Instrument type
     fits_update_key(fptr, TSTRING, "INSTRUME","HACKRF One", "Name of the instrument", &status); // Instrument name
 
-    fits_update_key(fptr, TSTRING, "OBJECT", "Space", "Object name", &status); // Object Description
+    fits_update_key(fptr, TSTRING, "OBJECT", &obj, "Object name", &status); // Object Description
 
     fits_update_key(fptr, TSTRING, "DATE-OBS", date_obs, "Date observation starts", &status); // Date observation starts
     fits_update_key(fptr, TSTRING, "TIME-OBS", time_obs, "Time observation starts", &status); // Time observation starts
@@ -241,13 +245,11 @@ void updateHeadersFitsFileImage(struct tm localTimeFirst, struct tm localTimeLas
     fits_update_key(fptr, TSTRING, "CTYPE2", "Frequency [MHz]", "Title of axis 2", &status ); // Title of axis 2
     fits_update_key(fptr, TDOUBLE, "CDELT2", &stepY, "Steps samples", &status); // Steps axis Y
 
-    fits_update_key(fptr, TDOUBLE, "OBS_LAT", &obs_lat, "Observatory latitude in degree", &status);
-    fits_update_key(fptr, TSTRING, "OBS_LAC", "N", "Observatory latitude code {N, S}", &status);
-    fits_update_key(fptr, TDOUBLE, "OBS_LON", &obs_lon, "Observatory longitude in degree", &status);
-    fits_update_key(fptr, TSTRING, "OBS_LOC", "W", "Observatory longitude code {E, W}", &status);
-    fits_update_key(fptr, TDOUBLE, "OBS_ALT", &obs_alt, "Observatory altitude in meter", &status);
-
-    fits_update_key(fptr, TLONG, "PWM_VAL", &pwm_val, "PWM value to control tuner gain", &status);
+    fits_update_key(fptr, TFLOAT, "OBS_LAT", &latitude, "Observatory latitude in degree", &status);
+    fits_update_key(fptr, TSTRING, "OBS_LAC", latitude_code, "Observatory latitude code {N, S}", &status);
+    fits_update_key(fptr, TFLOAT, "OBS_LON", &longitude, "Observatory longitude in degree", &status);
+    fits_update_key(fptr, TSTRING, "OBS_LOC", longitude_code, "Observatory longitude code {E, W}", &status);
+    fits_update_key(fptr, TFLOAT, "OBS_ALT", &altitude, "Observatory altitude in meter", &status);
 
     fprintf(hackrfLogsFile, "generationFits | updateHeadersFitsFile() | Execution Sucess\n");
 }

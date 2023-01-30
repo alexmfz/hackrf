@@ -39,7 +39,7 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFT_DEFAULT_SIZE	(20)
 
-#define TRIGGERING_TIMES (3600) //3600
+#define TRIGGERING_TIMES (5) //3600
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)
@@ -77,6 +77,18 @@ extern char stationName[50];
 extern struct tm tm_timeScheduled;
 
 uint32_t nChannels = 200;
+
+extern float longitude;
+extern char longitude_code[1];
+
+extern float latitude;
+extern char latitude_code[1];
+
+extern float altitude;
+
+extern char obj[50];
+extern char content[100];
+
 extern FILE* hackrfLogsFile;
 /*******/
 
@@ -96,6 +108,13 @@ void usage() {
 	fprintf(stderr, "\t[-l gain_db] # RX LNA (IF) gain, 0-40dB, 8dB steps\n");
 	fprintf(stderr, "\t[-g gain_db] # RX VGA (baseband) gain, 0-62dB, 2dB steps\n");
 	fprintf(stderr, "\t[-w bin_width] # FFT bin width (frequency resolution) in Hz, 2445-5000000\n");
+	fprintf(stderr, "\t[-L latitude] # Latitude\n");
+	fprintf(stderr, "\t[-k latitude code] # Latitude code\n");
+	fprintf(stderr, "\t[-m longitude] # Longitude\n");
+	fprintf(stderr, "\t[-M longitude code] # Longitude code\n");
+	fprintf(stderr, "\t[-A altitude] # altitude\n");
+	fprintf(stderr, "\t[-o object] # object\n");
+	fprintf(stderr, "\t[-O content] # content\n");
 	fprintf(stderr, "\t[-1] # one shot mode\n");
 	fprintf(stderr, "\t[-N num_sweeps] # Number of sweeps to perform\n");
 	fprintf(stderr, "\t[-r filename] # output file\n");
@@ -346,7 +365,7 @@ int execApiBasicConfiguration(int opt, int argc, char**argv)
 {
 	char timeScheduled[50];
 
-	while( (opt = getopt(argc, argv, "a:c:s:z:t:f:p:l:g:d:n:N:w:i:1r:h?")) != EOF ) {
+	while( (opt = getopt(argc, argv, "a:c:s:z:t:f:p:l:g:L:k:m:M:A:o:O:d:n:N:w:i:1r:h?")) != EOF ) {
 		result = HACKRF_SUCCESS;
 		switch( opt ) 
 		{
@@ -416,6 +435,34 @@ int execApiBasicConfiguration(int opt, int argc, char**argv)
 		case 'l':
 			result = parse_u32(optarg, &lna_gain);
 			break;
+		
+		case 'L':
+			longitude = atof(optarg);
+			break;
+
+		case 'k':
+			strcpy(longitude_code, optarg);
+			break;
+		
+		case 'm':
+			latitude = atof(optarg);
+			break;
+
+		case 'M':
+			strcpy(latitude_code ,optarg);
+			break;
+
+		case 'A':
+			altitude = atof(optarg);
+			break;
+		
+		case 'o':
+			strcpy(obj, optarg);
+			break;
+		
+		case 'O':
+			strcpy(content, optarg);
+			break;
 
 		case 'g':
 			result = parse_u32(optarg, &vga_gain);
@@ -463,8 +510,20 @@ int execApiBasicConfiguration(int opt, int argc, char**argv)
 		fprintf(stderr, "functions | execApiBasicConfiguration() | Error. Generation Mode not recognise. Use 0 for Python or 1 for C\nExample: hackrf_sweep -f45:245 -c1\n");
 		return EXIT_FAILURE;
 	}
-
-
+	/*fprintf(stderr, "Input parameters:\n"
+			"Fmin: %d\nFmax: %d\nGeneration Mode :%d\n"
+			"Station Name: %s\nFocus Code : %d\nGain: %d\n"
+			"Longitude: %f\nLongitude Code: %s\n"
+			"Latitude: %f\nLatitude Code: %s\n"
+			"Altitude: %f\n"
+			"Object: %s\nContent: %s\n",
+			freq_min, freq_max, generationMode,
+			stationName, focusCode, vga_gain,
+			longitude, longitude_code,
+			latitude, latitude_code,
+			altitude,
+			obj, content);
+*/
 	return EXIT_SUCCESS;
 }
 

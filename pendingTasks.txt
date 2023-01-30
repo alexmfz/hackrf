@@ -22,5 +22,8 @@ Status:  OK | PENDING
 20. Add input argument for generation mode --> OK
 21. TODO: Upload data to FTP --> PENDING
 22. Make scheduler functionality --> OK
-23. TODO: Resolve cast problem (wait to Monstein Response) or add offset parameter (min or max data as float?) --> PENDING
+23. Resolve cast problem (wait to Monstein Response) or add offset parameter (min or max data as float?) --> Did not comment anything (OK)
 24. TODO: Make scheduler functionality period --> PENDING (It leaves to integrate it)
+25. Implement Monstein's comments --> OK
+26. TODO: Investigate bandwidth problem
+27. Implement new runProgram version && generationPython --> OK

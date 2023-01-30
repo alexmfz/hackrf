@@ -116,10 +116,10 @@ def update_headers_image():
 
     # Update headers
     hdul[0].header.append(("DATE", header_data[0].replace("/", "-"), "Time of observation"))
-    hdul[0].header.append(("CONTENT", header_data[0] + "Radio Flux density, HackRF-One (Spain)", "Title"))
+    hdul[0].header.append(("CONTENT", sys.argv[9], "Title"))
 
     hdul[0].header.append(("INSTRUME", "HACKRF One", "Name of the instrument"))
-    hdul[0].header.append(("OBJECT", "Space", "Object name"))
+    hdul[0].header.append(("OBJECT", sys.argv[8], "Object name"))
 
     hdul[0].header.append(("DATE-OBS", header_data[0], "Date observation starts"))
     hdul[0].header.append(("TIME-OBS", header_data[1], "Time observation starts"))
@@ -144,11 +144,11 @@ def update_headers_image():
     hdul[0].header.append(("CTYPE2", "Frequency [MHz]", "Title of axis 2"))
     hdul[0].header.append(("CDELT2", -1, "Step samples"))
 
-    hdul[0].header.append(("OBS_LAT", 40.5131623, "Observatory latitude in degree"))
-    hdul[0].header.append(("OBS_LAC", "N", "Observatory latitude code {N, S}"))
-    hdul[0].header.append(("OBS_LON", -3.3527243, "Observatory longitude in degree"))
-    hdul[0].header.append(("OBS_LOC", "W", " Observatory longitude code {E, W}"))
-    hdul[0].header.append(("OBS_ALT", 594., "Observatory altitude in meter"))
+    hdul[0].header.append(("OBS_LAT", sys.argv[3], "Observatory latitude in degree"))
+    hdul[0].header.append(("OBS_LAC", sys.argv[4], "Observatory latitude code {N, S}"))
+    hdul[0].header.append(("OBS_LON", sys.argv[5], "Observatory longitude in degree"))
+    hdul[0].header.append(("OBS_LOC", sys.argv[6], " Observatory longitude code {E, W}"))
+    hdul[0].header.append(("OBS_ALT", sys.argv[7], "Observatory altitude in meter"))
 
     if len_headers == len(hdul[0].header):
         return error_code
@@ -391,9 +391,10 @@ def generate_fits(n_channels, triggering_times):
 
 if __name__ == "__main__":
 
-    triggering_times = 3600
+    triggering_times = 5
     n_channels = 200
-
+    
+    
     logger.basicConfig(filename='fits.log', filemode='w', level=logger.INFO)
     if generate_fits(n_channels, triggering_times) != success_code:
         logger.info("generationFits | " + error_code)
@@ -408,6 +409,7 @@ if __name__ == "__main__":
 
     # Renaming the file
     os.rename(old_name, new_name)
+    
     """
     # print fits data to debug
     print_fits_info()

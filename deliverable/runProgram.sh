@@ -18,7 +18,7 @@ check_format_2="^[2][0-3]:[0-5][0-9]:[0-5][0-9]" # # datetime format 2
 
  # Checks file content
 cp $filename original.tmp
-head -n -1 $filename > scheduler.tmp
+head -n -2 $filename > scheduler.tmp
 cp scheduler.tmp $filename
 
 if [[ ! -z $content_filename && -s $filename ]]
@@ -58,8 +58,7 @@ if [[ ! -z $content_filename && -s $filename ]]
       exit 0
     fi
   
-cp original.tmp $filename
-exit 0
+#exit 0
 
 #Checks parameters of execution an run it if everything is ok
 if  [[ -z "$1" || -z "$2" || -z "$3" || -z "$4" || -z "$5" ]]
@@ -103,6 +102,7 @@ else
             ./hackrf_sweep -f$1:$2 -c$3 -s$4 -z$5 -t$schedule_time
             python3 generationFits.py $4 $5
             
+		
             rm samples.txt # header, times, frequencies and values
             rm times.txt
             rm frequencies.txt
@@ -113,6 +113,8 @@ else
         fi
       
       done < $filename
+
+    cp original.tmp $filename
 
     echo "...Moving fits and logs into Result folder"
     mv *.fit Result/LastResult

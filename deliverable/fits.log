@@ -1,0 +1,5 @@
+INFO:root:generationFits | Initializing generation of fits file through python
+INFO:root:generationsFits | Dimensions Fits file: 3600x200
+INFO:root:generationFits | createImage() | Creation of fits image
+INFO:root:generationFits | createImage() | Reading power samples from SDR
+INFO:root:generationFits | read_power_samples() | Reading samples as output of SDR
