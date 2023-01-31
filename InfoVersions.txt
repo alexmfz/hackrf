@@ -1,6 +1,7 @@
-v5.0:
+v5.1:
 
-- Implemented Monsteins comments to make it all more customizable
-- Added new version of runProgram.sh (runProgram_v2.sh) which executes ./hackrf_sweep with input parameters read from "config.cfg"
-- runProgram_v2.sh not execute generationFits.py to minimize times. So it is executed from another script call "generationPython.sh"
-- Implementation of "generationPython.sh" to separate functionalities. It will only execute if generationMode is with Python
+- Scenario nominal 45-245 MHz ==> Expected results: OK
+- Scenario 45-840 MHz (Wrong sampleRate) ==> Expected results: OK
+- Scenario 45-840 MHz (Fixed SampleRate) ==> Expected Results: OK but review
+
+- Added control flag for generation python. Now, this script wont depend on time

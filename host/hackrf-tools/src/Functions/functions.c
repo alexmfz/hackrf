@@ -39,7 +39,8 @@ typedef int bool;
 #define FFTMAX 	(8180)
 #define FFT_DEFAULT_SIZE	(20)
 
-#define TRIGGERING_TIMES (5) //3600
+#define TRIGGERING_TIMES (3600) //3600
+#define INTERVAL 25e4 //us => 25e4 us = 250 ms
 
 #define MAX_TIME_MINUTES (15)
 #define SAMPLES_PER_S	(4)
@@ -340,8 +341,9 @@ void assignGenericParameters()
 	step_value = (float) (freq_max - freq_min)/numberOfSteps;
 	requested_fft_bin_width = step_value*FREQ_ONE_MHZ;
 
-	sampleRate = fftSize*requested_fft_bin_width;
-	//sampleRate = CUSTOM_SAMPLE_RATE_HZ;
+	//sampleRate = fftSize*requested_fft_bin_width; // TODO: Initial aprox
+
+	sampleRate = CUSTOM_SAMPLE_RATE_HZ;
 
 //	fftSize = sampleRate/requested_fft_bin_width;
 
@@ -352,6 +354,38 @@ void assignGenericParameters()
 	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Samples per channel: %d\n", fftSize/4);
 
 	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Execution Success\n");
+}
+
+int validateStandard()
+{
+	fprintf(hackrfLogsFile, "functions | void validateStandard() | Validating Standard e-callisto and HW specifications\n");
+
+	if (sampleRate > 20000000)
+	{
+		fprintf(hackrfLogsFile, "functions | void validateStandard() | Hardware Error. Max sample rate of HackRF One is: 20 MHz\n");
+		return EXIT_FAILURE;
+	}
+	
+	if (freq_min < 45 || freq_max > 870 || 
+		requested_fft_bin_width < 64000 ||
+		nChannels != 200 || //TRIGGERING_TIMES != 3600 ||
+		INTERVAL != 25e4 )
+		{
+			fprintf(hackrfLogsFile, "functions | void validateStandard() | Standard Error. The standard must be:\n"
+									"FREQUENCY RANGE: 45-870 MHz\n"
+									"MIN FFT_BIN_WIDTH (FREQUENCY RESOLUTION): 64KHz\n"
+									"RESOLUTION TIME: 0.25 us\n"
+									"N_CHANNELS: 200\n"
+									"SAMPLES PER SECOND: 1 \n"
+									"SAMPLES PER RESOLUTION TIME: 4\n"
+									"TOTAL TIME: 15 min\n"
+									"FITS DIMENSIONS: 3600x200 pixels");
+		
+			return EXIT_FAILURE;
+		}
+
+	fprintf(hackrfLogsFile, "functions | void validateStandard() | Validating Standard e-callisto and HW specifications\n");
+	return EXIT_SUCCESS;
 }
 
 /**
@@ -510,20 +544,7 @@ int execApiBasicConfiguration(int opt, int argc, char**argv)
 		fprintf(stderr, "functions | execApiBasicConfiguration() | Error. Generation Mode not recognise. Use 0 for Python or 1 for C\nExample: hackrf_sweep -f45:245 -c1\n");
 		return EXIT_FAILURE;
 	}
-	/*fprintf(stderr, "Input parameters:\n"
-			"Fmin: %d\nFmax: %d\nGeneration Mode :%d\n"
-			"Station Name: %s\nFocus Code : %d\nGain: %d\n"
-			"Longitude: %f\nLongitude Code: %s\n"
-			"Latitude: %f\nLatitude Code: %s\n"
-			"Altitude: %f\n"
-			"Object: %s\nContent: %s\n",
-			freq_min, freq_max, generationMode,
-			stationName, focusCode, vga_gain,
-			longitude, longitude_code,
-			latitude, latitude_code,
-			altitude,
-			obj, content);
-*/
+	
 	return EXIT_SUCCESS;
 }
 

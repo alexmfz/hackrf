@@ -106,13 +106,14 @@ else
 
             # execute generation with python
             cd pythonScripts/
-            python3 generationFits.py $station_name $focus_code $latitude $latitude_code $longitude $longitude_code $altitude $object $content # TODO: Add params
+            python3 generationFits.py $station_name $focus_code $latitude $latitude_code $longitude $longitude_code $altitude $object $content
             rm samples.txt
             rm times.txt
             rm frequencies.txt
             rm header_times.txt
 
             cd ..       
+            # sed -i 's\control_external_generation=1\control_external_generation=0\' $parameter_file # TODO: Checks
             
             mv pythonScripts/*.fit Result/LastResult
             mv pythonScripts/*_logs.txt Result/LastResult

@@ -92,19 +92,23 @@ altitude=$(head -n 11 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '
 object=$(head -n 12 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^object=].*')
 content=$(head -n 13 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^content=].*')
 
-echo "Freq min: $freq_min"
-echo "Freq max: $freq_max"
-echo "Generation Mode: $gen_mode"
-echo "Station Name: $station_name"
-echo "Focus Code: $focus_code"
-echo "Gain: $gain"
-echo "Longitude: $longitude"
-echo "Longitude Code: $longitude_code"
-echo "Latitude: $latitude"
-echo "Latitude Code: $latitude_code"
-echo "Altitude: $altitude"
-echo "Object: $object"
-echo "Content: $content"
+control_external_generation=$(head -n 14 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^control_external_generation=].*')
+
+sed -i 's\control_external_generation=1\control_external_generation=0\' $parameter_file
+#echo "Freq min: $freq_min"
+#echo "Freq max: $freq_max"
+#echo "Generation Mode: $gen_mode"
+#echo "Station Name: $station_name"
+#echo "Focus Code: $focus_code"
+#echo "Gain: $gain"
+#echo "Longitude: $longitude"
+#echo "Longitude Code: $longitude_code"
+#echo "Latitude: $latitude"
+#echo "Latitude Code: $latitude_code"
+#echo "Altitude: $altitude"
+#echo "Object: $object"
+#echo "Content: $content"
+#echo "Control external generation: $control_external_generation"
 
 #Checks parameters of execution an run it if everything is ok
 if  [[ -z "$freq_min" || -z "$freq_max" || -z "$gen_mode" ||
@@ -112,7 +116,8 @@ if  [[ -z "$freq_min" || -z "$freq_max" || -z "$gen_mode" ||
        -z $longitude || -z $longitude_code ||
        -z $latitude || -z $latitude_code ||
        -z $altitude ||
-       -z $object || -z $content ]]
+       -z $object || -z $content ||
+       -z $control_external_generation ]]
 then
     echo "Was not possible to execute."
     echo "Check config.cfg"
@@ -160,6 +165,7 @@ else
           mv frequencies.txt pythonScripts/
           mv header_times.txt pythonScripts/
           mv *_logs.txt Result/LastResult
+          sed -i 's\control_external_generation=0\control_external_generation=1\' $parameter_file # TODO: Checks
 
         fi
       fi

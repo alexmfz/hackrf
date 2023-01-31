@@ -24,3 +24,4 @@ int parse_u32_range(char* s, uint32_t* const value_min, uint32_t* const value_ma
 void assignGenericParameters();
 void generateDynamicName(struct tm tm_timeBeginningExecution);
 void startExecution(struct tm tm_timeScheduled);
+int validateStandard();

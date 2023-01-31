@@ -51,7 +51,7 @@ typedef int bool;
 #define FFTMAX (8180)
 #define FFTMIN (4)
 #define CUSTOM_SAMPLE_RATE_HZ (20000000)
-#define TRIGGERING_TIMES (5)						 // 3600
+#define TRIGGERING_TIMES (3600)						 // 3600
 #define DEFAULT_BASEBAND_FILTER_BANDWIDTH (15000000) /* 15MHz default */
 #define FD_BUFFER_SIZE (8 * 1024)
 #define TUNE_STEP (CUSTOM_SAMPLE_RATE_HZ / FREQ_ONE_MHZ)
@@ -401,9 +401,20 @@ int rx_callback(hackrf_transfer *transfer)
 
 		if (strstr(pathFits, "fit") != NULL && timerFlag == 1 && (frequency == (uint64_t)(FREQ_ONE_MHZ * frequencies[0]) || flag_initialFreqCaught == 1))
 		{
+			// TODO: Delete following lines
 			/*time_t time_stamp_seconds = usb_transfer_time.tv_sec;
 			fft_time = localtime(&time_stamp_seconds);
-			strftime(time_str, 60, "%Y-%m-%d, %H:%M:%S", fft_time);*/
+			strftime(time_str, 60, "%Y-%m-%d, %H:%M:%S", fft_time);
+			
+			fprintf(hackrfLogsFile ,"%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
+					time_str,
+					(long int)usb_transfer_time.tv_usec,
+					(uint64_t)(frequency), //First time: 45MhZ
+					(uint64_t)(frequency+step_value*sampleRate/4), //45MHz + 5MHz
+					fft_bin_width,
+					fftSize);
+*/
+			// TODO: END TODO
 			if (frequency == (uint64_t)(FREQ_ONE_MHZ * frequencies[0]))
 			{
 				/*char sweepingTime[60];
@@ -422,16 +433,29 @@ int rx_callback(hackrf_transfer *transfer)
 			for (i = 0; (fftSize / 4) > i; i++)
 			{
 				// Save power sample
+				
+//				fprintf(hackrfLogsFile, ", %.2f", pwr[i + 1 + (fftSize*5)/8]);//TODO: Delete
 				samples[id_sample] = pwr[i + 1 + (fftSize * 5) / 8];
 				id_sample++;
 			}
+			// TODO: Delete following lines
+/*			fprintf(hackrfLogsFile, "\n");
+			fprintf(hackrfLogsFile, "%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
+						time_str,
+						(long int)usb_transfer_time.tv_usec,
+						(uint64_t)(frequency+(step_value  * sampleRate/2)),
+						(uint64_t)(frequency+((step_value * sampleRate * 3)/4)),
+						fft_bin_width,	//	--> 49504,95			
+						fftSize);
+*/			// TODO: END
 			for (i = 0; (fftSize / 4) > i; i++)
 			{
 				// Save power sample
+//				fprintf(hackrfLogsFile, ", %.2f", pwr[i + 1 + (fftSize/8)]); // TODO: Delete
 				samples[id_sample] = pwr[i + 1 + (fftSize / 8)];
 				id_sample++;
 			}
-
+//			fprintf(hackrfLogsFile, "\n"); // TODO: Delete
 			if (counterSucess == 0)
 			{
 
@@ -439,19 +463,19 @@ int rx_callback(hackrf_transfer *transfer)
 				{
 					return EXIT_FAILURE;
 				}
-				if (checkOrderFreqs(nRanges, ((double)(frequency) + sampleRate / 2) / FREQ_ONE_MHZ) == EXIT_FAILURE)
+				if (checkOrderFreqs(nRanges, ((double)(frequency) + step_value * sampleRate / 2) / FREQ_ONE_MHZ) == EXIT_FAILURE)
 				{
 					return EXIT_FAILURE;
 				}
 			}
 
-			if ((uint64_t)(frequency + ((sampleRate * 3) / 4)) >= freq_max * FREQ_ONE_MHZ) // Where the sweep finished
+			if ((uint64_t)(frequency + ((step_value * sampleRate * 3) / 4)) >= freq_max * FREQ_ONE_MHZ) // Where the sweep finished
 			{
 				if (counterSucess == 0)
 				{			
 					printf("Iterations started\n");
 
-					if (checkOrderFreqs(naxes[1] / (fftSize / 4), ((double)(frequency) + sampleRate * 3 / 4) / FREQ_ONE_MHZ) == EXIT_FAILURE){ return EXIT_FAILURE; }
+					if (checkOrderFreqs(naxes[1] / (fftSize / 4), ((double)(frequency) + step_value * sampleRate * 3 / 4) / FREQ_ONE_MHZ) == EXIT_FAILURE){ return EXIT_FAILURE; }
 				}
 
 				counterSucess++;
@@ -614,7 +638,9 @@ static int setHackRFParams()
 static int setSweeping()
 {
 	fprintf(hackrfLogsFile, "hackrf_sweep | setSweeping() | Configuring sweeping parameters\n");
-	float customTuneStep = (float)sampleRate / (float)FREQ_ONE_MHZ;
+	
+	float customTuneStep = ((float)sampleRate * step_value) / (float)FREQ_ONE_MHZ;
+	
 	result = hackrf_init_sweep(device, frequencies, num_ranges, BYTES_PER_BLOCK,
 							   customTuneStep * FREQ_ONE_MHZ, OFFSET, INTERLEAVED);
 	if (result != HACKRF_SUCCESS)
@@ -985,13 +1011,16 @@ static int runConfiguration()
 
 	if (assignFitsParameters() == EXIT_FAILURE) { return EXIT_FAILURE; }
 	if (checkParams() == EXIT_FAILURE){ return EXIT_FAILURE; }
+	if (validateStandard() == EXIT_FAILURE) { return EXIT_FAILURE; }
+
 
 	while ((fftSize + 4) % 8)
 	{
 		fftSize++;
 	}
 
-	fft_bin_width = (double)sampleRate / fftSize;
+	//fft_bin_width = (double)sampleRate / fftSize; //TODO: Original
+	fft_bin_width = (double)requested_fft_bin_width;
 	fftwIn = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fftSize);
 	fftwOut = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fftSize);
 	fftwPlan = fftwf_plan_dft_1d(fftSize, fftwIn, fftwOut, FFTW_FORWARD, FFTW_MEASURE);
@@ -1018,7 +1047,7 @@ static int runConfiguration()
 	signal(SIGABRT, &sigint_callback_handler);
 #endif
 
-	float customTuneUp = (float)sampleRate / FREQ_ONE_MHZ;
+	float customTuneUp = ((float)sampleRate * step_value) / FREQ_ONE_MHZ;
 	if (setHackRFParams() == EXIT_FAILURE)
 	{
 		return EXIT_FAILURE;
@@ -1028,7 +1057,7 @@ static int runConfiguration()
 	{
 		step_count = 1 + (frequencies[2 * i + 1] - frequencies[2 * i] - 1) / customTuneUp;
 		frequencies[2 * i + 1] = (uint16_t)(frequencies[2 * i] + step_count * customTuneUp);
-		fprintf(hackrfLogsFile, "hackrf_sweep | runConfiguration() | Sweeping from %u MHz to %u MHz\n",
+		fprintf(stderr, "hackrf_sweep | runConfiguration() | Sweeping from %u MHz to %u MHz\n",
 				frequencies[2 * i], frequencies[2 * i + 1]);
 	}
 
@@ -1042,7 +1071,6 @@ static int runConfiguration()
 			nElements, nRanges, sampleRate, customTuneUp, step_value,
 			naxes[0], naxes[1],
 			requested_fft_bin_width, fft_bin_width, fftSize / 4, step_range);
-
 	flagsOrder = (int *)calloc(nRanges, sizeof(int));
 	real_order_frequencies = (int *)calloc(nRanges, sizeof(int)); // positions of frecuencies
 
@@ -1251,6 +1279,8 @@ int main(int argc, char **argv)
 
 	if (runConfiguration(argc, argv) == EXIT_FAILURE)
 	{
+		freeFFTMemory();
+		freeFitsMemory();
 		return EXIT_FAILURE;
 	}
 
@@ -1258,12 +1288,14 @@ int main(int argc, char **argv)
 	strftime(timeEndConfig, sizeof timeEndConfig, "%Y-%m-%d %H:%M:%S", &tm_timeEndConfig);
 
 	/* END CONFIGURATION*/
-	startExecution(tm_timeScheduled);
+	//startExecution(tm_timeScheduled);
 
 	/* START EXECUTION */
 
 	if (runExecution() == EXIT_FAILURE)
 	{
+		freeFFTMemory();
+		freeFitsMemory();
 		return EXIT_FAILURE;
 	}
 
