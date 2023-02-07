@@ -1,7 +1,4 @@
-v5.1:
+v5.1.2:
 
-- Scenario nominal 45-245 MHz ==> Expected results: OK
-- Scenario 45-840 MHz (Wrong sampleRate) ==> Expected results: OK
-- Scenario 45-840 MHz (Fixed SampleRate) ==> Expected Results: OK but review
-
-- Added control flag for generation python. Now, this script wont depend on time
+- Tests with high frequencies done.
+- Reformated some logs

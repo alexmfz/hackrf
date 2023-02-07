@@ -308,11 +308,11 @@ int assignFitsParameters()
 
 		/*Creating Fits File*/
 		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Receiving measures and saving as a FITS file\n\n||===Parameters FITS file===||\n");
-		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Freq min: %d\n", freq_min);
-		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Freq max: %d\n", freq_max);
-		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Step Value: %f\n",step_value);
+		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Freq min: %d\n MHz", freq_min);
+		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Freq max: %d\n MHz", freq_max);
+		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Step Value: %f\n MHz",step_value);
 		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Number of steps(X): %ld\n",naxes[0]);
-		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Number of samples(Z) per frequency: %d\n", fftSize/4);
+		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Number of samples(Y) per frequency: %d\n", fftSize/4);
 		fprintf(hackrfLogsFile, "functions | assignFitsParameters() | Number of total samples : %ld\n", naxes[0]*naxes[1]);
 		
 		if(pathFits==NULL )
@@ -349,7 +349,7 @@ void assignGenericParameters()
 
 	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Number of Channels: %d\n", nChannels);
 	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Step Value: %f MHz\n", step_value);
-	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Sample Rate: %f MHz\n", sampleRate);
+	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Sample Rate: %f Hz\n", sampleRate);
 	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | FFT size: %d\n", fftSize);	
 	fprintf(hackrfLogsFile, "functions | assignGenericParameters() | Samples per channel: %d\n", fftSize/4);
 
@@ -358,15 +358,15 @@ void assignGenericParameters()
 
 int validateStandard()
 {
-	fprintf(hackrfLogsFile, "functions | void validateStandard() | Validating Standard e-callisto and HW specifications\n");
+	fprintf(hackrfLogsFile, "functions | validateStandard() | Validating Standard e-callisto and HW specifications\n");
 
 	if (sampleRate > 20000000)
 	{
-		fprintf(hackrfLogsFile, "functions | void validateStandard() | Hardware Error. Max sample rate of HackRF One is: 20 MHz\n");
+		fprintf(hackrfLogsFile, "functions | validateStandard() | Hardware Error. Max sample rate of HackRF One is: 20 MHz\n");
 		return EXIT_FAILURE;
 	}
 	
-	if (freq_min < 45 || freq_max > 870 || 
+	/*if (freq_min < 45 || freq_max > 870 || // TODO: Ask to uncomment or not
 		requested_fft_bin_width < 64000 ||
 		nChannels != 200 || //TRIGGERING_TIMES != 3600 ||
 		INTERVAL != 25e4 )
@@ -383,8 +383,8 @@ int validateStandard()
 		
 			return EXIT_FAILURE;
 		}
-
-	fprintf(hackrfLogsFile, "functions | void validateStandard() | Validating Standard e-callisto and HW specifications\n");
+*/
+	fprintf(hackrfLogsFile, "functions | validateStandard() | Execution Success\n");
 	return EXIT_SUCCESS;
 }
 
@@ -568,11 +568,10 @@ void startExecution(struct tm tmScheduled)
     localtime_r(&tStart, &tmStart);
     
     fprintf(hackrfLogsFile, "functions | startExecution() | Execution will start at %s\n", timeScheduledString);
-	printf("functions | startExecution() | Execution will start at %s\n", timeScheduledString);
+	printf("Execution will start at %s\n", timeScheduledString);
 
     while(tmStart.tm_hour != tmScheduled.tm_hour ||
-          tmStart.tm_min  != tmScheduled.tm_min ||
-		  tmStart.tm_sec < tmScheduled.tm_sec)
+          tmStart.tm_min  != tmScheduled.tm_min)
     {
         tStart = time(NULL);
         localtime_r(&tStart, &tmStart);

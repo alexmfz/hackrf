@@ -1057,7 +1057,7 @@ static int runConfiguration()
 	{
 		step_count = 1 + (frequencies[2 * i + 1] - frequencies[2 * i] - 1) / customTuneUp;
 		frequencies[2 * i + 1] = (uint16_t)(frequencies[2 * i] + step_count * customTuneUp);
-		fprintf(stderr, "hackrf_sweep | runConfiguration() | Sweeping from %u MHz to %u MHz\n",
+		fprintf(stderr, "Sweeping from %u MHz to %u MHz\n",
 				frequencies[2 * i], frequencies[2 * i + 1]);
 	}
 
@@ -1245,6 +1245,9 @@ int main(int argc, char **argv)
 	
 	strftime(executionDate, sizeof executionDate, "%Y%m%d_%Hh_%Mm", &tm_timeBeginningExecution);
 
+	calculateTimes(&t_timeStartConfig, &tm_timeStartConfig, &timeValStartConfig);
+	strftime(timeStartConfig, sizeof timeStartConfig, "%Y-%m-%d %H:%M:%S", &tm_timeStartConfig);
+
 	if (execApiBasicConfiguration(opt, argc, argv) == EXIT_FAILURE) { return EXIT_FAILURE; }
 	strftime(scheduleTime, sizeof scheduleTime, "%H:%M:%S", &tm_timeScheduled);
 
@@ -1274,9 +1277,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	calculateTimes(&t_timeStartConfig, &tm_timeStartConfig, &timeValStartConfig);
-	strftime(timeStartConfig, sizeof timeStartConfig, "%Y-%m-%d %H:%M:%S", &tm_timeStartConfig);
-
+	
 	if (runConfiguration(argc, argv) == EXIT_FAILURE)
 	{
 		freeFFTMemory();
@@ -1288,7 +1289,7 @@ int main(int argc, char **argv)
 	strftime(timeEndConfig, sizeof timeEndConfig, "%Y-%m-%d %H:%M:%S", &tm_timeEndConfig);
 
 	/* END CONFIGURATION*/
-	//startExecution(tm_timeScheduled);
+	startExecution(tm_timeScheduled);
 
 	/* START EXECUTION */
 
@@ -1345,17 +1346,19 @@ int main(int argc, char **argv)
 
 	fprintf(hackrfLogsFile, "=============================================================\n\n");
 	fprintf(hackrfLogsFile, "Time parameters for command ./hackrf_sweep f%d:%d -c%d (%s) -s%s -z%d -t%s\n"
-							"Program Execution Start: %s\t Program Execution Finish: %s\t Duration: %fs\n"
 							"Configuration Start: %s\t Configuration Finish: %s\t Duration: %fs\n"
 							"Sweeping Start: %s\t Sweeping Finish: %s\t Duration: %fs\n"
 							"Generation FITS Part Start: %s\t Generation FITS Part Finish: %s\t Duration: %fs\n"
+							"Total Duration: %fs\n"
 							"Filename FITS generated: %s\n"
 							"HackRF Logs filename generated: %s\n",
 							freq_min, freq_max, generationMode, extraInfo, stationName, focusCode, scheduleTime,
-							timeStartProgram, timeEndProgram, TimevalDiff(&timeValEndExecution, &timeValStartExecution),
 							timeStartConfig, timeEndConfig, TimevalDiff(&timeValEndConfig, &timeValStartConfig),
 							timeStartSweeping, timeEndSweeping, TimevalDiff(&timeValEndSweeping, &timeValStartSweeping),
 							timeStartGeneration, timeEndGeneration, TimevalDiff(&timeValEndGeneration, &timeValStartGeneration),
+							TimevalDiff(&timeValEndConfig, &timeValStartConfig) + 
+							TimevalDiff(&timeValEndSweeping, &timeValStartSweeping) + 
+							TimevalDiff(&timeValEndGeneration, &timeValStartGeneration),
 							pathFits,
 							hackrfLogsPath
 			);
