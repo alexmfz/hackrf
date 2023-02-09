@@ -58,10 +58,6 @@ else
 	exit 0
 fi
 
-cp original.tmp $scheduler_file
-rm original.tmp
-rm scheduler.tmp
-
 # Checks file content (parameters.cfg)
 if [[ -z "$content_parameter" && -s $parameter_file ]]
 then
@@ -140,6 +136,8 @@ else
                       
           mv *.fit Result/LastResult
           mv *_logs.txt Result/LastResult
+          
+          echo "...Fits file generated..."
        
         else
           echo "...Fits file will be generate with Python script..."
@@ -153,7 +151,8 @@ else
         fi
       fi
     done < $scheduler_file
-
+    cp original.tmp $scheduler_file
+    
     echo "...Program Finished..."
     #echo "...Opening JavaViewer..."
     #cd Result/LastResult/

@@ -19,7 +19,7 @@ time_now=$(date +%H%M%S) # Time at this moment
 
 # Checks file content
 cp $scheduler_file original.tmp
-head -n -1 $scheduler_file > scheduler.tmp
+head -n -2 $scheduler_file > scheduler.tmp
 cp scheduler.tmp $scheduler_file
 
 if [[ ! -z "$content_scheduling" && -s $scheduler_file ]]
@@ -58,9 +58,6 @@ else
 	exit 0
 fi
 
-cp original.tmp $scheduler_file
-rm original.tmp
-rm scheduler.tmp
 
 # Checks file content (parameters.cfg)
 if [[ -z "$content_parameter" && -s $parameter_file ]]
@@ -141,7 +138,9 @@ else
                       
           mv *.fit Result/LastResult
           mv *_logs.txt Result/LastResult
-       
+
+          echo "...Fits file generated..."
+             
         else
           echo "...Fits file will be generate with Python script..."
             ./hackrf_sweep $execution_argument
@@ -152,7 +151,8 @@ else
         fi
       fi
     done < $scheduler_file
-
+    cp original.tmp $scheduler_file
+    
     echo "...Program Finished..."
     #echo "...Opening JavaViewer..."
     #cd Result/LastResult/

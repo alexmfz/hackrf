@@ -20,8 +20,9 @@ time_now=$(date +%H%M%S) # Time at this moment
 
 # Checks file content
 cp $scheduler_file original.tmp
-head -n -1 $scheduler_file > scheduler.tmp
+head -n -2 $scheduler_file > scheduler.tmp
 cp scheduler.tmp $scheduler_file
+
 
 if [[ ! -z "$content_scheduling" && -s $scheduler_file ]]
 then
@@ -59,10 +60,6 @@ else
 	exit 0
 fi
 
-cp original.tmp $scheduler_file
-rm original.tmp
-rm scheduler.tmp
-
 # Checks file content (parameters.cfg)
 if [[ -z "$content_parameter" && -s $parameter_file ]]
 then
@@ -96,7 +93,16 @@ content=$(head -n 13 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[
 control_external_generation=$(head -n 14 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^control_external_generation=].*')
 
 # Write 0 always at beginning to avoid generation at beginning
-sed -i 's\control_external_generation=1\control_external_generation=0\' $parameter_file 
+sed -i 's\control_external_generation=1\control_external_generation=0\' $parameter_file
+sed -i 's\control_external_generation=2\control_external_generation=0\' $parameter_file
+
+if [ "$gen_mode" -eq 0 ]
+then
+  cd $originalPath
+  echo "...Executing fits generator..."
+  ./generationPython.sh &
+  cd $originalPath/host/hackrf-tools/src/FitsFolder
+fi
 
 #Checks parameters of execution an run it if everything is ok
 if  [[ -z "$freq_min" || -z "$freq_max" || -z "$gen_mode" ||
@@ -148,20 +154,28 @@ else
        
         else
           echo "...Fits file will be generate with Python script..."
-            ./hackrf_sweep $execution_argument
+          ./hackrf_sweep $execution_argument
           mv samples.txt pythonScripts/
           mv times.txt pythonScripts/
           mv frequencies.txt pythonScripts/
           mv header_times.txt pythonScripts/
           mv *_logs.txt Result/LastResult
 
+
           # Enable control flag to execute python script
           sed -i 's\control_external_generation=0\control_external_generation=1\' $parameter_file 
+          echo "...Fits file generated..."
 
         fi
       fi
     done < $scheduler_file
+    cp original.tmp $scheduler_file
 
+    # Kill generationPython.sh
+    sleep 4
+    sed -i 's\control_external_generation=1\control_external_generation=2\' $parameter_file 
+    sed -i 's\control_external_generation=0\control_external_generation=2\' $parameter_file 
+    
     echo "...Program Finished..."
     #echo "...Opening JavaViewer..."
     #cd Result/LastResult/

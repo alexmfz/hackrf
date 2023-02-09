@@ -391,7 +391,7 @@ def generate_fits(n_channels, triggering_times):
 
 if __name__ == "__main__":
 
-    triggering_times = 3600
+    triggering_times = 50
     n_channels = 200
     
     

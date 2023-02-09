@@ -15,43 +15,6 @@ check_format_2="^[2][0-3]:[0-5][0-9]:[0-5][0-9]" # Checks times from 20:00:00 to
 time_now=$(date +%H%M%S) # Time at this moment
 logger=1 # Variable to show waiting message
 
-# Checks file content (scheduler.cfg)
-if [[ ! -z "$content_scheduling" && -s $scheduler_file ]]
-then
-    if [ -z "$check_comment" ]
-    then
- 	    echo "File not empty, but not well formated.
-		Must include this exactly comment:
-		########### END SCHEDULING ###########"
-		echo "...Exiting..."
-		exit 0
-	
-	fi
-
-	while read schedule_time
-	do
-		check_time_1=$(echo $schedule_time | grep $check_format_1)
-		check_time_2=$(echo $schedule_time | grep $check_format_2)
-		if [[ -z $check_time_1 && -z $check_time_2 ]]
-		then
-			echo "Time not well formated"
-			echo "...Exiting..."
-			exit 0
-		fi
-
-		
-	done < $scheduler_file
-
-else
-	echo "file scheduler.cfg empty"
-	echo "Example (comment must be included):
-	20:00:00
-	20:15:00
-	########### END SCHEDULING ###########"
-	echo "...Exiting..."
-	exit 0
-fi
-
 # Checks file content (parameters.cfg)
 if [[ -z "$content_parameter" && -s $parameter_file ]]
 then
