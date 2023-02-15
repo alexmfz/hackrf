@@ -1,0 +1,28 @@
+=============================================================
+hackrf_sweep | runConfiguration() | Starting Configuration
+functions | assignGenericParameters() | Assigning parameters of API
+ ===GENERIC PARAMS===
+functions | assignGenericParameters() | Number of Channels: 200
+functions | assignGenericParameters() | Step Value: 1.000000 MHz
+functions | assignGenericParameters() | Sample Rate: 20000000.000000 Hz
+functions | assignGenericParameters() | FFT size: 20
+functions | assignGenericParameters() | Samples per channel: 5
+functions | assignGenericParameters() | Execution Success
+functions | assignFitsParameters() | Assigning parameters of fits file
+functions | assignFitsParameters() | Filaname: SPAIN-PERALEJOS_20230215_224700_63.fit
+functions | assignFitsParameters() | Receiving measures and saving as a FITS file
+
+||===Parameters FITS file===||
+functions | assignFitsParameters() | Freq min: 45
+ MHzfunctions | assignFitsParameters() | Freq max: 245
+ MHzfunctions | assignFitsParameters() | Step Value: 1.000000
+ MHzfunctions | assignFitsParameters() | Number of steps(X): 3600
+functions | assignFitsParameters() | Number of samples(Y) per frequency: 5
+functions | assignFitsParameters() | Number of total samples : 720000
+functions | assignFitsParameters() | Execution Sucess
+hackrf_sweep | checkParams() | Checking if parameters values are correct
+hackrf_sweep | checkParams() | Execution Success
+functions | validateStandard() | Validating Standard e-callisto and HW specifications
+functions | validateStandard() | Execution Success
+hackrf_sweep | initConfigHackRF() | Initialize configuration of HackRF One
+hackrf_sweep | initConfigureHackRF() | hackrf_open() failed: HackRF not found (-5)

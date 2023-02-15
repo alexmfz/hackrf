@@ -1,3 +1,3 @@
-v5.2:
+v5.3:
 
-- Integration with period functionality done. Develop in runProgram_v3.sh
+- Some bugs solved at runProgram.sh
