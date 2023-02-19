@@ -94,7 +94,16 @@ control_external_generation=$(head -n 14 $parameter_file | tail -n 1 | grep -o '
 
 # Periodity part 
 period_time=$(head -n 15 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^period_time=].*')
-time_check_repetition=$(date -d "$period_time" +"%H%M%S") # Period time formated
+
+check_time_3=$(echo $period_time | grep $check_format_1)		
+check_time_4=$(echo $period_time | grep $check_format_2)
+if [[ -z $check_time_3 && -z $check_time_4 ]]
+    then
+      echo "ERROR: Time periodity not well formated. Check it at config.cfg"
+      echo "...Exiting..."
+      exit 0
+fi
+time_check_repetition=$(date -d "$period_time" +"%H%M%S"  | tr -d '[:space:]' | sed 's/^0*//') # Period time formated
 
 enable_repetition=0 # Control flag periodicity
 control_log=1 # Log control flag
@@ -119,13 +128,22 @@ else
     # Periodically execution
     while [ 1 ]
     do
-        time_now=$(date +%H%M%S) # Update time
+        time_now=$(date +%H%M%S | sed 's/^0*//') # Update time
 
         # Checks Control log to show log at 2nd or consecutive executions 
         if [[ $control_log -eq 1 && $first_execution -eq 1 ]]
         then          
           period_time=$(head -n 15 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^period_time=].*')
-          time_check_repetition=$(date -d "$period_time" +"%H%M%S") # Period time formated
+          check_time_3=$(echo $period_time | grep $check_format_1)		
+          check_time_4=$(echo $period_time | grep $check_format_2)
+          if [[ -z $check_time_3 && -z $check_time_4 ]]
+              then
+                echo "ERROR: Time periodity not well formated. Check it at config.cfg"
+                echo "...Exiting..."
+                exit 0
+          fi
+          time_check_repetition=$(date -d "$period_time" +"%H%M%S"  | tr -d '[:space:]' | sed 's/^0*//') # Period time formated
+
           freq_min=$(head -n 1 $parameter_file | grep -o '^[^#]*' | grep -o '[^frq_min=]*')
           freq_max=$(head -n 2 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^frq_max=].*')
           
@@ -137,7 +155,7 @@ else
         fi
 
         # Execute functionality at first execution or when times are equals in the following ones
-        if [[ $first_execution -eq 0 || ($time_now -ge $time_check_repetition && $enable_repetition -eq 0) ]]
+        if [[ $first_execution -eq 0 || ($time_now -eq $time_check_repetition && $enable_repetition -eq 0) ]]
 	      then
 		      enable_repetition=1
           first_execution=1
@@ -165,7 +183,7 @@ else
             # HERE
             while read schedule_time;
               do
-                schedule_time_formated=$(date -d "$schedule_time" +"%H%M%S")
+                schedule_time_formated=$(date -d "$schedule_time" +"%H%M%S" | sed 's/^0*//')
                 execution_argument="-f$(echo $freq_min:$freq_max | tr -d '[:space:]') -c$gen_mode -s$station_name -z$focus_code -t$schedule_time -g$gain -L$longitude -k$longitude_code -m$latitude -M$latitude_code -A$altitude -o$object -O$content"
               
                 if [ $time_now -gt $schedule_time_formated ]

@@ -1,3 +1,3 @@
-v5.3:
+v5.3.1:
 
-- Some bugs solved at runProgram.sh
+- Some bugs solved at runProgram.sh for periodity

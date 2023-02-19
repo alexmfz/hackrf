@@ -104,7 +104,7 @@ if [[ -z $check_time_3 && -z $check_time_4 ]]
 			echo "ERROR: Time periodity not well formated. Check it at config.cfg"
 			echo "...Exiting..."
 			exit 0
-		fi
+fi
 
 time_check_repetition=$(date -d "$period_time" +"%H%M%S"  | tr -d '[:space:]' | sed 's/^0*//')
 
@@ -148,7 +148,6 @@ else
           fi
 
           time_check_repetition=$(date -d "$period_time" +"%H%M%S"  | tr -d '[:space:]' | sed 's/^0*//') # Period time formated
-          echo $time_check_repetition
           freq_min=$(head -n 1 $parameter_file | grep -o '^[^#]*' | grep -o '[^frq_min=]*')
           freq_max=$(head -n 2 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^frq_max=].*')
           
@@ -160,11 +159,10 @@ else
         fi
 
         # Execute functionality at first execution or when times are equals in the following ones
-        if [[ $first_execution -eq 0 || ($time_now -ge $time_check_repetition && $enable_repetition -eq 0) ]]
+        if [[ $first_execution -eq 0 || ($time_now -eq $time_check_repetition && $enable_repetition -eq 0) ]]
 	      then
 		      enable_repetition=1
           first_execution=1
-          
           cp $scheduler_file original.tmp
           head -n -2 $scheduler_file > scheduler.tmp
           cp scheduler.tmp $scheduler_file
@@ -183,12 +181,6 @@ else
           
           if [ $enable_repetition -eq 1 ]
           then
-            
-             #Move last results into previous results folder
-           # echo "...Moving previous Results into PreviousResults folder..."
-            #cd $originalPath/host/hackrf-tools/src/FitsFolder/Result/
-            #mv LastResult/*.fit TestResults
-            #mv LastResult/*_logs.txt TestResults
 
             echo "INFO: Running Program"
     
@@ -197,7 +189,7 @@ else
             # HERE
             while read schedule_time;
               do
-                schedule_time_formated=$(date -d "$schedule_time" +"%H%M%S")
+                schedule_time_formated=$(date -d "$schedule_time" +"%H%M%S" | sed 's/^0*//')
                 execution_argument="-f$(echo $freq_min:$freq_max | tr -d '[:space:]') -c$gen_mode -s$station_name -z$focus_code -t$schedule_time -g$gain -L$longitude -k$longitude_code -m$latitude -M$latitude_code -A$altitude -o$object -O$content"
               
                 if [ $time_now -gt $schedule_time_formated ]
