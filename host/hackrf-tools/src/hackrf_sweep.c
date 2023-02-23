@@ -82,7 +82,7 @@ float sampleRate = 0; // Custom sample rate
 
 char pathFits[50];		// File name of fits file
 int generationMode = 5; // Generation Mode (0 python; 0 C) => Input parameter
-int focusCode = 63; // Input parameter
+char focusCode[20]; // Input parameter
 char stationName[50]; // Input parameter
 struct tm tm_timeScheduled; // Scheduling time => Input parameter
 float longitude = 0; // Longitude where the antenna is located
@@ -1345,7 +1345,7 @@ int main(int argc, char **argv)
 //	printValuesHackRFOne();
 
 	fprintf(hackrfLogsFile, "=============================================================\n\n");
-	fprintf(hackrfLogsFile, "Time parameters for command ./hackrf_sweep f%d:%d -c%d (%s) -s%s -z%d -t%s\n"
+	fprintf(hackrfLogsFile, "Time parameters for command ./hackrf_sweep f%d:%d -c%d (%s) -s%s -z%s -t%s\n"
 							"Configuration Start: %s\t Configuration Finish: %s\t Duration: %fs\n"
 							"Sweeping Start: %s\t Sweeping Finish: %s\t Duration: %fs\n"
 							"Generation FITS Part Start: %s\t Generation FITS Part Finish: %s\t Duration: %fs\n"

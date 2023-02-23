@@ -73,7 +73,7 @@ extern bool finite_mode;
 extern float sampleRate;
 
 extern int generationMode;
-extern int focusCode;
+extern char focusCode[20]; 
 extern char stationName[50];
 extern struct tm tm_timeScheduled;
 
@@ -199,12 +199,12 @@ int parse_u32_range(char* s, uint32_t* const value_min, uint32_t* const value_ma
 void generateDynamicName(struct tm baseName)
 {
     char date[50]="";
-	char code[50]="";
+	char code[50]="_";
 	baseName.tm_hour = tm_timeScheduled.tm_hour;
 	baseName.tm_min = tm_timeScheduled.tm_min;
 	baseName.tm_sec = tm_timeScheduled.tm_sec;
 
-	sprintf(code, "_%d", focusCode);
+	strcat(code, focusCode);
     strftime(date, sizeof date, "%Y%m%d_%H%M%S", &baseName);
 	strcat(date, code);
 	strcat(stationName, "_");
@@ -421,7 +421,7 @@ int execApiBasicConfiguration(int opt, int argc, char**argv)
 			break;
 		
 		case 'z':
-			result = parse_u32(optarg, &focusCode);
+			strcpy(focusCode, optarg);
 			break;
 
 	    case 't':
