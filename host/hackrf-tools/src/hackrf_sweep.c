@@ -401,61 +401,26 @@ int rx_callback(hackrf_transfer *transfer)
 
 		if (strstr(pathFits, "fit") != NULL && timerFlag == 1 && (frequency == (uint64_t)(FREQ_ONE_MHZ * frequencies[0]) || flag_initialFreqCaught == 1))
 		{
-			// TODO: Delete following lines
-			/*time_t time_stamp_seconds = usb_transfer_time.tv_sec;
-			fft_time = localtime(&time_stamp_seconds);
-			strftime(time_str, 60, "%Y-%m-%d, %H:%M:%S", fft_time);
-			
-			fprintf(hackrfLogsFile ,"%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
-					time_str,
-					(long int)usb_transfer_time.tv_usec,
-					(uint64_t)(frequency), //First time: 45MhZ
-					(uint64_t)(frequency+step_value*sampleRate/4), //45MHz + 5MHz
-					fft_bin_width,
-					fftSize);
-*/
-			// TODO: END TODO
+
 			if (frequency == (uint64_t)(FREQ_ONE_MHZ * frequencies[0]))
 			{
-				/*char sweepingTime[60];
-				char decimalTime[8] = {"."};
-				char totalDecimalsTime[8];*/
-				flag_initialFreqCaught = 1; // First time will enter
-				/*strcpy(sweepingTime, time_str);
-				sprintf(totalDecimalsTime, "%06ld", (long int)usb_transfer_time.tv_usec);
-				strncat(decimalTime, totalDecimalsTime, 3);
-				strncat(sweepingTime, decimalTime, 4);
 
-				// Save times
-				strcpy(timeDatas[counterSucess], sweepingTime);*/
+				flag_initialFreqCaught = 1; // First time will enter
+
 			}
 
 			for (i = 0; (fftSize / 4) > i; i++)
 			{
-				// Save power sample
 				
-//				fprintf(hackrfLogsFile, ", %.2f", pwr[i + 1 + (fftSize*5)/8]);//TODO: Delete
 				samples[id_sample] = pwr[i + 1 + (fftSize * 5) / 8];
 				id_sample++;
 			}
-			// TODO: Delete following lines
-/*			fprintf(hackrfLogsFile, "\n");
-			fprintf(hackrfLogsFile, "%s.%06ld, %" PRIu64 ", %" PRIu64 ", %.2f, %u",
-						time_str,
-						(long int)usb_transfer_time.tv_usec,
-						(uint64_t)(frequency+(step_value  * sampleRate/2)),
-						(uint64_t)(frequency+((step_value * sampleRate * 3)/4)),
-						fft_bin_width,	//	--> 49504,95			
-						fftSize);
-*/			// TODO: END
+
 			for (i = 0; (fftSize / 4) > i; i++)
 			{
-				// Save power sample
-//				fprintf(hackrfLogsFile, ", %.2f", pwr[i + 1 + (fftSize/8)]); // TODO: Delete
 				samples[id_sample] = pwr[i + 1 + (fftSize / 8)];
 				id_sample++;
 			}
-//			fprintf(hackrfLogsFile, "\n"); // TODO: Delete
 			if (counterSucess == 0)
 			{
 
@@ -682,7 +647,7 @@ static int sweeping()
 
 /**
  * @brief  calculates duration of sweeping
- * @note   TODO: Check it that time is correct
+ * @note   
  * @retval duration of sweeping
  */
 static float sweepDuration()
@@ -1019,7 +984,6 @@ static int runConfiguration()
 		fftSize++;
 	}
 
-	//fft_bin_width = (double)sampleRate / fftSize; //TODO: Original
 	fft_bin_width = (double)requested_fft_bin_width;
 	fftwIn = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fftSize);
 	fftwOut = (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * fftSize);
