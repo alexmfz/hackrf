@@ -24,28 +24,36 @@ then
 fi
 
 # Take parameters to set as input and check that are not empty
-freq_min=$(head -n 1 $parameter_file | grep -o '^[^#]*' | grep -o '[^frq_min=]*')
-freq_max=$(head -n 2 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^frq_max=]*')
-gen_mode=$(head -n 3 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^gen_mode=]*')
-station_name=$(head -n 4 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^station_name=].*')
-focus_code=$(head -n 5 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^focus_code=]*')
-gain=$(head -n 6 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^gain=]*')
-longitude=$(head -n 7 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^longitude=]*')
-longitude_code=$(head -n 8 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^longitude_code=].*')
-latitude=$(head -n 9 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^latitude=]*')
-latitude_code=$(head -n 10 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^latitude_code=].*')
-altitude=$(head -n 11 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^altitude=]*')
-object=$(head -n 12 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^object=].*')
-content=$(head -n 13 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^content=].*')
-control_external_generation=$(head -n 14 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^control_external_generation=].*')
+freq_min=$(head -n 1 $parameter_file | grep -o '^[^#]*' | grep -o '[^frq_min=]*' | tr -d '[:space:]')
+freq_max=$(head -n 2 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^frq_max=].*' | tr -d '[:space:]')
+gen_mode=$(head -n 3 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^gen_mode=].*' | tr -d '[:space:]')
+station_name=$(head -n 4 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^station_name=].*' | tr -d '[:space:]')
+focus_code=$(head -n 5 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^focus_code=].*' | tr -d '[:space:]')
+gain=$(head -n 6 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^gain=].*' | tr -d '[:space:]')
+longitude=$(head -n 7 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^longitude=].*' | tr -d '[:space:]')
+longitude_code=$(head -n 8 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^longitude_code=].*' | tr -d '[:space:]')
+latitude=$(head -n 9 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^latitude=]*' | tr -d '[:space:]')
+latitude_code=$(head -n 10 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^latitude_code=].*' | tr -d '[:space:]')
+altitude=$(head -n 11 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^altitude=].*' | tr -d '[:space:]')
+object=$(head -n 12 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^object=].*' | tr -d '[:space:]')
+content=$(head -n 13 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^content=].*' | tr -d '[:space:]')
+control_external_generation=$(head -n 14 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^control_external_generation=].*' | tr -d '[:space:]')
 
-# Check the content of the variables
-if [[ -z $freq_min || -z $freq_max || -z $gain ||
-      -z $gen_mode   || -z $station_name || -z $focus_code || 
-      -z $longitude  || -z $longitude_code ||
-      -z $latitude   || -z $latitude_code  || -z $altitude ||
-      -z $object   || -z $content ||
-      -z $control_external_generation ]]
+if  [[ -z "$freq_min" || $freq_min -eq $empty ||
+       -z "$freq_max" || $freq_max -eq $empty ||
+       -z "$gen_mode" || $gen_mode -eq $empty ||
+       -z "$station_name" || "$station_name" == "$empty" ||
+       -z "$focus_code" || $focus_code == $empty ||
+       -z "$gain" || $gain == $empty ||
+       -z "$longitude" || $longitude == $empty ||       
+       -z "$longitude_code" || $longitude_code == $empty ||
+       -z "$latitude" || $latitude == $empty ||
+       -z "$latitude_code" || $latitude_code == $empty ||
+       -z "$altitude" || $altitude == $empty || 
+       -z "$object" || $object == $empty ||
+       -z "$content" || $content == $empty || 
+       -z "$control_external_generation" || $control_external_generation == $empty 
+      ]]
 then
     echo "File parameters are empty"
     echo "...Exiting..."
