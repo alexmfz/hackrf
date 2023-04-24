@@ -17,6 +17,7 @@ check_format_1="^[0-1][0-9]:[0-5][0-9]:[0-5][0-9]" # Checks times from 00:00:00 
 check_format_2="^[2][0-3]:[0-5][0-9]:[0-5][0-9]" # Checks times from 20:00:00 to 23:59:59
 
 time_now=$(date +%H%M%S) # Time at this moment
+time_iterator=0
 
 # Checks file content
 cp $scheduler_file original.tmp
@@ -31,6 +32,7 @@ then
 		Must include this exactly comment:
 		########### END SCHEDULING ###########"
 		echo "...Exiting..."
+    cp original.tmp $scheduler_file
 		exit 0
 	
 	fi
@@ -39,10 +41,35 @@ then
 	do
 		check_time_1=$(echo $schedule_time | grep $check_format_1)
 		check_time_2=$(echo $schedule_time | grep $check_format_2)
+    
+    if [[ $time_iterator -eq 0 ]]
+    then
+      schedule_time_prev=$(date -d "$schedule_time" +"%H%M%S" | sed 's/^0*//')
+    else
+      schedule_time_prev=$schedule_time_next
+    fi
+
+    schedule_time_next=$(date -d "$schedule_time" +"%H%M%S" | sed 's/^0*//')  
+    value_time_prev=$schedule_time_prev 
+    value_time_next=$schedule_time_next 
+
+    differenceTime=$(($value_time_next-$value_time_prev))
+    
+    if [[ $differenceTime -lt 1500 && $time_iterator > 0 ]]
+    then
+      echo "ERROR: Window time minor than 15 minutes"
+			echo "...Exiting..."
+      cp original.tmp $scheduler_file
+			exit 0
+    fi
+
+    time_iterator=$(($time_iterator+1))
+    
 		if [[ -z $check_time_1 && -z $check_time_2 ]]
 		then
 			echo "ERROR: Time not well formated"
 			echo "...Exiting..."
+      cp original.tmp $scheduler_file
 			exit 0
 		fi
 
@@ -56,6 +83,7 @@ else
 	20:15:00
 	########### END SCHEDULING ###########"
 	echo "...Exiting..."
+  cp original.tmp $scheduler_file
 	exit 0
 fi
 
@@ -64,34 +92,35 @@ if [[ -z "$content_parameter" && -s $parameter_file ]]
 then
 	echo "ERROR: File config.cfg empty"
 	echo "...Exiting..."
+  cp original.tmp $scheduler_file
 	exit 0
 fi
 
 cp original.tmp $scheduler_file
 
 # Take parameters to set as input and check that are not empty
-freq_min=$(head -n 1 $parameter_file | grep -o '^[^#]*' | grep -o '[^frq_min=]*')
-freq_max=$(head -n 2 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^frq_max=].*')
+freq_min=$(head -n 1 $parameter_file | grep -o '^[^#]*' | grep -o '[^frq_min=]*' | tr -d '[:space:]')
+freq_max=$(head -n 2 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^frq_max=].*' | tr -d '[:space:]')
 
-gen_mode=$(head -n 3 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^gen_mode=].*')
+gen_mode=$(head -n 3 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^gen_mode=].*' | tr -d '[:space:]')
 
-station_name=$(head -n 4 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^station_name=].*')
-focus_code=$(head -n 5 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^focus_code=].*')
+station_name=$(head -n 4 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^station_name=].*' | tr -d '[:space:]')
+focus_code=$(head -n 5 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^focus_code=].*' | tr -d '[:space:]')
 
-gain=$(head -n 6 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^gain=].*')
+gain=$(head -n 6 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^gain=].*' | tr -d '[:space:]')
 
-longitude=$(head -n 7 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^longitude=].*')
-longitude_code=$(head -n 8 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^longitude_code=].*')
+longitude=$(head -n 7 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^longitude=].*' | tr -d '[:space:]')
+longitude_code=$(head -n 8 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^longitude_code=].*' | tr -d '[:space:]')
 
-latitude=$(head -n 9 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^latitude=]*')
-latitude_code=$(head -n 10 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^latitude_code=].*')
+latitude=$(head -n 9 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^latitude=]*' | tr -d '[:space:]')
+latitude_code=$(head -n 10 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^latitude_code=].*' | tr -d '[:space:]')
 
-altitude=$(head -n 11 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^altitude=].*')
+altitude=$(head -n 11 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^altitude=].*' | tr -d '[:space:]')
 
-object=$(head -n 12 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^object=].*')
-content=$(head -n 13 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^content=].*')
+object=$(head -n 12 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^object=].*' | tr -d '[:space:]')
+content=$(head -n 13 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^content=].*' | tr -d '[:space:]')
 
-control_external_generation=$(head -n 14 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^control_external_generation=].*')
+control_external_generation=$(head -n 14 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^control_external_generation=].*' | tr -d '[:space:]')
 
 # Periodity part 
 period_time=$(head -n 15 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^period_time=].*')
@@ -103,6 +132,7 @@ if [[ -z $check_time_3 && -z $check_time_4 ]]
 		then
 			echo "ERROR: Time periodity not well formated. Check it at config.cfg"
 			echo "...Exiting..."
+      cp original.tmp $scheduler_file
 			exit 0
 fi
 
@@ -111,20 +141,30 @@ time_check_repetition=$(date -d "$period_time" +"%H%M%S"  | tr -d '[:space:]' | 
 enable_repetition=0 # Control flag periodicity
 control_log=1 # Log control flag
 first_execution=0 # Control flag first execution
+empty=""
 
 #Checks parameters of execution an run it if everything is ok
-if  [[ -z "$freq_min" || -z "$freq_max" || -z "$gen_mode" ||
-       -z "$station_name" || -z "$focus_code" || -z "$gain" ||
-       -z $longitude || -z $longitude_code ||
-       -z $latitude || -z $latitude_code ||
-       -z $altitude ||
-       -z $object || -z $content ||
-       -z $control_external_generation ||
-       -z $time_check_repetition ]]
+if  [[ -z "$freq_min" || $freq_min -eq $empty ||
+       -z "$freq_max" || $freq_max -eq $empty ||
+       -z "$gen_mode" || $gen_mode -eq $empty ||
+       -z "$station_name" || "$station_name" == "$empty" ||
+       -z "$focus_code" || $focus_code == $empty ||
+       -z "$gain" || $gain == $empty ||
+       -z "$longitude" || $longitude == $empty ||       
+       -z "$longitude_code" || $longitude_code == $empty ||
+       -z "$latitude" || $latitude == $empty ||
+       -z "$latitude_code" || $latitude_code == $empty ||
+       -z "$altitude" || $altitude == $empty || 
+       -z "$object" || $object == $empty ||
+       -z "$content" || $content == $empty || 
+       -z "$control_external_generation" || $control_external_generation == $empty || 
+       -z "$time_check_repetition" || $time_check_repetition -eq $empty 
+      ]]
 then
     echo "ERROR: Was not possible to execute."
     echo "Check config.cfg"
     echo "...Exiting..."
+    cp original.tmp $scheduler_file
     exit 0
     
 else
@@ -144,6 +184,7 @@ else
               then
                 echo "ERROR: Time periodity not well formated. Check it at config.cfg"
                 echo "...Exiting..."
+                cp original.tmp $scheduler_file
                 exit 0
           fi
 
@@ -191,10 +232,10 @@ else
               do
                 schedule_time_formated=$(date -d "$schedule_time" +"%H%M%S" | sed 's/^0*//')
                 execution_argument="-f$(echo $freq_min:$freq_max | tr -d '[:space:]') -c$gen_mode -s$station_name -z$focus_code -t$schedule_time -g$gain -L$longitude -k$longitude_code -m$latitude -M$latitude_code -A$altitude -o$object -O$content"
-              
                 if [ $time_now -gt $schedule_time_formated ]
                 then
                   echo "ERROR. Cannot be scheduled on the pass"
+                  cp original.tmp $scheduler_file
                   exit 0
                 else
                   echo "INFO: Executing script at $schedule_time"
