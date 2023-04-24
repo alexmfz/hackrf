@@ -6,3 +6,21 @@
 
 #IncludeRegexTransform: 
 
+/home/manolo/hackrf/host/hackrf-tools/src/hackrf_debug.c
+/home/manolo/hackrf/host/libhackrf/src/hackrf.h
+-
+stdio.h
+-
+string.h
+-
+stdlib.h
+-
+getopt.h
+-
+
+/home/manolo/hackrf/host/libhackrf/src/hackrf.h
+stdint.h
+-
+sys/types.h
+-
+

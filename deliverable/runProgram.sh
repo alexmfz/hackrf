@@ -4,6 +4,7 @@ echo "INFO: Reattaching HackRF One"
 sleep 1
 
 originalPath=$(pwd) # Base path
+cd $originalPath
 
 parameter_file='config.cfg'
 scheduler_file='scheduler.cfg' # File name with schedule times
@@ -97,13 +98,15 @@ period_time=$(head -n 15 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -
 
 check_time_3=$(echo $period_time | grep $check_format_1)		
 check_time_4=$(echo $period_time | grep $check_format_2)
+
 if [[ -z $check_time_3 && -z $check_time_4 ]]
-    then
-      echo "ERROR: Time periodity not well formated. Check it at config.cfg"
-      echo "...Exiting..."
-      exit 0
+		then
+			echo "ERROR: Time periodity not well formated. Check it at config.cfg"
+			echo "...Exiting..."
+			exit 0
 fi
-time_check_repetition=$(date -d "$period_time" +"%H%M%S"  | tr -d '[:space:]' | sed 's/^0*//') # Period time formated
+
+time_check_repetition=$(date -d "$period_time" +"%H%M%S"  | tr -d '[:space:]' | sed 's/^0*//')
 
 enable_repetition=0 # Control flag periodicity
 control_log=1 # Log control flag
@@ -136,14 +139,15 @@ else
           period_time=$(head -n 15 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^period_time=].*')
           check_time_3=$(echo $period_time | grep $check_format_1)		
           check_time_4=$(echo $period_time | grep $check_format_2)
+
           if [[ -z $check_time_3 && -z $check_time_4 ]]
               then
                 echo "ERROR: Time periodity not well formated. Check it at config.cfg"
                 echo "...Exiting..."
                 exit 0
           fi
-          time_check_repetition=$(date -d "$period_time" +"%H%M%S"  | tr -d '[:space:]' | sed 's/^0*//') # Period time formated
 
+          time_check_repetition=$(date -d "$period_time" +"%H%M%S"  | tr -d '[:space:]' | sed 's/^0*//') # Period time formated
           freq_min=$(head -n 1 $parameter_file | grep -o '^[^#]*' | grep -o '[^frq_min=]*')
           freq_max=$(head -n 2 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^frq_max=].*')
           
@@ -159,7 +163,6 @@ else
 	      then
 		      enable_repetition=1
           first_execution=1
-          
           cp $scheduler_file original.tmp
           head -n -2 $scheduler_file > scheduler.tmp
           cp scheduler.tmp $scheduler_file
@@ -170,7 +173,6 @@ else
   
           if [ "$gen_mode" -eq 0 ]
           then
-            cd $originalPath
             echo "INFO: Executing fits generator"
             ./generationPython.sh &
           fi
@@ -179,7 +181,7 @@ else
           then
 
             echo "INFO: Running Program"
-
+                
             # HERE
             while read schedule_time;
               do
@@ -207,6 +209,9 @@ else
                   else
                     echo "INFO: Fits file will be generate with Python script"
                     ./hackrf_sweep $execution_argument
+
+                    #Move files to proper folder
+                    
                     mv *_logs.txt Result/LastResult
                 
                     # Enable control flag to execute python script

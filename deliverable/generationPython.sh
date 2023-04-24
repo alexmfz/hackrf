@@ -54,7 +54,7 @@ else
     # Check gen mode and if gen_mode == 0, then scheduling.cfg will be read and sw will be executed
     if [ $gen_mode -eq 0 ]
     then        
-        while [ 1 ]
+        while [ $control_external_generation -ne 2 ]
         do
             control_external_generation=$(head -n 14 $parameter_file | tail -n 1 | grep -o '^[^#]*' | grep -o '[^control_external_generation=].*')
             if [ $control_external_generation -eq 1 ]
@@ -64,25 +64,21 @@ else
                 rm samples.txt
                 rm times.txt
                 rm frequencies.txt
-                rm header_times.txt
-
-                       
+                rm header_times.txt     
             
                 mv *.fit Result/LastResult
                 mv *_logs.txt Result/LastResult
-                
-                echo "...Fits file generated..."
-                
+                                
                 # Disable control flag to not execute python script again
                 sed -i 's\control_external_generation=1\control_external_generation=0\' $parameter_file
                 logger=1
-            else
+            #else
 
-                if [ $logger -eq 1 ]
-                then
-                    echo "...Waiting until sweeping is done..."
-                    logger=0                
-                fi
+             #   if [[ $logger -eq 1 && $control_external_generation -ne 2 ]]
+              #  then
+               #     echo "...Waiting until sweeping is done..."
+                #    logger=0                
+                #fi
 
             fi 
         done
@@ -96,3 +92,5 @@ else
     fi
 
 fi
+
+exit 0

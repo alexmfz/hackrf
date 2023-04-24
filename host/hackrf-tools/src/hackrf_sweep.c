@@ -2,10 +2,10 @@
  * @file hackrf_sweep.c
  * @author Alejandro
  * @brief
- * @version 2.0
- * @date 2022-11-05
+ * @version 5.3.2
+ * @date 2023-04-24
  *
- * @copyright Copyright (c) 2022
+ * @copyright Copyright (c) 2023
  *
  */
 #include "../../libhackrf/src/hackrf.h"

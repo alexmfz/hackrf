@@ -2,9 +2,9 @@
  * @file generationFits.c
  * @author Alejandro
  * @brief 
- * @version 0.1
- * @date 2022-11-05
- * @copyright Copyright (c) 2022
+ * @version 5.3.2
+ * @date 2023-04-24
+ * @copyright Copyright (c) 2023
  * 
  */
 #include "fitsio.h"
