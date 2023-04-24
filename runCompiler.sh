@@ -11,6 +11,7 @@ rm functions.c.o
 rm timer.c.o
 echo "Files object successfully removed"
 
+cp $originalPath/link.txt link.txt
 
 cd $originalPath/host/hackrf-tools/src/FitsFolder/
 

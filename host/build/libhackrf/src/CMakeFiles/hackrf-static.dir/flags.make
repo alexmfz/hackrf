@@ -4,7 +4,7 @@
 # compile C with /usr/bin/cc
 C_FLAGS =  -std=gnu90   -Wall
 
-C_DEFINES = -DLIBRARY_RELEASE="\"git-dffbd11*\"" -DLIBRARY_VERSION=\"0.7\"
+C_DEFINES = -DLIBRARY_RELEASE="\"git-7deaae7*\"" -DLIBRARY_VERSION=\"0.7\"
 
 C_INCLUDES = -I/usr/include/libusb-1.0 
 
